@@ -18,12 +18,15 @@ public class PlayerSeason
 
     public virtual ICollection<PlayerTeamHistory> TeamHistory { get; set; } =
         new HashSet<PlayerTeamHistory>();
-    
+
     public virtual PlayerSeasonGameStat GameStats { get; set; } = default!;
-    
+
     public virtual ICollection<PlayerSeasonBattingStat> BattingStats { get; set; } =
         new HashSet<PlayerSeasonBattingStat>();
 
     public virtual ICollection<PlayerSeasonPitchingStat> PitchingStats { get; set; } =
         new HashSet<PlayerSeasonPitchingStat>();
+
+    public virtual ICollection<PlayerSeasonAward> Awards { get; set; } =
+        new HashSet<PlayerSeasonAward>();
 }
