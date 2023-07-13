@@ -36,4 +36,6 @@ public class SeasonTeamHistory
     public virtual ICollection<TeamSeasonSchedule> HomeSeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
 
     public virtual ICollection<TeamSeasonSchedule> AwaySeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
+
+    public virtual ChampionshipWinner? ChampionshipWinner { get; set; }
 }

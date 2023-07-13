@@ -7,6 +7,7 @@ public class Player
     public int Id { get; set; }
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
+    public bool IsHallOfFamer { get; set; }
     public virtual BatHandedness BatHandedness { get; set; } = default!;
     public virtual ThrowHandedness ThrowHandedness { get; set; } = default!;
     public virtual Position PrimaryPosition { get; set; } = default!;

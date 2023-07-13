@@ -20,4 +20,8 @@
       <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>

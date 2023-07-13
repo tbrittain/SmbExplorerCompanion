@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230713221824_Initial")]
+    [Migration("20230713232945_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -19,6 +19,23 @@ namespace SmbExplorerCompanion.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.9");
+
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.ChampionshipWinner", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SeasonTeamHistoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeasonTeamHistoryId")
+                        .IsUnique();
+
+                    b.ToTable("ChampionshipWinners");
+                });
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Conference", b =>
                 {
@@ -261,6 +278,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsHallOfFamer")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -317,6 +337,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Age")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("ChampionshipWinnerId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PlayerId")
                         .HasColumnType("INTEGER");
 
@@ -327,6 +350,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChampionshipWinnerId");
 
                     b.HasIndex("PlayerId");
 
@@ -871,6 +896,17 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.ToTable("TeamSeasonSchedule");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.ChampionshipWinner", b =>
+                {
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", "SeasonTeamHistory")
+                        .WithOne("ChampionshipWinner")
+                        .HasForeignKey("SmbExplorerCompanion.Database.Entities.ChampionshipWinner", "SeasonTeamHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SeasonTeamHistory");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Conference", b =>
                 {
                     b.HasOne("SmbExplorerCompanion.Database.Entities.Franchise", null)
@@ -977,6 +1013,10 @@ namespace SmbExplorerCompanion.Database.Migrations
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.PlayerSeason", b =>
                 {
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.ChampionshipWinner", "ChampionshipWinner")
+                        .WithMany("Players")
+                        .HasForeignKey("ChampionshipWinnerId");
+
                     b.HasOne("SmbExplorerCompanion.Database.Entities.Player", "Player")
                         .WithMany("Seasons")
                         .HasForeignKey("PlayerId")
@@ -988,6 +1028,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .HasForeignKey("SeasonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ChampionshipWinner");
 
                     b.Navigation("Player");
 
@@ -1183,6 +1225,11 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Navigation("HomeTeamHistory");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.ChampionshipWinner", b =>
+                {
+                    b.Navigation("Players");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Conference", b =>
                 {
                     b.Navigation("Divisions");
@@ -1259,6 +1306,8 @@ namespace SmbExplorerCompanion.Database.Migrations
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", b =>
                 {
                     b.Navigation("AwaySeasonSchedule");
+
+                    b.Navigation("ChampionshipWinner");
 
                     b.Navigation("HomeSeasonSchedule");
 
