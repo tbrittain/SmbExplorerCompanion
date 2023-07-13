@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace SmbExplorerCompanion.WPF
+namespace SmbExplorerCompanion.WPF.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

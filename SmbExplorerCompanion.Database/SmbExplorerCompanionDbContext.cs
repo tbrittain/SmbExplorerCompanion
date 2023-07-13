@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Database.Entities.Lookups;
+using SmbExplorerCompanion.Shared.Constants;
 
 namespace SmbExplorerCompanion.Database;
 
@@ -12,7 +13,7 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<PlayerAward> PlayerAwards { get; set; } = default!;
     public virtual DbSet<Position> Positions { get; set; } = default!;
     public virtual DbSet<Trait> Traits { get; set; } = default!;
-    
+
     public virtual DbSet<Conference> Conferences { get; set; } = default!;
     public virtual DbSet<Division> Divisions { get; set; } = default!;
     public virtual DbSet<Franchise> Franchises { get; set; } = default!;
@@ -34,23 +35,37 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<BatHandedness> BatHandedness { get; set; } = default!;
     public virtual DbSet<ThrowHandedness> ThrowHandedness { get; set; } = default!;
 
+    public SmbExplorerCompanionDbContext()
+    {
+    }
+
+    public SmbExplorerCompanionDbContext(DbContextOptions<SmbExplorerCompanionDbContext> options) : base(options)
+    {
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite($"Data Source={FileExports.BaseApplicationDirectory}\\SmbExplorerCompanion.db");
+        base.OnConfiguring(optionsBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TeamSeasonSchedule>()
             .HasOne(x => x.HomeTeamHistory)
             .WithMany(x => x.HomeSeasonSchedule)
             .HasForeignKey(x => x.HomeTeamHistoryId);
-        
+
         modelBuilder.Entity<TeamSeasonSchedule>()
             .HasOne(x => x.AwayTeamHistory)
             .WithMany(x => x.AwaySeasonSchedule)
             .HasForeignKey(x => x.AwayTeamHistoryId);
-        
+
         modelBuilder.Entity<TeamSeasonSchedule>()
             .HasOne(x => x.HomePitcherSeason)
             .WithMany(x => x.HomePitchingSchedule)
             .HasForeignKey(x => x.HomePitcherSeasonId);
-        
+
         modelBuilder.Entity<TeamSeasonSchedule>()
             .HasOne(x => x.AwayPitcherSeason)
             .WithMany(x => x.AwayPitchingSchedule)
