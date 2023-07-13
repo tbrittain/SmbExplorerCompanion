@@ -7,6 +7,8 @@ public class Player
     public int Id { get; set; }
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
+    public virtual BatHandedness BatHandedness { get; set; } = default!;
+    public virtual ThrowHandedness ThrowHandedness { get; set; } = default!;
     public virtual Position PrimaryPosition { get; set; } = default!;
     public virtual PitcherRole? PitcherRole { get; set; }
     public virtual Chemistry? Chemistry { get; set; }

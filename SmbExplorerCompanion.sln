@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Csv", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Core", "SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj", "{2602720D-CDA2-463C-9049-30E01AE77D3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Shared", "SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj", "{EB3F8F59-54E7-4050-9731-9FBE99541A48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

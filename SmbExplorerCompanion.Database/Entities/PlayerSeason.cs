@@ -29,4 +29,10 @@ public class PlayerSeason
 
     public virtual ICollection<PlayerSeasonAward> Awards { get; set; } =
         new HashSet<PlayerSeasonAward>();
+    
+    public virtual ICollection<TeamSeasonSchedule> HomePitchingSchedule { get; set; } =
+        new HashSet<TeamSeasonSchedule>();
+    
+    public virtual ICollection<TeamSeasonSchedule> AwayPitchingSchedule { get; set; } =
+        new HashSet<TeamSeasonSchedule>();
 }

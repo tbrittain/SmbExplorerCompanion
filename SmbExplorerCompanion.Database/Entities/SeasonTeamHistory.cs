@@ -33,7 +33,6 @@ public class SeasonTeamHistory
     public virtual ICollection<TeamDivisionHistory> TeamDivisionHistory { get; set; } =
         new HashSet<TeamDivisionHistory>();
 
-    // TODO: ensure these keys are set properly
     public virtual ICollection<TeamSeasonSchedule> HomeSeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
 
     public virtual ICollection<TeamSeasonSchedule> AwaySeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
