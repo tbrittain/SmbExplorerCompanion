@@ -723,8 +723,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<long>("Budget")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("GamesBehind")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("GamesBehind")
+                        .HasColumnType("REAL");
 
                     b.Property<int>("Losses")
                         .HasColumnType("INTEGER");

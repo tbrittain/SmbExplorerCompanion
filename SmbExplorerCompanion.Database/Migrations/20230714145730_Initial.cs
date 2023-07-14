@@ -360,7 +360,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     PayrollPerGame = table.Column<double>(type: "REAL", nullable: false),
                     Wins = table.Column<int>(type: "INTEGER", nullable: false),
                     Losses = table.Column<int>(type: "INTEGER", nullable: false),
-                    GamesBehind = table.Column<long>(type: "INTEGER", nullable: false),
+                    GamesBehind = table.Column<double>(type: "REAL", nullable: false),
                     RunsScored = table.Column<int>(type: "INTEGER", nullable: false),
                     RunsAllowed = table.Column<int>(type: "INTEGER", nullable: false),
                     TotalPower = table.Column<int>(type: "INTEGER", nullable: false),

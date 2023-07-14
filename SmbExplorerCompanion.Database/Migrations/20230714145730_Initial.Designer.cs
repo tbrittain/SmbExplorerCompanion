@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230714143934_Initial")]
+    [Migration("20230714145730_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -726,8 +726,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<long>("Budget")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("GamesBehind")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("GamesBehind")
+                        .HasColumnType("REAL");
 
                     b.Property<int>("Losses")
                         .HasColumnType("INTEGER");

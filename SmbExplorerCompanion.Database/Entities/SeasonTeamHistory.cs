@@ -12,7 +12,7 @@ public class SeasonTeamHistory
     public double PayrollPerGame { get; set; }
     public int Wins { get; set; }
     public int Losses { get; set; }
-    public long GamesBehind { get; set; }
+    public double GamesBehind { get; set; }
     public int RunsScored { get; set; }
     public int RunsAllowed { get; set; }
     public int TotalPower { get; set; }
