@@ -23,6 +23,8 @@ public class PlayerSeason
 
     // This is one-to-one because a player's game stats are not modified during the postseason
     public virtual PlayerSeasonGameStat GameStats { get; set; } = default!;
+    
+    public virtual ICollection<Trait> Traits { get; set; } = new HashSet<Trait>();
 
     public virtual ICollection<PlayerSeasonBattingStat> BattingStats { get; set; } =
         new HashSet<PlayerSeasonBattingStat>();

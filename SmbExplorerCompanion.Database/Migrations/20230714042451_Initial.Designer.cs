@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230714041845_Initial")]
+    [Migration("20230714042451_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -33,6 +33,21 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.HasIndex("PlayerSeasonsId");
 
                     b.ToTable("PlayerAwardPlayerSeason");
+                });
+
+            modelBuilder.Entity("PlayerSeasonTrait", b =>
+                {
+                    b.Property<int>("PlayerSeasonsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TraitsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PlayerSeasonsId", "TraitsId");
+
+                    b.HasIndex("TraitsId");
+
+                    b.ToTable("PlayerSeasonTrait");
                 });
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.ChampionshipWinner", b =>
@@ -878,6 +893,21 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.HasOne("SmbExplorerCompanion.Database.Entities.PlayerSeason", null)
                         .WithMany()
                         .HasForeignKey("PlayerSeasonsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PlayerSeasonTrait", b =>
+                {
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.PlayerSeason", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerSeasonsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.Lookups.Trait", null)
+                        .WithMany()
+                        .HasForeignKey("TraitsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

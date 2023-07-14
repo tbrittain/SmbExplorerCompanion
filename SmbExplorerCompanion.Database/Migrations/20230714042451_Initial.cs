@@ -607,6 +607,30 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PlayerSeasonTrait",
+                columns: table => new
+                {
+                    PlayerSeasonsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TraitsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerSeasonTrait", x => new { x.PlayerSeasonsId, x.TraitsId });
+                    table.ForeignKey(
+                        name: "FK_PlayerSeasonTrait_PlayerSeasons_PlayerSeasonsId",
+                        column: x => x.PlayerSeasonsId,
+                        principalTable: "PlayerSeasons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PlayerSeasonTrait_Traits_TraitsId",
+                        column: x => x.TraitsId,
+                        principalTable: "Traits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PlayerTeamHistory",
                 columns: table => new
                 {
@@ -773,6 +797,11 @@ namespace SmbExplorerCompanion.Database.Migrations
                 column: "SecondaryPositionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PlayerSeasonTrait_TraitsId",
+                table: "PlayerSeasonTrait",
+                column: "TraitsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PlayerTeamHistory_PlayerSeasonId",
                 table: "PlayerTeamHistory",
                 column: "PlayerSeasonId");
@@ -860,6 +889,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "PlayerSeasonPitchingStats");
 
             migrationBuilder.DropTable(
+                name: "PlayerSeasonTrait");
+
+            migrationBuilder.DropTable(
                 name: "PlayerTeamHistory");
 
             migrationBuilder.DropTable(
@@ -869,13 +901,13 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "TeamSeasonSchedule");
 
             migrationBuilder.DropTable(
-                name: "Traits");
-
-            migrationBuilder.DropTable(
                 name: "PitchTypes");
 
             migrationBuilder.DropTable(
                 name: "PlayerAwards");
+
+            migrationBuilder.DropTable(
+                name: "Traits");
 
             migrationBuilder.DropTable(
                 name: "PlayerSeasons");

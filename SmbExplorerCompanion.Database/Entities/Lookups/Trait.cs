@@ -8,4 +8,5 @@ public class Trait
     public bool IsPositive { get; set; } = true;
     public int? ChemistryId { get; set; }
     public virtual Chemistry? Chemistry { get; set; }
+    public virtual ICollection<PlayerSeason> PlayerSeasons { get; set; } = new HashSet<PlayerSeason>();
 }
