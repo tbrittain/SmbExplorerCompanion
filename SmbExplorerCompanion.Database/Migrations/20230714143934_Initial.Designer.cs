@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230714142403_Initial")]
+    [Migration("20230714143934_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -399,16 +399,16 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("AbPerHomeRun")
+                    b.Property<double?>("AbPerHomeRun")
                         .HasColumnType("REAL");
 
                     b.Property<int>("AtBats")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Babip")
+                    b.Property<double?>("Babip")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("BattingAverage")
+                    b.Property<double?>("BattingAverage")
                         .HasColumnType("REAL");
 
                     b.Property<int>("CaughtStealing")
@@ -420,7 +420,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Errors")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("ExtraBaseHitPercentage")
+                    b.Property<double?>("ExtraBaseHitPercentage")
                         .HasColumnType("REAL");
 
                     b.Property<int>("ExtraBaseHits")
@@ -444,19 +444,19 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<bool>("IsRegularSeason")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Iso")
+                    b.Property<double?>("Iso")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("Obp")
+                    b.Property<double?>("Obp")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("Ops")
+                    b.Property<double?>("Ops")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("OpsPlus")
+                    b.Property<double?>("OpsPlus")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("PaPerGame")
+                    b.Property<double?>("PaPerGame")
                         .HasColumnType("REAL");
 
                     b.Property<int>("PassedBalls")
@@ -483,13 +483,13 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Singles")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Slg")
+                    b.Property<double?>("Slg")
                         .HasColumnType("REAL");
 
                     b.Property<int>("StolenBases")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("StrikeoutPercentage")
+                    b.Property<double?>("StrikeoutPercentage")
                         .HasColumnType("REAL");
 
                     b.Property<int>("Strikeouts")
@@ -501,13 +501,13 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Triples")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("WalkPercentage")
+                    b.Property<double?>("WalkPercentage")
                         .HasColumnType("REAL");
 
                     b.Property<int>("Walks")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Woba")
+                    b.Property<double?>("Woba")
                         .HasColumnType("REAL");
 
                     b.HasKey("Id");
@@ -523,10 +523,10 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Accuracy")
+                    b.Property<int?>("Accuracy")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Arm")
+                    b.Property<int?>("Arm")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Contact")
@@ -535,7 +535,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Fielding")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Junk")
+                    b.Property<int?>("Junk")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PlayerSeasonId")
@@ -547,7 +547,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Speed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Velocity")
+                    b.Property<int?>("Velocity")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -567,25 +567,25 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("BattersFaced")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("BattingAverageAgainst")
+                    b.Property<double?>("BattingAverageAgainst")
                         .HasColumnType("REAL");
 
                     b.Property<int>("CompleteGames")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("EarnedRunAverage")
+                    b.Property<double?>("EarnedRunAverage")
                         .HasColumnType("REAL");
 
                     b.Property<int>("EarnedRuns")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("EraMinus")
+                    b.Property<double?>("EraMinus")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("Fip")
+                    b.Property<double?>("Fip")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("FipMinus")
+                    b.Property<double?>("FipMinus")
                         .HasColumnType("REAL");
 
                     b.Property<int>("GamesFinished")
@@ -603,13 +603,13 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Hits")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("HitsPerNine")
+                    b.Property<double?>("HitsPerNine")
                         .HasColumnType("REAL");
 
                     b.Property<int>("HomeRuns")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("HomeRunsPerNine")
+                    b.Property<double?>("HomeRunsPerNine")
                         .HasColumnType("REAL");
 
                     b.Property<double>("InningsPitched")
@@ -621,13 +621,13 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Losses")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("OpponentObp")
+                    b.Property<double?>("OpponentObp")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("PitcherPerGame")
+                    b.Property<double?>("PitcherPerGame")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("PitchesPerInning")
+                    b.Property<double?>("PitchesPerInning")
                         .HasColumnType("REAL");
 
                     b.Property<int>("PlayerSeasonId")
@@ -645,7 +645,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Strikeouts")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("StrikeoutsPerNine")
+                    b.Property<double?>("StrikeoutsPerNine")
                         .HasColumnType("REAL");
 
                     b.Property<int>("TotalPitches")
@@ -654,16 +654,16 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Walks")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("WalksPerNine")
+                    b.Property<double?>("WalksPerNine")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("Whip")
+                    b.Property<double?>("Whip")
                         .HasColumnType("REAL");
 
                     b.Property<int>("WildPitches")
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("WinPercentage")
+                    b.Property<double?>("WinPercentage")
                         .HasColumnType("REAL");
 
                     b.Property<int>("Wins")
@@ -860,7 +860,11 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("Logo")
+                    b.Property<byte[]>("LogoFullSize")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<byte[]>("LogoIconSize")
                         .IsRequired()
                         .HasColumnType("BLOB");
 

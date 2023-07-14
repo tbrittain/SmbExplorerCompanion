@@ -24,22 +24,22 @@ public class PlayerSeasonBattingStat
     public int Walks { get; set; }
     public int Strikeouts { get; set; }
     public int HitByPitch { get; set; }
-    public double Obp { get; set; }
-    public double Slg { get; set; }
-    public double Ops { get; set; }
-    public double Woba { get; set; }
-    public double Iso { get; set; }
-    public double Babip { get; set; }
+    public double? Obp { get; set; }
+    public double? Slg { get; set; }
+    public double? Ops { get; set; }
+    public double? Woba { get; set; }
+    public double? Iso { get; set; }
+    public double? Babip { get; set; }
     public int SacrificeHits { get; set; }
     public int SacrificeFlies { get; set; }
-    public double BattingAverage { get; set; }
+    public double? BattingAverage { get; set; }
     public int Errors { get; set; }
     public int PassedBalls { get; set; }
-    public double PaPerGame { get; set; }
-    public double AbPerHomeRun { get; set; }
-    public double StrikeoutPercentage { get; set; }
-    public double WalkPercentage { get; set; }
-    public double ExtraBaseHitPercentage { get; set; }
-    public double OpsPlus { get; set; }
+    public double? PaPerGame { get; set; }
+    public double? AbPerHomeRun { get; set; }
+    public double? StrikeoutPercentage { get; set; }
+    public double? WalkPercentage { get; set; }
+    public double? ExtraBaseHitPercentage { get; set; }
+    public double? OpsPlus { get; set; }
     public bool IsRegularSeason { get; set; } = true;
 }

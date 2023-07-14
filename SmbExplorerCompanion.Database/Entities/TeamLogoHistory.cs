@@ -7,7 +7,8 @@ public class TeamLogoHistory
 {
     [Key]
     public int Id { get; set; }
-    public byte[] Logo { get; set; } = default!;
+    public byte[] LogoFullSize { get; set; } = default!;
+    public byte[] LogoIconSize { get; set; } = default!;
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Order { get; set; }
