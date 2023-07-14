@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230713232945_Initial")]
+    [Migration("20230714033526_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -89,6 +89,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSmb3")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
