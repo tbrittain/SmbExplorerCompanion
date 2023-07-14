@@ -13,5 +13,5 @@ public class PlayerAward
     /// </summary>
     public int Importance { get; set; }
 
-    public virtual ICollection<PlayerSeasonAward> PlayerSeasonAwards { get; set; } = new HashSet<PlayerSeasonAward>();
+    public virtual ICollection<PlayerSeason> PlayerSeasons { get; set; } = new HashSet<PlayerSeason>();
 }

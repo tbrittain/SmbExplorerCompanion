@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.Database.Entities;
+﻿using SmbExplorerCompanion.Database.Entities.Lookups;
+
+namespace SmbExplorerCompanion.Database.Entities;
 
 public class PlayerSeason
 {
@@ -12,13 +14,14 @@ public class PlayerSeason
 
     public virtual ICollection<PitcherPitchTypeHistory> PitcherPitchTypeHistory { get; set; } =
         new HashSet<PitcherPitchTypeHistory>();
-
-    public virtual ICollection<PlayerSecondaryPositionHistory> SecondaryPositionHistory { get; set; } =
-        new HashSet<PlayerSecondaryPositionHistory>();
+    
+    public int SecondaryPositionId { get; set; }
+    public virtual Position SecondaryPosition { get; set; } = default!;
 
     public virtual ICollection<PlayerTeamHistory> TeamHistory { get; set; } =
         new HashSet<PlayerTeamHistory>();
 
+    // This is one-to-one because a player's game stats are not modified during the postseason
     public virtual PlayerSeasonGameStat GameStats { get; set; } = default!;
 
     public virtual ICollection<PlayerSeasonBattingStat> BattingStats { get; set; } =
@@ -27,8 +30,8 @@ public class PlayerSeason
     public virtual ICollection<PlayerSeasonPitchingStat> PitchingStats { get; set; } =
         new HashSet<PlayerSeasonPitchingStat>();
 
-    public virtual ICollection<PlayerSeasonAward> Awards { get; set; } =
-        new HashSet<PlayerSeasonAward>();
+    public virtual ICollection<PlayerAward> Awards { get; set; } =
+        new HashSet<PlayerAward>();
 
     public virtual ICollection<TeamSeasonSchedule> HomePitchingSchedule { get; set; } =
         new HashSet<TeamSeasonSchedule>();

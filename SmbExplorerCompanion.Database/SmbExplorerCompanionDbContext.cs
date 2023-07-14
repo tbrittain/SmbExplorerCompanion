@@ -24,11 +24,9 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<Player> Players { get; set; } = default!;
     public virtual DbSet<PlayerGameIdHistory> PlayerGameIdHistory { get; set; } = default!;
     public virtual DbSet<PlayerSeason> PlayerSeasons { get; set; } = default!;
-    public virtual DbSet<PlayerSeasonAward> PlayerSeasonAwards { get; set; } = default!;
     public virtual DbSet<PlayerSeasonBattingStat> PlayerSeasonBattingStats { get; set; } = default!;
     public virtual DbSet<PlayerSeasonGameStat> PlayerSeasonGameStats { get; set; } = default!;
     public virtual DbSet<PlayerSeasonPitchingStat> PlayerSeasonPitchingStats { get; set; } = default!;
-    public virtual DbSet<PlayerSecondaryPositionHistory> PlayerSecondaryPositionHistory { get; set; } = default!;
     public virtual DbSet<PlayerTeamHistory> PlayerTeamHistory { get; set; } = default!;
     public virtual DbSet<Season> Seasons { get; set; } = default!;
     public virtual DbSet<SeasonTeamHistory> SeasonTeamHistory { get; set; } = default!;
@@ -73,6 +71,16 @@ public class SmbExplorerCompanionDbContext : DbContext
             .HasOne(x => x.AwayPitcherSeason)
             .WithMany(x => x.AwayPitchingSchedule)
             .HasForeignKey(x => x.AwayPitcherSeasonId);
+        
+        modelBuilder.Entity<PlayerSeason>()
+            .HasOne(x => x.SecondaryPosition)
+            .WithMany(x => x.SecondaryPositionPlayers)
+            .HasForeignKey(x => x.SecondaryPositionId);
+        
+        modelBuilder.Entity<Player>()
+            .HasOne(x => x.PrimaryPosition)
+            .WithMany(x => x.PrimaryPositionPlayers)
+            .HasForeignKey(x => x.PrimaryPositionId);
 
         base.OnModelCreating(modelBuilder);
     }
