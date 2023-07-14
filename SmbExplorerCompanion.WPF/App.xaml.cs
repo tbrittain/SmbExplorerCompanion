@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -15,9 +16,6 @@ namespace SmbExplorerCompanion.WPF;
 
 public partial class App
 {
-    private IServiceProvider ServiceProvider { get; set; } = null!;
-    private IServiceCollection Services { get; set; } = null!;
-
     public App()
     {
 #if RELEASE
@@ -25,16 +23,18 @@ public partial class App
 #endif
     }
 
+    private IServiceProvider ServiceProvider { get; set; } = null!;
+    private IServiceCollection Services { get; set; } = null!;
+
     protected override async void OnStartup(StartupEventArgs e)
     {
-        if (!Directory.Exists(BaseApplicationDirectory))
-        {
-            Directory.CreateDirectory(BaseApplicationDirectory);
-        }
+        if (!Directory.Exists(BaseApplicationDirectory)) Directory.CreateDirectory(BaseApplicationDirectory);
 
         Services = new ServiceCollection();
         await ConfigureServices(Services);
         ServiceProvider = Services.BuildServiceProvider();
+        SmbExplorerCompanionDbContext.ApplyMigrations(ServiceProvider);
+        SmbExplorerCompanionDbContext.SeedLookups(ServiceProvider);
 
         var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         mainWindow.Show();
@@ -45,10 +45,7 @@ public partial class App
     private static Task ConfigureServices(IServiceCollection services)
     {
         var connectionString = Path.Combine(BaseApplicationDirectory, "SmbExplorerCompanion.db");
-        services.AddDbContext<SmbExplorerCompanionDbContext>(options =>
-        {
-            options.UseSqlite(new SqliteConnection(connectionString));
-        });
+        services.AddDbContext<SmbExplorerCompanionDbContext>();
 
         services.AddSingleton<MainWindow>(serviceProvider => new MainWindow
         {
@@ -65,7 +62,7 @@ public partial class App
     }
 
     /// <summary>
-    /// Global exception handler. In debug mode, this will not be called and exceptions will be thrown.
+    ///     Global exception handler. In debug mode, this will not be called and exceptions will be thrown.
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
