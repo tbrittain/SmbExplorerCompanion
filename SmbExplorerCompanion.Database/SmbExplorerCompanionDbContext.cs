@@ -792,6 +792,123 @@ public class SmbExplorerCompanionDbContext : DbContext
         {
             new()
             {
+                Name = "POW vs RHP",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "POW vs LHP",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "CON vs RHP",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "CON vs LHP",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "RBI Man",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "RBI Dud",
+                IsPositive = false,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "High Pitch",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Low Pitch",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Inside Pitch",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Outside Pitch",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Tough Out",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Whiffer",
+                IsPositive = false,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Stealer",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Bad Jumps",
+                IsPositive = false,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Utility",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Composed",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "BB Prone",
+                IsPositive = false,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "Specialist",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "K Man",
+                IsPositive = true,
+                IsSmb3 = true
+            },
+            new()
+            {
+                Name = "K Dud",
+                IsPositive = false,
+                IsSmb3 = true
             },
         };
 
