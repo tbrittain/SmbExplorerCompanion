@@ -8,6 +8,7 @@
 public class PlayerGameIdHistory
 {
     public int Id { get; set; }
+    public int PlayerId { get; set; }
     public virtual Player Player { get; set; } = default!;
     public Guid GameId { get; set; }
 }

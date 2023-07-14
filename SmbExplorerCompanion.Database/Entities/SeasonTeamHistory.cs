@@ -30,8 +30,11 @@ public class SeasonTeamHistory
 
     public virtual ICollection<PlayerTeamHistory> PlayerTeamHistory { get; set; } = new HashSet<PlayerTeamHistory>();
 
-    public virtual ICollection<TeamDivisionHistory> TeamDivisionHistory { get; set; } =
-        new HashSet<TeamDivisionHistory>();
+    public int TeamDivisionHistoryId { get; set; }
+    public virtual TeamDivisionHistory TeamDivisionHistory { get; set; } = default!;
+
+    public int TeamNameHistoryId { get; set; }
+    public virtual TeamNameHistory TeamNameHistory { get; set; } = default!;
 
     public virtual ICollection<TeamSeasonSchedule> HomeSeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
 

@@ -9,8 +9,7 @@
 public class TeamDivisionHistory
 {
     public int Id { get; set; }
-    public int SeasonTeamHistoryId { get; set; }
-    public virtual SeasonTeamHistory SeasonTeamHistory { get; set; } = default!;
+    public virtual ICollection<SeasonTeamHistory> SeasonTeamHistory { get; set; } = new HashSet<SeasonTeamHistory>();
     public int DivisionId { get; set; }
     public virtual Division Division { get; set; } = default!;
 }

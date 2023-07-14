@@ -34,6 +34,9 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<TeamDivisionHistory> TeamDivisionHistory { get; set; } = default!;
     public virtual DbSet<TeamSeasonSchedule> TeamSeasonSchedule { get; set; } = default!;
     public virtual DbSet<ChampionshipWinner> ChampionshipWinners { get; set; } = default!;
+    public virtual DbSet<TeamGameIdHistory> TeamGameIdHistory { get; set; } = default!;
+    public virtual DbSet<TeamLogoHistory> TeamLogoHistory { get; set; } = default!;
+    public virtual DbSet<TeamNameHistory> TeamNameHistory { get; set; } = default!;
 
     public SmbExplorerCompanionDbContext()
     {
@@ -172,6 +175,13 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Importance = 1,
                 IsBuiltIn = true,
             },
+            new()
+            {
+                Name = "ROY",
+                OriginalName = "ROY",
+                Importance = 1,
+                IsBuiltIn = true,
+            },
             new PlayerAward
             {
                 Name = "Gold Glove",
@@ -241,7 +251,91 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "All-Star",
                 Importance = 4,
                 IsBuiltIn = true,
-            }
+            },
+            new()
+            {
+                Name = "MVP-2",
+                OriginalName = "MVP-2",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "MVP-3",
+                OriginalName = "MVP-3",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "MVP-4",
+                OriginalName = "MVP-4",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "MVP-5",
+                OriginalName = "MVP-5",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "Cy Young-2",
+                OriginalName = "Cy Young-2",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "Cy Young-3",
+                OriginalName = "Cy Young-3",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "Cy Young-4",
+                OriginalName = "Cy Young-4",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "Cy Young-5",
+                OriginalName = "Cy Young-5",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "ROY-2",
+                OriginalName = "ROY-2",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "ROY-3",
+                OriginalName = "ROY-3",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "ROY-4",
+                OriginalName = "ROY-4",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
+            new()
+            {
+                Name = "ROY-5",
+                OriginalName = "ROY-5",
+                Importance = 5,
+                IsBuiltIn = true,
+            },
         };
 
         dbContext.PlayerAwards.AddRange(playerAwards);
