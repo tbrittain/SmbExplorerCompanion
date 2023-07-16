@@ -735,16 +735,19 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<double>("PayrollPerGame")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("PlayoffLosses")
+                    b.Property<int?>("PlayoffLosses")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PlayoffRunsAllowed")
+                    b.Property<int?>("PlayoffRunsAllowed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PlayoffRunsScored")
+                    b.Property<int?>("PlayoffRunsScored")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PlayoffWins")
+                    b.Property<int?>("PlayoffSeed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("PlayoffWins")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("RunsAllowed")
@@ -894,16 +897,59 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.ToTable("TeamNameHistory");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.TeamPlayoffSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AwayPitcherSeasonId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AwayScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AwayTeamHistoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("GlobalGameNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("HomePitcherSeasonId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("HomeScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("HomeTeamHistoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SeriesNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AwayPitcherSeasonId");
+
+                    b.HasIndex("AwayTeamHistoryId");
+
+                    b.HasIndex("HomePitcherSeasonId");
+
+                    b.HasIndex("HomeTeamHistoryId");
+
+                    b.ToTable("TeamPlayoffSchedules");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.TeamSeasonSchedule", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("AwayPitcherSeasonId")
+                    b.Property<int?>("AwayPitcherSeasonId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("AwayScore")
+                    b.Property<int?>("AwayScore")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("AwayTeamHistoryId")
@@ -915,10 +961,10 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("GlobalGameNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("HomePitcherSeasonId")
+                    b.Property<int?>("HomePitcherSeasonId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("HomeScore")
+                    b.Property<int?>("HomeScore")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("HomeTeamHistoryId")
@@ -934,7 +980,7 @@ namespace SmbExplorerCompanion.Database.Migrations
 
                     b.HasIndex("HomeTeamHistoryId");
 
-                    b.ToTable("TeamSeasonSchedule");
+                    b.ToTable("TeamSeasonSchedules");
                 });
 
             modelBuilder.Entity("PlayerAwardPlayerSeason", b =>
@@ -1229,13 +1275,42 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Navigation("TeamLogoHistory");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.TeamPlayoffSchedule", b =>
+                {
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.PlayerSeason", "AwayPitcherSeason")
+                        .WithMany("AwayPitchingPlayoffSchedule")
+                        .HasForeignKey("AwayPitcherSeasonId");
+
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", "AwayTeamHistory")
+                        .WithMany("AwayPlayoffSchedule")
+                        .HasForeignKey("AwayTeamHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.PlayerSeason", "HomePitcherSeason")
+                        .WithMany("HomePitchingPlayoffSchedule")
+                        .HasForeignKey("HomePitcherSeasonId");
+
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", "HomeTeamHistory")
+                        .WithMany("HomePlayoffSchedule")
+                        .HasForeignKey("HomeTeamHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AwayPitcherSeason");
+
+                    b.Navigation("AwayTeamHistory");
+
+                    b.Navigation("HomePitcherSeason");
+
+                    b.Navigation("HomeTeamHistory");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.TeamSeasonSchedule", b =>
                 {
                     b.HasOne("SmbExplorerCompanion.Database.Entities.PlayerSeason", "AwayPitcherSeason")
                         .WithMany("AwayPitchingSchedule")
-                        .HasForeignKey("AwayPitcherSeasonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AwayPitcherSeasonId");
 
                     b.HasOne("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", "AwayTeamHistory")
                         .WithMany("AwaySeasonSchedule")
@@ -1245,9 +1320,7 @@ namespace SmbExplorerCompanion.Database.Migrations
 
                     b.HasOne("SmbExplorerCompanion.Database.Entities.PlayerSeason", "HomePitcherSeason")
                         .WithMany("HomePitchingSchedule")
-                        .HasForeignKey("HomePitcherSeasonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("HomePitcherSeasonId");
 
                     b.HasOne("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", "HomeTeamHistory")
                         .WithMany("HomeSeasonSchedule")
@@ -1315,12 +1388,16 @@ namespace SmbExplorerCompanion.Database.Migrations
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.PlayerSeason", b =>
                 {
+                    b.Navigation("AwayPitchingPlayoffSchedule");
+
                     b.Navigation("AwayPitchingSchedule");
 
                     b.Navigation("BattingStats");
 
                     b.Navigation("GameStats")
                         .IsRequired();
+
+                    b.Navigation("HomePitchingPlayoffSchedule");
 
                     b.Navigation("HomePitchingSchedule");
 
@@ -1340,9 +1417,13 @@ namespace SmbExplorerCompanion.Database.Migrations
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", b =>
                 {
+                    b.Navigation("AwayPlayoffSchedule");
+
                     b.Navigation("AwaySeasonSchedule");
 
                     b.Navigation("ChampionshipWinner");
+
+                    b.Navigation("HomePlayoffSchedule");
 
                     b.Navigation("HomeSeasonSchedule");
 

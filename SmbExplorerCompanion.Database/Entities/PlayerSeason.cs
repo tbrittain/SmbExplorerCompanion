@@ -14,7 +14,7 @@ public class PlayerSeason
 
     public virtual ICollection<PitcherPitchTypeHistory> PitcherPitchTypeHistory { get; set; } =
         new HashSet<PitcherPitchTypeHistory>();
-    
+
     public int SecondaryPositionId { get; set; }
     public virtual Position SecondaryPosition { get; set; } = default!;
 
@@ -23,7 +23,7 @@ public class PlayerSeason
 
     // This is one-to-one because a player's game stats are not modified during the postseason
     public virtual PlayerSeasonGameStat GameStats { get; set; } = default!;
-    
+
     public virtual ICollection<Trait> Traits { get; set; } = new HashSet<Trait>();
 
     public virtual ICollection<PlayerSeasonBattingStat> BattingStats { get; set; } =
@@ -40,6 +40,12 @@ public class PlayerSeason
 
     public virtual ICollection<TeamSeasonSchedule> AwayPitchingSchedule { get; set; } =
         new HashSet<TeamSeasonSchedule>();
+
+    public virtual ICollection<TeamPlayoffSchedule> HomePitchingPlayoffSchedule { get; set; } =
+        new HashSet<TeamPlayoffSchedule>();
+
+    public virtual ICollection<TeamPlayoffSchedule> AwayPitchingPlayoffSchedule { get; set; } =
+        new HashSet<TeamPlayoffSchedule>();
 
     public virtual ChampionshipWinner? ChampionshipWinner { get; set; }
 }

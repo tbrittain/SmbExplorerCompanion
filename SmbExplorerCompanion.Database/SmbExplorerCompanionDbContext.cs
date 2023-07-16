@@ -32,7 +32,8 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<SeasonTeamHistory> SeasonTeamHistory { get; set; } = default!;
     public virtual DbSet<Team> Teams { get; set; } = default!;
     public virtual DbSet<TeamDivisionHistory> TeamDivisionHistory { get; set; } = default!;
-    public virtual DbSet<TeamSeasonSchedule> TeamSeasonSchedule { get; set; } = default!;
+    public virtual DbSet<TeamSeasonSchedule> TeamSeasonSchedules { get; set; } = default!;
+    public virtual DbSet<TeamPlayoffSchedule> TeamPlayoffSchedules { get; set; } = default!;
     public virtual DbSet<ChampionshipWinner> ChampionshipWinners { get; set; } = default!;
     public virtual DbSet<TeamGameIdHistory> TeamGameIdHistory { get; set; } = default!;
     public virtual DbSet<TeamLogoHistory> TeamLogoHistory { get; set; } = default!;
@@ -74,12 +75,32 @@ public class SmbExplorerCompanionDbContext : DbContext
             .HasOne(x => x.AwayPitcherSeason)
             .WithMany(x => x.AwayPitchingSchedule)
             .HasForeignKey(x => x.AwayPitcherSeasonId);
-        
+
+        modelBuilder.Entity<TeamPlayoffSchedule>()
+            .HasOne(x => x.HomeTeamHistory)
+            .WithMany(x => x.HomePlayoffSchedule)
+            .HasForeignKey(x => x.HomeTeamHistoryId);
+
+        modelBuilder.Entity<TeamPlayoffSchedule>()
+            .HasOne(x => x.AwayTeamHistory)
+            .WithMany(x => x.AwayPlayoffSchedule)
+            .HasForeignKey(x => x.AwayTeamHistoryId);
+
+        modelBuilder.Entity<TeamPlayoffSchedule>()
+            .HasOne(x => x.HomePitcherSeason)
+            .WithMany(x => x.HomePitchingPlayoffSchedule)
+            .HasForeignKey(x => x.HomePitcherSeasonId);
+
+        modelBuilder.Entity<TeamPlayoffSchedule>()
+            .HasOne(x => x.AwayPitcherSeason)
+            .WithMany(x => x.AwayPitchingPlayoffSchedule)
+            .HasForeignKey(x => x.AwayPitcherSeasonId);
+
         modelBuilder.Entity<PlayerSeason>()
             .HasOne(x => x.SecondaryPosition)
             .WithMany(x => x.SecondaryPositionPlayers)
             .HasForeignKey(x => x.SecondaryPositionId);
-        
+
         modelBuilder.Entity<Player>()
             .HasOne(x => x.PrimaryPosition)
             .WithMany(x => x.PrimaryPositionPlayers)

@@ -23,10 +23,11 @@ public class SeasonTeamHistory
     public int TotalVelocity { get; set; }
     public int TotalJunk { get; set; }
     public int TotalAccuracy { get; set; }
-    public int PlayoffWins { get; set; }
-    public int PlayoffLosses { get; set; }
-    public int PlayoffRunsScored { get; set; }
-    public int PlayoffRunsAllowed { get; set; }
+    public int? PlayoffSeed { get; set; }
+    public int? PlayoffWins { get; set; }
+    public int? PlayoffLosses { get; set; }
+    public int? PlayoffRunsScored { get; set; }
+    public int? PlayoffRunsAllowed { get; set; }
 
     public virtual ICollection<PlayerTeamHistory> PlayerTeamHistory { get; set; } = new HashSet<PlayerTeamHistory>();
 
@@ -39,6 +40,12 @@ public class SeasonTeamHistory
     public virtual ICollection<TeamSeasonSchedule> HomeSeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
 
     public virtual ICollection<TeamSeasonSchedule> AwaySeasonSchedule { get; set; } = new HashSet<TeamSeasonSchedule>();
+
+    public virtual ICollection<TeamPlayoffSchedule> HomePlayoffSchedule { get; set; } =
+        new HashSet<TeamPlayoffSchedule>();
+
+    public virtual ICollection<TeamPlayoffSchedule> AwayPlayoffSchedule { get; set; } =
+        new HashSet<TeamPlayoffSchedule>();
 
     public virtual ChampionshipWinner? ChampionshipWinner { get; set; }
 }

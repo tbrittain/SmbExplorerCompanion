@@ -371,10 +371,11 @@ namespace SmbExplorerCompanion.Database.Migrations
                     TotalVelocity = table.Column<int>(type: "INTEGER", nullable: false),
                     TotalJunk = table.Column<int>(type: "INTEGER", nullable: false),
                     TotalAccuracy = table.Column<int>(type: "INTEGER", nullable: false),
-                    PlayoffWins = table.Column<int>(type: "INTEGER", nullable: false),
-                    PlayoffLosses = table.Column<int>(type: "INTEGER", nullable: false),
-                    PlayoffRunsScored = table.Column<int>(type: "INTEGER", nullable: false),
-                    PlayoffRunsAllowed = table.Column<int>(type: "INTEGER", nullable: false),
+                    PlayoffSeed = table.Column<int>(type: "INTEGER", nullable: true),
+                    PlayoffWins = table.Column<int>(type: "INTEGER", nullable: true),
+                    PlayoffLosses = table.Column<int>(type: "INTEGER", nullable: true),
+                    PlayoffRunsScored = table.Column<int>(type: "INTEGER", nullable: true),
+                    PlayoffRunsAllowed = table.Column<int>(type: "INTEGER", nullable: true),
                     TeamDivisionHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
                     TeamNameHistoryId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -704,43 +705,83 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TeamSeasonSchedule",
+                name: "TeamPlayoffSchedules",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     HomeTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
                     AwayTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
-                    HomePitcherSeasonId = table.Column<int>(type: "INTEGER", nullable: false),
-                    AwayPitcherSeasonId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Day = table.Column<int>(type: "INTEGER", nullable: false),
+                    HomePitcherSeasonId = table.Column<int>(type: "INTEGER", nullable: true),
+                    AwayPitcherSeasonId = table.Column<int>(type: "INTEGER", nullable: true),
+                    SeriesNumber = table.Column<int>(type: "INTEGER", nullable: false),
                     GlobalGameNumber = table.Column<int>(type: "INTEGER", nullable: false),
-                    HomeScore = table.Column<int>(type: "INTEGER", nullable: false),
-                    AwayScore = table.Column<int>(type: "INTEGER", nullable: false)
+                    HomeScore = table.Column<int>(type: "INTEGER", nullable: true),
+                    AwayScore = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TeamSeasonSchedule", x => x.Id);
+                    table.PrimaryKey("PK_TeamPlayoffSchedules", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TeamSeasonSchedule_PlayerSeasons_AwayPitcherSeasonId",
+                        name: "FK_TeamPlayoffSchedules_PlayerSeasons_AwayPitcherSeasonId",
                         column: x => x.AwayPitcherSeasonId,
                         principalTable: "PlayerSeasons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_TeamSeasonSchedule_PlayerSeasons_HomePitcherSeasonId",
+                        name: "FK_TeamPlayoffSchedules_PlayerSeasons_HomePitcherSeasonId",
                         column: x => x.HomePitcherSeasonId,
                         principalTable: "PlayerSeasons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_TeamSeasonSchedule_SeasonTeamHistory_AwayTeamHistoryId",
+                        name: "FK_TeamPlayoffSchedules_SeasonTeamHistory_AwayTeamHistoryId",
                         column: x => x.AwayTeamHistoryId,
                         principalTable: "SeasonTeamHistory",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TeamSeasonSchedule_SeasonTeamHistory_HomeTeamHistoryId",
+                        name: "FK_TeamPlayoffSchedules_SeasonTeamHistory_HomeTeamHistoryId",
+                        column: x => x.HomeTeamHistoryId,
+                        principalTable: "SeasonTeamHistory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TeamSeasonSchedules",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    HomeTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
+                    AwayTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
+                    HomePitcherSeasonId = table.Column<int>(type: "INTEGER", nullable: true),
+                    AwayPitcherSeasonId = table.Column<int>(type: "INTEGER", nullable: true),
+                    Day = table.Column<int>(type: "INTEGER", nullable: false),
+                    GlobalGameNumber = table.Column<int>(type: "INTEGER", nullable: false),
+                    HomeScore = table.Column<int>(type: "INTEGER", nullable: true),
+                    AwayScore = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeamSeasonSchedules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TeamSeasonSchedules_PlayerSeasons_AwayPitcherSeasonId",
+                        column: x => x.AwayPitcherSeasonId,
+                        principalTable: "PlayerSeasons",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TeamSeasonSchedules_PlayerSeasons_HomePitcherSeasonId",
+                        column: x => x.HomePitcherSeasonId,
+                        principalTable: "PlayerSeasons",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TeamSeasonSchedules_SeasonTeamHistory_AwayTeamHistoryId",
+                        column: x => x.AwayTeamHistoryId,
+                        principalTable: "SeasonTeamHistory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TeamSeasonSchedules_SeasonTeamHistory_HomeTeamHistoryId",
                         column: x => x.HomeTeamHistoryId,
                         principalTable: "SeasonTeamHistory",
                         principalColumn: "Id",
@@ -895,23 +936,43 @@ namespace SmbExplorerCompanion.Database.Migrations
                 column: "TeamLogoHistoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamSeasonSchedule_AwayPitcherSeasonId",
-                table: "TeamSeasonSchedule",
+                name: "IX_TeamPlayoffSchedules_AwayPitcherSeasonId",
+                table: "TeamPlayoffSchedules",
                 column: "AwayPitcherSeasonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamSeasonSchedule_AwayTeamHistoryId",
-                table: "TeamSeasonSchedule",
+                name: "IX_TeamPlayoffSchedules_AwayTeamHistoryId",
+                table: "TeamPlayoffSchedules",
                 column: "AwayTeamHistoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamSeasonSchedule_HomePitcherSeasonId",
-                table: "TeamSeasonSchedule",
+                name: "IX_TeamPlayoffSchedules_HomePitcherSeasonId",
+                table: "TeamPlayoffSchedules",
                 column: "HomePitcherSeasonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamSeasonSchedule_HomeTeamHistoryId",
-                table: "TeamSeasonSchedule",
+                name: "IX_TeamPlayoffSchedules_HomeTeamHistoryId",
+                table: "TeamPlayoffSchedules",
+                column: "HomeTeamHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamSeasonSchedules_AwayPitcherSeasonId",
+                table: "TeamSeasonSchedules",
+                column: "AwayPitcherSeasonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamSeasonSchedules_AwayTeamHistoryId",
+                table: "TeamSeasonSchedules",
+                column: "AwayTeamHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamSeasonSchedules_HomePitcherSeasonId",
+                table: "TeamSeasonSchedules",
+                column: "HomePitcherSeasonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TeamSeasonSchedules_HomeTeamHistoryId",
+                table: "TeamSeasonSchedules",
                 column: "HomeTeamHistoryId");
 
             migrationBuilder.CreateIndex(
@@ -951,7 +1012,10 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "TeamGameIdHistory");
 
             migrationBuilder.DropTable(
-                name: "TeamSeasonSchedule");
+                name: "TeamPlayoffSchedules");
+
+            migrationBuilder.DropTable(
+                name: "TeamSeasonSchedules");
 
             migrationBuilder.DropTable(
                 name: "PitchTypes");
