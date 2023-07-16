@@ -8,6 +8,20 @@
         Title="MainWindow" Height="450" Width="800"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
     <Grid>
-        <Label>Hello!</Label>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="5*" />
+        </Grid.ColumnDefinitions>
+
+        
+        <StackPanel
+            Grid.Column="0"
+            Orientation="Vertical">
+        </StackPanel>
+        <ContentControl
+            Grid.Column="1"
+            Content="{Binding NavigationService.CurrentView}"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch" />
     </Grid>
 </Window>

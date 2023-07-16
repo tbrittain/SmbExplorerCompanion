@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using SmbExplorerCompanion.Core;
 using SmbExplorerCompanion.Database;
+using SmbExplorerCompanion.WPF.Services;
 using SmbExplorerCompanion.WPF.ViewModels;
 using SmbExplorerCompanion.WPF.Views;
 using static SmbExplorerCompanion.Shared.Constants.FileExports;
@@ -36,6 +37,7 @@ public partial class App
 
         var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         mainWindow.Show();
+        await ((MainWindowViewModel) mainWindow.DataContext).Initialize();
 
         base.OnStartup(e);
     }
@@ -50,6 +52,7 @@ public partial class App
                 DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
             })
             .AddTransient<MainWindowViewModel>()
+            .AddSingleton<INavigationService, NavigationService>()
             // NavigationService calls this Func to get the ViewModel instance
             .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
                 viewModelType => (ViewModelBase) serviceProvider.GetRequiredService(viewModelType));
