@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SmbExplorerCompanion.Core;
 using SmbExplorerCompanion.Database;
 using SmbExplorerCompanion.WPF.ViewModels;
 using SmbExplorerCompanion.WPF.Views;
@@ -44,19 +42,17 @@ public partial class App
 
     private static Task ConfigureServices(IServiceCollection services)
     {
-        var connectionString = Path.Combine(BaseApplicationDirectory, "SmbExplorerCompanion.db");
-        services.AddDbContext<SmbExplorerCompanionDbContext>();
-
-        services.AddSingleton<MainWindow>(serviceProvider => new MainWindow
-        {
-            DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
-        });
-
-        services.AddTransient<MainWindowViewModel>();
-
-        // NavigationService calls this Func to get the ViewModel instance
-        services.AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
-            viewModelType => (ViewModelBase) serviceProvider.GetRequiredService(viewModelType));
+        services
+            .AddCore()
+            .AddDatabase()
+            .AddSingleton<MainWindow>(serviceProvider => new MainWindow
+            {
+                DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
+            })
+            .AddTransient<MainWindowViewModel>()
+            // NavigationService calls this Func to get the ViewModel instance
+            .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
+                viewModelType => (ViewModelBase) serviceProvider.GetRequiredService(viewModelType));
 
         return Task.CompletedTask;
     }
