@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Commands\Actions\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="MediatR" Version="12.1.1" />
       <PackageReference Include="OneOf" Version="3.0.255" />
     </ItemGroup>

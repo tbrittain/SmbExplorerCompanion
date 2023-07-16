@@ -8,7 +8,7 @@ public static class DependencyInjection
     public static IServiceCollection AddCore(this IServiceCollection services)
     {
         services.AddMediatR(config =>
-            config.RegisterServicesFromAssembly(Assembly.GetCallingAssembly()));
+            config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         return services;
     }
