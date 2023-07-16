@@ -5,18 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="SMB Explorer Companion" 
+        Height="1920" 
+        Width="1080"
+        ResizeMode="CanResizeWithGrip"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition MinWidth="200"/>
             <ColumnDefinition Width="5*" />
         </Grid.ColumnDefinitions>
-
         
         <StackPanel
             Grid.Column="0"
-            Orientation="Vertical">
+            Orientation="Vertical"
+            Background="WhiteSmoke">
         </StackPanel>
         <ContentControl
             Grid.Column="1"

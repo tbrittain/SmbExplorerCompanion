@@ -9,9 +9,9 @@ public class MainWindowViewModel : ViewModelBase
     {
         NavigationService = navigationService;
     }
-    
+
     public INavigationService NavigationService { get; }
-    
+
     public Task Initialize()
     {
         NavigationService.NavigateTo<LandingViewModel>();

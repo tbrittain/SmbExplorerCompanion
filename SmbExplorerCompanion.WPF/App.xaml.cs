@@ -52,6 +52,7 @@ public partial class App
                 DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
             })
             .AddTransient<MainWindowViewModel>()
+            .AddTransient<LandingViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             // NavigationService calls this Func to get the ViewModel instance
             .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
