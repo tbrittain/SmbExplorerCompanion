@@ -1,13 +1,32 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Windows;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    public MainWindowViewModel(INavigationService navigationService)
+    private readonly IApplicationContext _applicationContext;
+
+    public MainWindowViewModel(INavigationService navigationService, IApplicationContext applicationContext)
     {
         NavigationService = navigationService;
+        _applicationContext = applicationContext;
+
+        _applicationContext.PropertyChanged += ApplicationContextOnPropertyChanged;
+    }
+
+    private void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(IApplicationContext.IsFranchiseSelected):
+            {
+                OnPropertyChanged(nameof(SidebarVisibility));
+                break;
+            }
+        }
     }
 
     public INavigationService NavigationService { get; }
@@ -17,4 +36,7 @@ public class MainWindowViewModel : ViewModelBase
         NavigationService.NavigateTo<LandingViewModel>();
         return Task.CompletedTask;
     }
+
+    public Visibility SidebarVisibility =>
+        _applicationContext.IsFranchiseSelected ? Visibility.Visible : Visibility.Collapsed;
 }

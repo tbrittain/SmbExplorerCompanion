@@ -17,6 +17,7 @@
         </Grid.ColumnDefinitions>
         
         <StackPanel
+            Visibility="{Binding SidebarVisibility}"
             Grid.Column="0"
             Orientation="Vertical"
             Background="WhiteSmoke">
