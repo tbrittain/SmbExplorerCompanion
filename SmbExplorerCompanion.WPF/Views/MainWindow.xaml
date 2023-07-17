@@ -4,11 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.FontWeight="Medium"
+        TextElement.FontSize="14"
+        FontFamily="{materialDesign:MaterialDesignFont}"
         mc:Ignorable="d"
         Title="SMB Explorer Companion" 
-        Height="1920" 
-        Width="1080"
-        ResizeMode="CanResizeWithGrip"
+        Height="1280" 
+        Width="720"
+        ResizeMode="CanResize"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -17,7 +23,7 @@
         </Grid.ColumnDefinitions>
         
         <StackPanel
-            Visibility="{Binding SidebarVisibility}"
+            IsEnabled="{Binding SidebarEnabled}"
             Grid.Column="0"
             Orientation="Vertical"
             Background="WhiteSmoke">

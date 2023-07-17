@@ -23,7 +23,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             case nameof(IApplicationContext.IsFranchiseSelected):
             {
-                OnPropertyChanged(nameof(SidebarVisibility));
+                OnPropertyChanged(nameof(SidebarEnabled));
                 break;
             }
         }
@@ -36,6 +36,8 @@ public class MainWindowViewModel : ViewModelBase
         NavigationService.NavigateTo<LandingViewModel>();
         return Task.CompletedTask;
     }
+    
+    public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
 
     public Visibility SidebarVisibility =>
         _applicationContext.IsFranchiseSelected ? Visibility.Visible : Visibility.Collapsed;
