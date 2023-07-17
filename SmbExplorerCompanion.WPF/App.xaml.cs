@@ -53,6 +53,7 @@ public partial class App
             })
             .AddTransient<MainWindowViewModel>()
             .AddTransient<LandingViewModel>()
+            .AddTransient<HomeViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
             // NavigationService calls this Func to get the ViewModel instance

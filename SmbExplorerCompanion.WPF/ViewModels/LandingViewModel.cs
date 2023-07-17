@@ -19,12 +19,14 @@ public partial class LandingViewModel : ViewModelBase
     private const string LandingViewModelDialogIdentifier = nameof(LandingViewModel);
     private readonly IMediator _mediator;
     private readonly IApplicationContext _applicationContext;
+    private readonly INavigationService _navigationService;
     private Franchise? _selectedFranchise;
 
-    public LandingViewModel(IMediator mediator, IApplicationContext applicationContext)
+    public LandingViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
         _mediator = mediator;
         _applicationContext = applicationContext;
+        _navigationService = navigationService;
 
         var franchiseResponse = _mediator.Send(new GetAllFranchisesRequest()).Result;
         if (franchiseResponse.TryPickT1(out var exception, out var franchises))
@@ -47,6 +49,8 @@ public partial class LandingViewModel : ViewModelBase
     {
         if (SelectedFranchise is null) return;
         _applicationContext.SelectedFranchiseId = SelectedFranchise.Id;
+        
+        _navigationService.NavigateTo<HomeViewModel>();
     }
 
     public ObservableCollection<Franchise> Franchises { get; }
