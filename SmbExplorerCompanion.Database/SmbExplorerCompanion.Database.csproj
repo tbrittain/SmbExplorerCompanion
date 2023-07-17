@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj" />
       <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
     </ItemGroup>
 
