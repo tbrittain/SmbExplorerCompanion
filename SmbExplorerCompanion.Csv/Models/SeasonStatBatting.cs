@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration;
 
-namespace SmbExplorerCompanion.Csv.Mappings;
+namespace SmbExplorerCompanion.Csv.Models;
 
 public class SeasonStatBatting : SeasonStatBase
 {

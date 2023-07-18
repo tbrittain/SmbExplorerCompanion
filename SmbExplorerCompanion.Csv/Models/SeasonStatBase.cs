@@ -1,4 +1,4 @@
-﻿namespace SmbExplorerCompanion.Csv.Mappings;
+﻿namespace SmbExplorerCompanion.Csv.Models;
 
 public abstract class SeasonStatBase
 {
