@@ -9,8 +9,7 @@ public class Team
     public string DivisionName { get; set; } = default!;
 
     public string ConferenceName { get; set; } = default!;
-
-    // TODO: Expose this property on the export
+    
     public int SeasonId { get; set; }
     public int SeasonNum { get; set; }
     public int Budget { get; set; }
@@ -23,10 +22,7 @@ public class Team
     public int RunsFor { get; set; }
     public int RunsAgainst { get; set; }
     public double GamesBehind { get; set; }
-
     public double WinPercentage { get; set; }
-
-    // TODO: Make sure the expected stats are on the database objects
     public double PythagoreanWinPercentage { get; set; }
     public int ExpectedWins { get; set; }
     public int ExpectedLosses { get; set; }

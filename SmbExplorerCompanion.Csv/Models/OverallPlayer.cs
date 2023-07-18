@@ -40,7 +40,6 @@ public class OverallPlayer
     {
         public OverallPlayersCsvMapping()
         {
-            // TODO: Need to expose the following two on the export
             Map(x => x.PlayerId).Name("PlayerId");
             Map(x => x.SeasonId).Name("SeasonId");
             Map(x => x.SeasonNum).Name("Season");

@@ -13,6 +13,10 @@ public class SeasonTeamHistory
     public int Wins { get; set; }
     public int Losses { get; set; }
     public double GamesBehind { get; set; }
+    public double WinPercentage { get; set; }
+    public double PythagoreanWinPercentage { get; set; }
+    public int ExpectedWins { get; set; }
+    public int ExpectedLosses { get; set; }
     public int RunsScored { get; set; }
     public int RunsAllowed { get; set; }
     public int TotalPower { get; set; }

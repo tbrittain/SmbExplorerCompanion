@@ -73,7 +73,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         }
     }
 
-    public async Task<OneOf<IEnumerable<FranchiseDto>, Exception>> AddRangeAsync(IEnumerable<FranchiseDto> entities,
+    public Task<OneOf<IEnumerable<FranchiseDto>, Exception>> AddRangeAsync(IEnumerable<FranchiseDto> entities,
         CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
@@ -99,7 +99,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         return franchiseDto;
     }
 
-    public async Task<OneOf<FranchiseDto, None, Exception>> DeleteAsync(int Id,
+    public Task<OneOf<FranchiseDto, None, Exception>> DeleteAsync(int Id,
         CancellationToken cancellationToken = default)
     {
         // TODO: This is a tricky one since we will need to delete all the related entities as well
