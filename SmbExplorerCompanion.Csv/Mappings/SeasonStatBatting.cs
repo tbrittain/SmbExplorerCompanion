@@ -2,7 +2,7 @@
 
 namespace SmbExplorerCompanion.Csv.Mappings;
 
-public class TopPerformersBatting : TopPerformersBase
+public class SeasonStatBatting : SeasonStatBase
 {
     public int GamesBatting { get; set; }
     public int GamesPlayed { get; set; }
@@ -40,15 +40,21 @@ public class TopPerformersBatting : TopPerformersBase
     public double? ExtraBaseHitPercentage { get; set; }
     public double? OpsPlus { get; set; }
 
-    public sealed class TopPerformersBattingCsvMapping : ClassMap<TopPerformersBatting>
+    public sealed class SeasonStatBattingCsvMapping : ClassMap<SeasonStatBatting>
     {
-        public TopPerformersBattingCsvMapping()
+        public SeasonStatBattingCsvMapping()
         {
             Map(x => x.PlayerId).Name("PlayerId");
             Map(x => x.SeasonId).Name("SeasonId");
             Map(x => x.SeasonNum).Name("Season");
             Map(x => x.FirstName).Name("First Name");
             Map(x => x.LastName).Name("Last Name");
+            Map(x => x.CurrentTeam).Name("Team");
+            Map(x => x.PreviousTeam).Name("Prev Team");
+            Map(x => x.SecondPreviousTeam).Name("2nd Prev Team");
+            Map(x => x.CurrentTeamId).Name("TeamId");
+            Map(x => x.PreviousTeamId).Name("MostRecentTeamId");
+            Map(x => x.SecondPreviousTeamId).Name("PreviousTeamId");
             Map(x => x.GamesBatting).Name("Games Batting");
             Map(x => x.GamesPlayed).Name("Games Played");
             Map(x => x.AtBats).Name("AB");
