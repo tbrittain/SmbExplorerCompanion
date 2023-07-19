@@ -9,6 +9,7 @@ public class SeasonTeamHistory
     public virtual Team Team { get; set; } = default!;
     public long Budget { get; set; }
     public long Payroll { get; set; }
+    public long Surplus { get; set; }
     public double PayrollPerGame { get; set; }
     public int Wins { get; set; }
     public int Losses { get; set; }

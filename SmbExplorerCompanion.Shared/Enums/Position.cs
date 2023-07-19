@@ -2,7 +2,7 @@
 
 namespace SmbExplorerCompanion.Shared.Enums;
 
-public enum BaseballPlayerPosition
+public enum Position
 {
     [Description("")] None = 0,
 
