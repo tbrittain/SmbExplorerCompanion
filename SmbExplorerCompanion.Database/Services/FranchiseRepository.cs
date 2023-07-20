@@ -41,7 +41,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         try
         {
             var franchise =
-                await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == Id, cancellationToken: cancellationToken);
+                await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == Id, cancellationToken);
             if (franchise is null) return new None();
 
             var mapper = new FranchiseMapping();
@@ -85,7 +85,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         if (entity.Id == default) return new None();
         var existingFranchise =
             await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == entity.Id,
-                cancellationToken: cancellationToken);
+                cancellationToken);
         if (existingFranchise is null) return new None();
 
         var mapper = new FranchiseMapping();

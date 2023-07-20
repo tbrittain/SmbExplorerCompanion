@@ -10,7 +10,7 @@ public class SeasonTeamHistory
     public long Budget { get; set; }
     public long Payroll { get; set; }
     public long Surplus { get; set; }
-    public double PayrollPerGame { get; set; }
+    public double SurplusPerGame { get; set; }
     public int Wins { get; set; }
     public int Losses { get; set; }
     public double GamesBehind { get; set; }
@@ -36,8 +36,8 @@ public class SeasonTeamHistory
 
     public virtual ICollection<PlayerTeamHistory> PlayerTeamHistory { get; set; } = new HashSet<PlayerTeamHistory>();
 
-    public int TeamDivisionHistoryId { get; set; }
-    public virtual TeamDivisionHistory TeamDivisionHistory { get; set; } = default!;
+    public int DivisionId { get; set; }
+    public virtual Division Division { get; set; } = default!;
 
     public int TeamNameHistoryId { get; set; }
     public virtual TeamNameHistory TeamNameHistory { get; set; } = default!;

@@ -5,7 +5,7 @@ public class PlayerSeasonBattingStat
     public int Id { get; set; }
     public int PlayerSeasonId { get; set; }
     public virtual PlayerSeason PlayerSeason { get; set; } = default!;
-    
+
     public int GamesPlayed { get; set; }
     public int GamesBatting { get; set; }
     public int AtBats { get; set; }

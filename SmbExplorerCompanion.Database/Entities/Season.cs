@@ -5,11 +5,11 @@ namespace SmbExplorerCompanion.Database.Entities;
 public class Season
 {
     /// <summary>
-    /// We will reuse the SMB Season ID as the primary key for this entity.
+    ///     We will reuse the SMB Season ID as the primary key for this entity.
     /// </summary>
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
-    public string Name { get; set; } = default!;
+    public int Number { get; set; } = default!;
 
     // In theory, this could change if the franchise is migrated to a new league,
     // and the user modifies the number of games per season. We will need to compute this value

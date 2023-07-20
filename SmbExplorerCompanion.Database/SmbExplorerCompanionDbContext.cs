@@ -8,6 +8,14 @@ namespace SmbExplorerCompanion.Database;
 
 public class SmbExplorerCompanionDbContext : DbContext
 {
+    public SmbExplorerCompanionDbContext()
+    {
+    }
+
+    public SmbExplorerCompanionDbContext(DbContextOptions<SmbExplorerCompanionDbContext> options) : base(options)
+    {
+    }
+
     public virtual DbSet<Chemistry> Chemistry { get; set; } = default!;
     public virtual DbSet<PitcherRole> PitcherRoles { get; set; } = default!;
     public virtual DbSet<PitchType> PitchTypes { get; set; } = default!;
@@ -31,21 +39,12 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<Season> Seasons { get; set; } = default!;
     public virtual DbSet<SeasonTeamHistory> SeasonTeamHistory { get; set; } = default!;
     public virtual DbSet<Team> Teams { get; set; } = default!;
-    public virtual DbSet<TeamDivisionHistory> TeamDivisionHistory { get; set; } = default!;
     public virtual DbSet<TeamSeasonSchedule> TeamSeasonSchedules { get; set; } = default!;
     public virtual DbSet<TeamPlayoffSchedule> TeamPlayoffSchedules { get; set; } = default!;
     public virtual DbSet<ChampionshipWinner> ChampionshipWinners { get; set; } = default!;
     public virtual DbSet<TeamGameIdHistory> TeamGameIdHistory { get; set; } = default!;
     public virtual DbSet<TeamLogoHistory> TeamLogoHistory { get; set; } = default!;
     public virtual DbSet<TeamNameHistory> TeamNameHistory { get; set; } = default!;
-
-    public SmbExplorerCompanionDbContext()
-    {
-    }
-
-    public SmbExplorerCompanionDbContext(DbContextOptions<SmbExplorerCompanionDbContext> options) : base(options)
-    {
-    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -161,202 +160,202 @@ public class SmbExplorerCompanionDbContext : DbContext
 
         var playerAwards = new List<PlayerAward>
         {
-            new PlayerAward
+            new()
             {
                 Name = "MVP",
                 OriginalName = "MVP",
                 Importance = 0,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Triple Crown (Batting)",
                 OriginalName = "Triple Crown (Batting)",
                 Importance = 0,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Triple Crown (Pitching)",
                 OriginalName = "Triple Crown (Pitching)",
                 Importance = 0,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Cy Young",
                 OriginalName = "Cy Young",
                 Importance = 1,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Silver Slugger",
                 OriginalName = "Silver Slugger",
                 Importance = 1,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY",
                 OriginalName = "ROY",
                 Importance = 1,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Gold Glove",
                 OriginalName = "Gold Glove",
                 Importance = 2,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Playoff MVP",
                 OriginalName = "Playoff MVP",
                 Importance = 2,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Championship MVP",
                 OriginalName = "Championship MVP",
                 Importance = 2,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Batting Title",
                 OriginalName = "Batting Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Home Run Title",
                 OriginalName = "Home Run Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "RBI Title",
                 OriginalName = "RBI Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "ERA Title",
                 OriginalName = "ERA Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Wins Title",
                 OriginalName = "Wins Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Strikeouts Title",
                 OriginalName = "Strikeouts Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "All-Star",
                 OriginalName = "All-Star",
                 Importance = 4,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-2",
                 OriginalName = "MVP-2",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-3",
                 OriginalName = "MVP-3",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-4",
                 OriginalName = "MVP-4",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-5",
                 OriginalName = "MVP-5",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-2",
                 OriginalName = "Cy Young-2",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-3",
                 OriginalName = "Cy Young-3",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-4",
                 OriginalName = "Cy Young-4",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-5",
                 OriginalName = "Cy Young-5",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-2",
                 OriginalName = "ROY-2",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-3",
                 OriginalName = "ROY-3",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-4",
                 OriginalName = "ROY-4",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-5",
                 OriginalName = "ROY-5",
                 Importance = 5,
-                IsBuiltIn = true,
-            },
+                IsBuiltIn = true
+            }
         };
 
         dbContext.PlayerAwards.AddRange(playerAwards);
@@ -906,7 +905,7 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Chemistry = competitiveChemistry,
                 IsPositive = true,
                 IsSmb3 = false
-            },
+            }
         };
 
         dbContext.Traits.AddRange(smb4Traits);
@@ -1032,7 +1031,7 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Name = "K Dud",
                 IsPositive = false,
                 IsSmb3 = true
-            },
+            }
         };
 
         dbContext.Traits.AddRange(smb3Traits);

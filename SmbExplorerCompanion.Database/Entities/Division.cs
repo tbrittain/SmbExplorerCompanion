@@ -7,6 +7,6 @@ public class Division
     public int ConferenceId { get; set; }
     public virtual Conference Conference { get; set; } = default!;
 
-    public virtual ICollection<TeamDivisionHistory> TeamDivisionHistory { get; set; } =
-        new HashSet<TeamDivisionHistory>();
+    public virtual ICollection<SeasonTeamHistory> SeasonTeamHistories { get; set; } =
+        new HashSet<SeasonTeamHistory>();
 }

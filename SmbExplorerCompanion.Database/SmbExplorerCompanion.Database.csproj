@@ -7,22 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9" />
-      <PackageReference Include="Riok.Mapperly" Version="2.8.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9"/>
+        <PackageReference Include="Riok.Mapperly" Version="2.8.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj" />
-      <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
+        <ProjectReference Include="..\SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj"/>
+        <ProjectReference Include="..\SmbExplorerCompanion.Csv\SmbExplorerCompanion.Csv.csproj"/>
+        <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Migrations\" />
+        <Folder Include="Mappings\Csv\"/>
+        <Folder Include="Migrations\"/>
     </ItemGroup>
 
 </Project>
