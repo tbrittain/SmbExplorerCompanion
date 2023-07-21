@@ -5,8 +5,8 @@ public class PlayerTeamHistory
     public int Id { get; set; }
     public int PlayerSeasonId { get; set; }
     public virtual PlayerSeason PlayerSeason { get; set; } = default!;
-    public int SeasonTeamHistoryId { get; set; }
-    public virtual SeasonTeamHistory SeasonTeamHistory { get; set; } = default!;
+    public int? SeasonTeamHistoryId { get; set; }
+    public virtual SeasonTeamHistory? SeasonTeamHistory { get; set; }
 
     /// <summary>
     ///     Order represents the index of the team in the player's history. So, if a player has played for 3 teams,

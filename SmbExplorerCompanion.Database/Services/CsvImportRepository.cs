@@ -168,4 +168,155 @@ public class CsvImportRepository
 
         return new Success();
     }
+
+    public async Task<OneOf<Success, Exception>> AddOverallPlayersAsync(List<CsvOverallPlayer> players)
+    {
+        var batHandedness = await _dbContext.BatHandedness.ToListAsync();
+        var throwHandedness = await _dbContext.ThrowHandedness.ToListAsync();
+        var positions = await _dbContext.Positions.ToListAsync();
+        var chemistry = await _dbContext.Chemistry.ToListAsync();
+        var pitcherRoles = await _dbContext.PitcherRoles.ToListAsync();
+        var traits = await _dbContext.Traits.ToListAsync();
+        var pitchTypes = await _dbContext.PitchTypes.ToListAsync();
+
+        try
+        {
+            foreach (var csvOverallPlayer in players)
+            {
+                Player? player;
+                var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
+                    .Include(x => x.Player)
+                    .ThenInclude(x => x.Seasons)
+                    .ThenInclude(x => x.GameStats)
+                    .Include(x => x.Player)
+                    .ThenInclude(x => x.Seasons)
+                    .ThenInclude(x => x.SecondaryPosition)
+                    .Include(x => x.Player)
+                    .ThenInclude(x => x.Seasons)
+                    .ThenInclude(x => x.Traits)
+                    .SingleOrDefaultAsync(x => x.GameId == csvOverallPlayer.PlayerId);
+
+                if (playerGameIdHistory is null)
+                {
+                    // attempt to match on player name AND position AND pitcher role (if applicable) AND chemistry AND handedness
+                    // should be enough to uniquely identify a player
+                    player = await _dbContext.Players
+                        .Include(x => x.Chemistry)
+                        .Include(x => x.BatHandedness)
+                        .Include(x => x.ThrowHandedness)
+                        .Include(x => x.PrimaryPosition)
+                        .Include(x => x.PitcherRole)
+                        .Where(x => x.Chemistry!.Name == csvOverallPlayer.Chemistry
+                                    && x.BatHandedness.Name == csvOverallPlayer.BatHand
+                                    && x.ThrowHandedness.Name == csvOverallPlayer.ThrowHand
+                                    && x.PrimaryPosition.Name == csvOverallPlayer.Position
+                                    && (x.PitcherRole == null || x.PitcherRole.Name == csvOverallPlayer.PitcherRole))
+                        .SingleOrDefaultAsync();
+
+                    if (player is null)
+                    {
+                        // assume it is a new player if we cannot find a match
+                        player = new Player
+                        {
+                            FirstName = csvOverallPlayer.FirstName,
+                            LastName = csvOverallPlayer.LastName,
+                            Chemistry = chemistry.SingleOrDefault(x => x.Name == csvOverallPlayer.Chemistry) ??
+                                        throw new Exception($"No chemistry found with value {csvOverallPlayer.Chemistry}"),
+                            BatHandedness = batHandedness.SingleOrDefault(x => x.Name == csvOverallPlayer.BatHand) ??
+                                            throw new Exception($"No bat handedness found with value {csvOverallPlayer.BatHand}"),
+                            ThrowHandedness = throwHandedness.SingleOrDefault(x => x.Name == csvOverallPlayer.ThrowHand) ??
+                                              throw new Exception($"No throw handedness found with value {csvOverallPlayer.ThrowHand}"),
+                            PrimaryPosition = positions.SingleOrDefault(x => x.Name == csvOverallPlayer.Position) ??
+                                              throw new Exception($"No position found with value {csvOverallPlayer.Position}"),
+                            PitcherRole = !string.IsNullOrEmpty(csvOverallPlayer.PitcherRole)
+                                ? pitcherRoles.SingleOrDefault(x => x.Name == csvOverallPlayer.PitcherRole)
+                                : null,
+                            GameIdHistory = new List<PlayerGameIdHistory>
+                            {
+                                new PlayerGameIdHistory
+                                {
+                                    GameId = csvOverallPlayer.PlayerId
+                                }
+                            }
+                        };
+
+                        _dbContext.Players.Add(player);
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    player = playerGameIdHistory.Player;
+                }
+
+                // here, going to search a player season matching the season for the given player
+                // if it does not exist, create it
+                var newPlayerSeason = false;
+                var playerSeason = await _dbContext.PlayerSeasons
+                    .Include(x => x.GameStats)
+                    .Include(x => x.TeamHistory)
+                    .Include(x => x.SecondaryPosition)
+                    .Include(x => x.Traits)
+                    .SingleOrDefaultAsync(x => x.PlayerId == player.Id && x.SeasonId == csvOverallPlayer.SeasonId);
+
+                if (playerSeason is null)
+                {
+                    newPlayerSeason = true;
+                    playerSeason = new PlayerSeason
+                    {
+                        PlayerId = player.Id,
+                        SeasonId = csvOverallPlayer.SeasonId,
+                    };
+                }
+
+                playerSeason.Age = csvOverallPlayer.Age;
+                playerSeason.Salary = csvOverallPlayer.Salary;
+                playerSeason.SecondaryPosition = positions.SingleOrDefault(x => x.Name == csvOverallPlayer.SecondaryPosition) ??
+                                                 throw new Exception($"No position found with value {csvOverallPlayer.SecondaryPosition}");
+
+                var csvTraits = new List<string>();
+                if (!string.IsNullOrEmpty(csvOverallPlayer.Trait1))
+                    csvTraits.Add(csvOverallPlayer.Trait1);
+                if (!string.IsNullOrEmpty(csvOverallPlayer.Trait2))
+                    csvTraits.Add(csvOverallPlayer.Trait2);
+
+                playerSeason.Traits = csvTraits
+                    .Select(x => traits
+                        .SingleOrDefault(y => y.Name == x) ?? throw new Exception($"No trait found with value {x}"))
+                    .ToList();
+
+                if (player.PitcherRole is not null)
+                {
+                    var csvPitches = new List<string>();
+                    if (!string.IsNullOrEmpty(csvOverallPlayer.Pitch1))
+                        csvPitches.Add(csvOverallPlayer.Pitch1);
+                    if (!string.IsNullOrEmpty(csvOverallPlayer.Pitch2))
+                        csvPitches.Add(csvOverallPlayer.Pitch2);
+                    if (!string.IsNullOrEmpty(csvOverallPlayer.Pitch3))
+                        csvPitches.Add(csvOverallPlayer.Pitch3);
+                    if (!string.IsNullOrEmpty(csvOverallPlayer.Pitch4))
+                        csvPitches.Add(csvOverallPlayer.Pitch4);
+                    if (!string.IsNullOrEmpty(csvOverallPlayer.Pitch5))
+                        csvPitches.Add(csvOverallPlayer.Pitch5);
+
+                    playerSeason.PitchTypes = csvPitches
+                        .Select(x => pitchTypes
+                            .SingleOrDefault(y => y.Name == x) ?? throw new Exception($"No pitch type found with value {x}"))
+                        .ToList();
+                }
+
+                playerSeason.SecondaryPosition = positions.SingleOrDefault(x => x.Name == csvOverallPlayer.SecondaryPosition);
+
+                if (newPlayerSeason)
+                    _dbContext.PlayerSeasons.Add(playerSeason);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+
+        return new Success();
+    }
 }

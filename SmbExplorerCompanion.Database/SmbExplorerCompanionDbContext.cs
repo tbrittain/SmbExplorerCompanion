@@ -28,7 +28,6 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<Conference> Conferences { get; set; } = default!;
     public virtual DbSet<Division> Divisions { get; set; } = default!;
     public virtual DbSet<Franchise> Franchises { get; set; } = default!;
-    public virtual DbSet<PitcherPitchTypeHistory> PitcherPitchTypeHistory { get; set; } = default!;
     public virtual DbSet<Player> Players { get; set; } = default!;
     public virtual DbSet<PlayerGameIdHistory> PlayerGameIdHistory { get; set; } = default!;
     public virtual DbSet<PlayerSeason> PlayerSeasons { get; set; } = default!;
@@ -115,14 +114,14 @@ public class SmbExplorerCompanionDbContext : DbContext
         using var transaction = dbContext.Database.BeginTransaction();
 
         dbContext.BatHandedness.AddRange(
-            new BatHandedness {Name = "Right"},
-            new BatHandedness {Name = "Left"},
-            new BatHandedness {Name = "Switch"}
+            new BatHandedness {Name = "R"},
+            new BatHandedness {Name = "L"},
+            new BatHandedness {Name = "S"}
         );
 
         dbContext.ThrowHandedness.AddRange(
-            new ThrowHandedness {Name = "Right"},
-            new ThrowHandedness {Name = "Left"}
+            new ThrowHandedness {Name = "R"},
+            new ThrowHandedness {Name = "L"}
         );
 
         dbContext.PitcherRoles.AddRange(
