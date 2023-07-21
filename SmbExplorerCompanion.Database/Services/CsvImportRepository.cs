@@ -14,6 +14,7 @@ public class CsvImportRepository
         _dbContext = dbContext;
     }
 
+    // Import step #1
     public async Task<OneOf<Success, Exception>> AddTeamsAsync(List<CsvTeam> teams, int franchiseId)
     {
         try
@@ -169,6 +170,7 @@ public class CsvImportRepository
         return new Success();
     }
 
+    // Import step #2
     public async Task<OneOf<Success, Exception>> AddOverallPlayersAsync(List<CsvOverallPlayer> players)
     {
         var batHandedness = await _dbContext.BatHandedness.ToListAsync();
@@ -317,6 +319,60 @@ public class CsvImportRepository
             return e;
         }
 
+        return new Success();
+    }
+
+    // Import step #3
+    public async Task<OneOf<Success, Exception>> AddPlayerPitchingStatsAsync(List<CsvPitchingStat> pitchingStats)
+    {
+        try
+        {
+            throw new NotImplementedException();
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+        return new Success();
+    }
+
+    // Import step #4
+    public async Task<OneOf<Success, Exception>> AddPlayerBattingStatsAsync(List<CsvBattingStat> battingStats)
+    {
+        try
+        {
+            throw new NotImplementedException();
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+        return new Success();
+    }
+
+    public async Task<OneOf<Success, Exception>> AddSeasonScheduleAsync(List<CsvSeasonSchedule> schedule)
+    {
+        try
+        {
+            throw new NotImplementedException();
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+        return new Success();
+    }
+    
+    public async Task<OneOf<Success, Exception>> AddPlayoffScheduleAsync(List<CsvPlayoffSchedule> schedule)
+    {
+        try
+        {
+            throw new NotImplementedException();
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
         return new Success();
     }
 }
