@@ -17,7 +17,7 @@ public class PlayerSeason
     public int? SecondaryPositionId { get; set; }
     public virtual Position? SecondaryPosition { get; set; } = default!;
 
-    public virtual ICollection<PlayerTeamHistory> TeamHistory { get; set; } =
+    public virtual ICollection<PlayerTeamHistory> PlayerTeamHistory { get; set; } =
         new HashSet<PlayerTeamHistory>();
 
     // This is one-to-one because a player's game stats are not modified during the postseason
