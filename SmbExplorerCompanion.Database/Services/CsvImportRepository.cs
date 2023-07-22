@@ -310,236 +310,195 @@ public class CsvImportRepository
     }
 
     // Import step #3
-    public async Task<OneOf<Success, Exception>> AddPlayerPitchingStatsAsync(List<CsvPitchingStat> pitchingStats, bool isRegularSeason = true)
+    public async Task AddPlayerPitchingStatsAsync(List<CsvPitchingStat> pitchingStats, bool isRegularSeason = true)
     {
-        try
+        var currentSeason = await _dbContext.Seasons
+                                .SingleOrDefaultAsync(x => x.Id == pitchingStats.First().SeasonId)
+                            ?? throw new Exception("No season found with the given season ID");
+
+        var seasonTeamHistories = await _dbContext.SeasonTeamHistory
+            .Include(x => x.Team)
+            .ThenInclude(x => x.TeamGameIdHistory)
+            .Where(x => x.SeasonId == currentSeason.Id)
+            .ToListAsync();
+
+        foreach (var csvPitchingStat in pitchingStats)
         {
-            var currentSeason = await _dbContext.Seasons
-                                    .SingleOrDefaultAsync(x => x.Id == pitchingStats.First().SeasonId)
-                                ?? throw new Exception("No season found with the given season ID");
+            var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
+                                          .Include(x => x.Player)
+                                          .ThenInclude(x => x.PlayerSeasons)
+                                          .SingleOrDefaultAsync(x => x.GameId == csvPitchingStat.PlayerId)
+                                      ?? throw new Exception($"No player found with the given player ID {csvPitchingStat.PlayerId}");
 
-            var seasonTeamHistories = await _dbContext.SeasonTeamHistory
-                .Include(x => x.Team)
-                .ThenInclude(x => x.TeamGameIdHistory)
-                .Where(x => x.SeasonId == currentSeason.Id)
-                .ToListAsync();
+            var playerSeason = playerGameIdHistory.Player.PlayerSeasons.SingleOrDefault(x => x.SeasonId == currentSeason.Id)
+                               ?? throw new Exception(
+                                   $"No player season found for player ID {csvPitchingStat.PlayerId} and season ID {csvPitchingStat.SeasonId}");
 
-            foreach (var csvPitchingStat in pitchingStats)
+            if (isRegularSeason)
             {
-                var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
-                                              .Include(x => x.Player)
-                                              .ThenInclude(x => x.PlayerSeasons)
-                                              .SingleOrDefaultAsync(x => x.GameId == csvPitchingStat.PlayerId)
-                                          ?? throw new Exception($"No player found with the given player ID {csvPitchingStat.PlayerId}");
+                // overwrite the PlayerTeamHistory entries with what is present on the CSV
+                var isCurrentFreeAgent = csvPitchingStat.CurrentTeamId is null;
+                var playerTeamHistories = new List<PlayerTeamHistory>();
 
-                var playerSeason = playerGameIdHistory.Player.PlayerSeasons.SingleOrDefault(x => x.SeasonId == currentSeason.Id)
-                                   ?? throw new Exception(
-                                       $"No player season found for player ID {csvPitchingStat.PlayerId} and season ID {csvPitchingStat.SeasonId}");
-
-                if (isRegularSeason)
+                if (isCurrentFreeAgent)
                 {
-                    // overwrite the PlayerTeamHistory entries with what is present on the CSV
-                    var isCurrentFreeAgent = csvPitchingStat.CurrentTeamId is null;
-                    var playerTeamHistories = new List<PlayerTeamHistory>();
-
-                    if (isCurrentFreeAgent)
+                    playerTeamHistories.Add(new PlayerTeamHistory
                     {
-                        playerTeamHistories.Add(new PlayerTeamHistory
-                        {
-                            Order = 1,
-                            SeasonTeamHistoryId = null
-                        });
-                    }
+                        Order = 1,
+                        SeasonTeamHistoryId = null
+                    });
+                }
 
-                    // The most recent team should never be null, based on the constraints of how we export
-                    // the pitching CSV data in the other app
-                    var mostRecentTeam = csvPitchingStat.PreviousTeamId
-                                         ?? throw new Exception($"No previous team ID found for player ID {csvPitchingStat.PlayerId} " +
-                                                                $"and season ID {csvPitchingStat.SeasonId}");
+                // The most recent team should never be null, based on the constraints of how we export
+                // the pitching CSV data in the other app
+                var mostRecentTeam = csvPitchingStat.PreviousTeamId
+                                     ?? throw new Exception($"No previous team ID found for player ID {csvPitchingStat.PlayerId} " +
+                                                            $"and season ID {csvPitchingStat.SeasonId}");
 
-                    // Get the SeasonTeamHistory record for the most recent team
-                    var mostRecentSeasonTeamHistory = seasonTeamHistories
+                // Get the SeasonTeamHistory record for the most recent team
+                var mostRecentSeasonTeamHistory = seasonTeamHistories
+                                                      .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                          .Any(y => y.GameId == mostRecentTeam))
+                                                  ?? throw new Exception($"No SeasonTeamHistory record found for team ID {mostRecentTeam} " +
+                                                                         $"and season ID {csvPitchingStat.SeasonId}");
+
+                playerTeamHistories.Add(new PlayerTeamHistory
+                {
+                    Order = isCurrentFreeAgent ? 2 : 1,
+                    SeasonTeamHistoryId = mostRecentSeasonTeamHistory.Id
+                });
+
+                var secondMostRecentTeam = csvPitchingStat.SecondPreviousTeamId;
+                if (secondMostRecentTeam is not null)
+                {
+                    var secondMostRecentTeamHistory = seasonTeamHistories
                                                           .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                              .Any(y => y.GameId == mostRecentTeam))
-                                                      ?? throw new Exception($"No SeasonTeamHistory record found for team ID {mostRecentTeam} " +
-                                                                             $"and season ID {csvPitchingStat.SeasonId}");
+                                                              .Any(y => y.GameId == secondMostRecentTeam))
+                                                      ?? throw new Exception(
+                                                          $"No SeasonTeamHistory record found for team ID {secondMostRecentTeam} " +
+                                                          $"and season ID {csvPitchingStat.SeasonId}");
 
                     playerTeamHistories.Add(new PlayerTeamHistory
                     {
-                        Order = isCurrentFreeAgent ? 2 : 1,
-                        SeasonTeamHistoryId = mostRecentSeasonTeamHistory.Id
+                        Order = isCurrentFreeAgent ? 3 : 2,
+                        SeasonTeamHistoryId = secondMostRecentTeamHistory.Id
                     });
-
-                    var secondMostRecentTeam = csvPitchingStat.SecondPreviousTeamId;
-                    if (secondMostRecentTeam is not null)
-                    {
-                        var secondMostRecentTeamHistory = seasonTeamHistories
-                                                              .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                                  .Any(y => y.GameId == secondMostRecentTeam))
-                                                          ?? throw new Exception(
-                                                              $"No SeasonTeamHistory record found for team ID {secondMostRecentTeam} " +
-                                                              $"and season ID {csvPitchingStat.SeasonId}");
-
-                        playerTeamHistories.Add(new PlayerTeamHistory
-                        {
-                            Order = isCurrentFreeAgent ? 3 : 2,
-                            SeasonTeamHistoryId = secondMostRecentTeamHistory.Id
-                        });
-                    }
-
-                    playerSeason.PlayerTeamHistory = playerTeamHistories;
-                }
-                else
-                {
-                    var playerTeamHistories = await _dbContext.PlayerSeasons
-                        .Include(x => x.PlayerTeamHistory)
-                        .ThenInclude(x => x.SeasonTeamHistory)
-                        // TODO: Check if this works due to team potentially being null
-                        .ThenInclude(x => x!.Team)
-                        .ThenInclude(x => x.TeamGameIdHistory)
-                        .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == currentSeason.Id)
-                        .SelectMany(x => x.PlayerTeamHistory)
-                        .ToListAsync();
-
-                    // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
-                    if (playerTeamHistories.First().SeasonTeamHistory is null)
-                    {
-                        // This means that the last team that was recorded for this player was them being a free agent, and we need to update it
-                        // to indicate that they were signed by a team for the postseason
-                        playerTeamHistories.First().SeasonTeamHistory = seasonTeamHistories
-                                                                            .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                                                .Any(y => y.GameId == csvPitchingStat.CurrentTeamId))
-                                                                        ?? throw new Exception(
-                                                                            $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
-                                                                            $"and season ID {csvPitchingStat.SeasonId}");
-                    }
-                    else if (playerTeamHistories
-                                 .First().SeasonTeamHistory!.Team.TeamGameIdHistory
-                                 .First().GameId != csvPitchingStat.CurrentTeamId)
-                    {
-                        // This means that the team ID on the CSV import does not match the team ID on Order 1 in the player team history
-                        // We will then need to add a new player team history record to indicate that they were signed by a team for the postseason
-                        // and also update the orders of the existing records
-                        var newPlayerTeamHistory = new PlayerTeamHistory
-                        {
-                            Order = 1,
-                            SeasonTeamHistory = seasonTeamHistories
-                                                    .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                        .Any(y => y.GameId == csvPitchingStat.CurrentTeamId))
-                                                ?? throw new Exception(
-                                                    $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
-                                                    $"and season ID {csvPitchingStat.SeasonId}")
-                        };
-
-                        // update the orders of the existing records
-                        foreach (var playerTeamHistory in playerTeamHistories)
-                        {
-                            playerTeamHistory.Order++;
-                        }
-
-                        playerTeamHistories.Add(newPlayerTeamHistory);
-                    }
                 }
 
-                // Here, add the pitching-specific stats. Attempt to find an existing record, and if it doesn't exist, create a new one
-                // Also need to check depending on whether this is a regular season or playoff import
-                var playerSeasonPitchingStat = playerSeason.PitchingStats
-                    .SingleOrDefault(x => x.IsRegularSeason == isRegularSeason) ?? new PlayerSeasonPitchingStat
-                {
-                    IsRegularSeason = isRegularSeason
-                };
-
-                playerSeasonPitchingStat.Wins = csvPitchingStat.Wins;
-                playerSeasonPitchingStat.Losses = csvPitchingStat.Losses;
-                playerSeasonPitchingStat.CompleteGames = csvPitchingStat.CompleteGames;
-                playerSeasonPitchingStat.Shutouts = csvPitchingStat.Shutouts;
-                playerSeasonPitchingStat.Hits = csvPitchingStat.Hits;
-                playerSeasonPitchingStat.EarnedRuns = csvPitchingStat.EarnedRuns;
-                playerSeasonPitchingStat.HomeRuns = csvPitchingStat.HomeRuns;
-                playerSeasonPitchingStat.Walks = csvPitchingStat.Walks;
-                playerSeasonPitchingStat.Strikeouts = csvPitchingStat.Strikeouts;
-                playerSeasonPitchingStat.InningsPitched = csvPitchingStat.InningsPitched;
-                playerSeasonPitchingStat.EarnedRunAverage = csvPitchingStat.Era;
-                playerSeasonPitchingStat.TotalPitches = csvPitchingStat.TotalPitches;
-                playerSeasonPitchingStat.Saves = csvPitchingStat.Saves;
-                playerSeasonPitchingStat.HitByPitch = csvPitchingStat.HitByPitch;
-                playerSeasonPitchingStat.BattersFaced = csvPitchingStat.BattersFaced;
-                playerSeasonPitchingStat.GamesPlayed = csvPitchingStat.GamesPlayed;
-                playerSeasonPitchingStat.GamesStarted = csvPitchingStat.GamesStarted;
-                playerSeasonPitchingStat.GamesFinished = csvPitchingStat.GamesFinished;
-                playerSeasonPitchingStat.RunsAllowed = csvPitchingStat.RunsAllowed;
-                playerSeasonPitchingStat.WildPitches = csvPitchingStat.WildPitches;
-                playerSeasonPitchingStat.BattingAverageAgainst = csvPitchingStat.BattingAverageAgainst;
-                playerSeasonPitchingStat.Fip = csvPitchingStat.Fip;
-                playerSeasonPitchingStat.Whip = csvPitchingStat.Whip;
-                playerSeasonPitchingStat.WinPercentage = csvPitchingStat.WinPercentage;
-                playerSeasonPitchingStat.OpponentObp = csvPitchingStat.OpponentObp;
-                playerSeasonPitchingStat.StrikeoutsPerWalk = csvPitchingStat.StrikeoutsPerWalk;
-                playerSeasonPitchingStat.StrikeoutsPerNine = csvPitchingStat.StrikeoutsPerNine;
-                playerSeasonPitchingStat.WalksPerNine = csvPitchingStat.WalksPerNine;
-                playerSeasonPitchingStat.HitsPerNine = csvPitchingStat.HitsPerNine;
-                playerSeasonPitchingStat.HomeRunsPerNine = csvPitchingStat.HomeRunsPerNine;
-                playerSeasonPitchingStat.PitchesPerInning = csvPitchingStat.PitchesPerInning;
-                playerSeasonPitchingStat.PitchesPerGame = csvPitchingStat.PitchesPerGame;
-                playerSeasonPitchingStat.EraMinus = csvPitchingStat.EraMinus;
-                playerSeasonPitchingStat.FipMinus = csvPitchingStat.FipMinus;
-
-                if (playerSeasonPitchingStat.Id == default)
-                    playerSeason.PitchingStats.Add(playerSeasonPitchingStat);
-
-                await _dbContext.SaveChangesAsync();
+                playerSeason.PlayerTeamHistory = playerTeamHistories;
             }
-        }
-        catch (Exception e)
-        {
-            return e;
-        }
+            else
+            {
+                var playerTeamHistories = await _dbContext.PlayerSeasons
+                    .Include(x => x.PlayerTeamHistory)
+                    .ThenInclude(x => x.SeasonTeamHistory)
+                    // TODO: Check if this works due to team potentially being null
+                    .ThenInclude(x => x!.Team)
+                    .ThenInclude(x => x.TeamGameIdHistory)
+                    .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == currentSeason.Id)
+                    .SelectMany(x => x.PlayerTeamHistory)
+                    .ToListAsync();
 
-        return new Success();
+                // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
+                if (playerTeamHistories.First().SeasonTeamHistory is null)
+                {
+                    // This means that the last team that was recorded for this player was them being a free agent, and we need to update it
+                    // to indicate that they were signed by a team for the postseason
+                    playerTeamHistories.First().SeasonTeamHistory = seasonTeamHistories
+                                                                        .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                                            .Any(y => y.GameId == csvPitchingStat.CurrentTeamId))
+                                                                    ?? throw new Exception(
+                                                                        $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
+                                                                        $"and season ID {csvPitchingStat.SeasonId}");
+                }
+                else if (playerTeamHistories
+                             .First().SeasonTeamHistory!.Team.TeamGameIdHistory
+                             .First().GameId != csvPitchingStat.CurrentTeamId)
+                {
+                    // This means that the team ID on the CSV import does not match the team ID on Order 1 in the player team history
+                    // We will then need to add a new player team history record to indicate that they were signed by a team for the postseason
+                    // and also update the orders of the existing records
+                    var newPlayerTeamHistory = new PlayerTeamHistory
+                    {
+                        Order = 1,
+                        SeasonTeamHistory = seasonTeamHistories
+                                                .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                    .Any(y => y.GameId == csvPitchingStat.CurrentTeamId))
+                                            ?? throw new Exception(
+                                                $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
+                                                $"and season ID {csvPitchingStat.SeasonId}")
+                    };
+
+                    // update the orders of the existing records
+                    foreach (var playerTeamHistory in playerTeamHistories)
+                    {
+                        playerTeamHistory.Order++;
+                    }
+
+                    playerTeamHistories.Add(newPlayerTeamHistory);
+                }
+            }
+
+            // Here, add the pitching-specific stats. Attempt to find an existing record, and if it doesn't exist, create a new one
+            // Also need to check depending on whether this is a regular season or playoff import
+            var playerSeasonPitchingStat = playerSeason.PitchingStats
+                .SingleOrDefault(x => x.IsRegularSeason == isRegularSeason) ?? new PlayerSeasonPitchingStat
+            {
+                IsRegularSeason = isRegularSeason
+            };
+
+            playerSeasonPitchingStat.Wins = csvPitchingStat.Wins;
+            playerSeasonPitchingStat.Losses = csvPitchingStat.Losses;
+            playerSeasonPitchingStat.CompleteGames = csvPitchingStat.CompleteGames;
+            playerSeasonPitchingStat.Shutouts = csvPitchingStat.Shutouts;
+            playerSeasonPitchingStat.Hits = csvPitchingStat.Hits;
+            playerSeasonPitchingStat.EarnedRuns = csvPitchingStat.EarnedRuns;
+            playerSeasonPitchingStat.HomeRuns = csvPitchingStat.HomeRuns;
+            playerSeasonPitchingStat.Walks = csvPitchingStat.Walks;
+            playerSeasonPitchingStat.Strikeouts = csvPitchingStat.Strikeouts;
+            playerSeasonPitchingStat.InningsPitched = csvPitchingStat.InningsPitched;
+            playerSeasonPitchingStat.EarnedRunAverage = csvPitchingStat.Era;
+            playerSeasonPitchingStat.TotalPitches = csvPitchingStat.TotalPitches;
+            playerSeasonPitchingStat.Saves = csvPitchingStat.Saves;
+            playerSeasonPitchingStat.HitByPitch = csvPitchingStat.HitByPitch;
+            playerSeasonPitchingStat.BattersFaced = csvPitchingStat.BattersFaced;
+            playerSeasonPitchingStat.GamesPlayed = csvPitchingStat.GamesPlayed;
+            playerSeasonPitchingStat.GamesStarted = csvPitchingStat.GamesStarted;
+            playerSeasonPitchingStat.GamesFinished = csvPitchingStat.GamesFinished;
+            playerSeasonPitchingStat.RunsAllowed = csvPitchingStat.RunsAllowed;
+            playerSeasonPitchingStat.WildPitches = csvPitchingStat.WildPitches;
+            playerSeasonPitchingStat.BattingAverageAgainst = csvPitchingStat.BattingAverageAgainst;
+            playerSeasonPitchingStat.Fip = csvPitchingStat.Fip;
+            playerSeasonPitchingStat.Whip = csvPitchingStat.Whip;
+            playerSeasonPitchingStat.WinPercentage = csvPitchingStat.WinPercentage;
+            playerSeasonPitchingStat.OpponentObp = csvPitchingStat.OpponentObp;
+            playerSeasonPitchingStat.StrikeoutsPerWalk = csvPitchingStat.StrikeoutsPerWalk;
+            playerSeasonPitchingStat.StrikeoutsPerNine = csvPitchingStat.StrikeoutsPerNine;
+            playerSeasonPitchingStat.WalksPerNine = csvPitchingStat.WalksPerNine;
+            playerSeasonPitchingStat.HitsPerNine = csvPitchingStat.HitsPerNine;
+            playerSeasonPitchingStat.HomeRunsPerNine = csvPitchingStat.HomeRunsPerNine;
+            playerSeasonPitchingStat.PitchesPerInning = csvPitchingStat.PitchesPerInning;
+            playerSeasonPitchingStat.PitchesPerGame = csvPitchingStat.PitchesPerGame;
+            playerSeasonPitchingStat.EraMinus = csvPitchingStat.EraMinus;
+            playerSeasonPitchingStat.FipMinus = csvPitchingStat.FipMinus;
+
+            if (playerSeasonPitchingStat.Id == default)
+                playerSeason.PitchingStats.Add(playerSeasonPitchingStat);
+
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
     // Import step #4
-    public async Task<OneOf<Success, Exception>> AddPlayerBattingStatsAsync(List<CsvBattingStat> battingStats)
+    public async Task AddPlayerBattingStatsAsync(List<CsvBattingStat> battingStats)
     {
-        try
-        {
-            throw new NotImplementedException();
-            // TODO:
-            // The steps will be nearly identical to the AddPlayerPitchingStatsAsync method
-        }
-        catch (Exception e)
-        {
-            return e;
-        }
-
-        return new Success();
     }
 
-    public async Task<OneOf<Success, Exception>> AddSeasonScheduleAsync(List<CsvSeasonSchedule> schedule)
+    public async Task AddSeasonScheduleAsync(List<CsvSeasonSchedule> schedule)
     {
-        try
-        {
-            throw new NotImplementedException();
-        }
-        catch (Exception e)
-        {
-            return e;
-        }
-
-        return new Success();
     }
 
-    public async Task<OneOf<Success, Exception>> AddPlayoffScheduleAsync(List<CsvPlayoffSchedule> schedule)
+    public async Task AddPlayoffScheduleAsync(List<CsvPlayoffSchedule> schedule)
     {
-        try
-        {
-            throw new NotImplementedException();
-        }
-        catch (Exception e)
-        {
-            return e;
-        }
-
-        return new Success();
     }
 }
