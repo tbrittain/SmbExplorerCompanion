@@ -490,8 +490,90 @@ public class CsvImportRepository
     }
 
     // Import step #4
-    public async Task AddPlayerBattingStatsAsync(List<CsvBattingStat> battingStats)
+    public async Task AddPlayerBattingStatsAsync(List<CsvBattingStat> battingStats, bool isRegularSeason = true)
     {
+        // Perform the same steps that we have with the pitching stats in the above method, but with the batting equivalents
+        var currentSeason = await _dbContext.Seasons
+                                .SingleOrDefaultAsync(x => x.Id == battingStats.First().SeasonId)
+                            ?? throw new Exception("No season found with the given season ID");
+
+        var seasonTeamHistories = await _dbContext.SeasonTeamHistory
+            .Include(x => x.Team)
+            .ThenInclude(x => x.TeamGameIdHistory)
+            .Where(x => x.SeasonId == currentSeason.Id)
+            .ToListAsync();
+
+        foreach (var csvBattingStat in battingStats)
+        {
+            var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
+                                          .Include(x => x.Player)
+                                          .ThenInclude(x => x.PlayerSeasons)
+                                          .SingleOrDefaultAsync(x => x.GameId == csvBattingStat.PlayerId)
+                                      ?? throw new Exception($"No player found with the given player ID {csvBattingStat.PlayerId}");
+
+            var playerSeason = playerGameIdHistory.Player.PlayerSeasons.SingleOrDefault(x => x.SeasonId == currentSeason.Id)
+                               ?? throw new Exception(
+                                   $"No player season found for player ID {csvBattingStat.PlayerId} and season ID {csvBattingStat.SeasonId}");
+
+            if (isRegularSeason)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+            
+            // Here, add the batting-specific stats. Attempt to find an existing record, and if it doesn't exist, create a new one
+            // Also need to check depending on whether this is a regular season or playoff import
+            
+            var playerSeasonBattingStat = playerSeason.BattingStats
+                .SingleOrDefault(x => x.IsRegularSeason == isRegularSeason) ?? new PlayerSeasonBattingStat
+            {
+                IsRegularSeason = isRegularSeason
+            };
+            
+            playerSeasonBattingStat.GamesPlayed = csvBattingStat.GamesPlayed;
+            playerSeasonBattingStat.GamesBatting = csvBattingStat.GamesBatting;
+            playerSeasonBattingStat.AtBats = csvBattingStat.AtBats;
+            playerSeasonBattingStat.PlateAppearances = csvBattingStat.PlateAppearances;
+            playerSeasonBattingStat.Runs = csvBattingStat.Runs;
+            playerSeasonBattingStat.Hits = csvBattingStat.Hits;
+            playerSeasonBattingStat.Singles = csvBattingStat.Singles;
+            playerSeasonBattingStat.Doubles = csvBattingStat.Doubles;
+            playerSeasonBattingStat.Triples = csvBattingStat.Triples;
+            playerSeasonBattingStat.HomeRuns = csvBattingStat.HomeRuns;
+            playerSeasonBattingStat.RunsBattedIn = csvBattingStat.RunsBattedIn;
+            playerSeasonBattingStat.ExtraBaseHits = csvBattingStat.ExtraBaseHits;
+            playerSeasonBattingStat.TotalBases = csvBattingStat.TotalBases;
+            playerSeasonBattingStat.StolenBases = csvBattingStat.StolenBases;
+            playerSeasonBattingStat.CaughtStealing = csvBattingStat.CaughtStealing;
+            playerSeasonBattingStat.Walks = csvBattingStat.Walks;
+            playerSeasonBattingStat.Strikeouts = csvBattingStat.Strikeouts;
+            playerSeasonBattingStat.HitByPitch = csvBattingStat.HitByPitch;
+            playerSeasonBattingStat.Obp = csvBattingStat.Obp;
+            playerSeasonBattingStat.Slg = csvBattingStat.Slg;
+            playerSeasonBattingStat.Ops = csvBattingStat.Ops;
+            playerSeasonBattingStat.Woba = csvBattingStat.Woba;
+            playerSeasonBattingStat.Iso = csvBattingStat.Iso;
+            playerSeasonBattingStat.Babip = csvBattingStat.Babip;
+            playerSeasonBattingStat.SacrificeHits = csvBattingStat.SacrificeHits;
+            playerSeasonBattingStat.SacrificeFlies = csvBattingStat.SacrificeFlies;
+            playerSeasonBattingStat.BattingAverage = csvBattingStat.BattingAverage;
+            playerSeasonBattingStat.Errors = csvBattingStat.Errors;
+            playerSeasonBattingStat.PassedBalls = csvBattingStat.PassedBalls;
+            playerSeasonBattingStat.PaPerGame = csvBattingStat.PaPerGame;
+            playerSeasonBattingStat.AbPerHomeRun = csvBattingStat.AbPerHomeRun;
+            playerSeasonBattingStat.StrikeoutPercentage = csvBattingStat.StrikeoutPercentage;
+            playerSeasonBattingStat.WalkPercentage = csvBattingStat.WalkPercentage;
+            playerSeasonBattingStat.ExtraBaseHitPercentage = csvBattingStat.ExtraBaseHitPercentage;
+            playerSeasonBattingStat.OpsPlus = csvBattingStat.OpsPlus;
+            
+            if (playerSeasonBattingStat.Id == default)
+                playerSeason.BattingStats.Add(playerSeasonBattingStat);
+            
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
     public async Task AddSeasonScheduleAsync(List<CsvSeasonSchedule> schedule)
