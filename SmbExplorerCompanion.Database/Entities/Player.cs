@@ -25,5 +25,5 @@ public class Player
     public virtual Chemistry? Chemistry { get; set; }
 
     public virtual ICollection<PlayerSeason> PlayerSeasons { get; set; } = new HashSet<PlayerSeason>();
-    public virtual ICollection<PlayerGameIdHistory> GameIdHistory { get; set; } = new HashSet<PlayerGameIdHistory>();
+    public virtual ICollection<PlayerGameIdHistory> PlayerGameIdHistory { get; set; } = new HashSet<PlayerGameIdHistory>();
 }

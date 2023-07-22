@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Database.Entities;
 
 namespace SmbExplorerCompanion.Database.Services;
@@ -222,7 +220,7 @@ public class CsvImportRepository
                         PitcherRole = !string.IsNullOrEmpty(csvOverallPlayer.PitcherRole)
                             ? pitcherRoles.SingleOrDefault(x => x.Name == csvOverallPlayer.PitcherRole)
                             : null,
-                        GameIdHistory = new List<PlayerGameIdHistory>
+                        PlayerGameIdHistory = new List<PlayerGameIdHistory>
                         {
                             new PlayerGameIdHistory
                             {
@@ -520,7 +518,7 @@ public class CsvImportRepository
                 // overwrite the PlayerTeamHistory entries with what is present on the CSV
                 var isCurrentFreeAgent = csvBattingStat.CurrentTeamId is null;
                 var playerTeamHistories = new List<PlayerTeamHistory>();
-                
+
                 if (isCurrentFreeAgent)
                 {
                     playerTeamHistories.Add(new PlayerTeamHistory
@@ -529,13 +527,13 @@ public class CsvImportRepository
                         SeasonTeamHistoryId = null
                     });
                 }
-                
+
                 // The most recent team should never be null, based on the constraints of how we export
                 // the batting CSV data in the other app
                 var mostRecentTeam = csvBattingStat.PreviousTeamId
                                      ?? throw new Exception($"No previous team ID found for player ID {csvBattingStat.PlayerId} " +
                                                             $"and season ID {csvBattingStat.SeasonId}");
-                
+
                 // Get the SeasonTeamHistory record for the most recent team
                 var mostRecentSeasonTeamHistory = seasonTeamHistories
                                                       .SingleOrDefault(x => x.Team.TeamGameIdHistory
@@ -548,7 +546,7 @@ public class CsvImportRepository
                     Order = isCurrentFreeAgent ? 2 : 1,
                     SeasonTeamHistoryId = mostRecentSeasonTeamHistory.Id
                 });
-                
+
                 var secondMostRecentTeam = csvBattingStat.SecondPreviousTeamId;
                 if (secondMostRecentTeam is not null)
                 {
@@ -565,7 +563,7 @@ public class CsvImportRepository
                         SeasonTeamHistoryId = secondMostRecentTeamHistory.Id
                     });
                 }
-                
+
                 playerSeason.PlayerTeamHistory = playerTeamHistories;
             }
             else
@@ -579,8 +577,8 @@ public class CsvImportRepository
                     .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == currentSeason.Id)
                     .SelectMany(x => x.PlayerTeamHistory)
                     .ToListAsync();
-                
-                                // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
+
+                // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
                 if (playerTeamHistories.First().SeasonTeamHistory is null)
                 {
                     // This means that the last team that was recorded for this player was them being a free agent, and we need to update it
@@ -619,16 +617,16 @@ public class CsvImportRepository
                     playerTeamHistories.Add(newPlayerTeamHistory);
                 }
             }
-            
+
             // Here, add the batting-specific stats. Attempt to find an existing record, and if it doesn't exist, create a new one
             // Also need to check depending on whether this is a regular season or playoff import
-            
+
             var playerSeasonBattingStat = playerSeason.BattingStats
                 .SingleOrDefault(x => x.IsRegularSeason == isRegularSeason) ?? new PlayerSeasonBattingStat
             {
                 IsRegularSeason = isRegularSeason
             };
-            
+
             playerSeasonBattingStat.GamesPlayed = csvBattingStat.GamesPlayed;
             playerSeasonBattingStat.GamesBatting = csvBattingStat.GamesBatting;
             playerSeasonBattingStat.AtBats = csvBattingStat.AtBats;
@@ -664,16 +662,95 @@ public class CsvImportRepository
             playerSeasonBattingStat.WalkPercentage = csvBattingStat.WalkPercentage;
             playerSeasonBattingStat.ExtraBaseHitPercentage = csvBattingStat.ExtraBaseHitPercentage;
             playerSeasonBattingStat.OpsPlus = csvBattingStat.OpsPlus;
-            
+
             if (playerSeasonBattingStat.Id == default)
                 playerSeason.BattingStats.Add(playerSeasonBattingStat);
-            
+
             await _dbContext.SaveChangesAsync();
         }
     }
 
     public async Task AddSeasonScheduleAsync(List<CsvSeasonSchedule> schedule)
     {
+        var seasonId = schedule.First().SeasonId;
+        var season = await _dbContext.Seasons
+                         .SingleOrDefaultAsync(x => x.Id == seasonId)
+                     ?? throw new Exception($"No season found with ID {seasonId}");
+
+        var seasonTeamHistories = await _dbContext.SeasonTeamHistory
+            .Include(x => x.Team)
+            .ThenInclude(x => x.TeamGameIdHistory)
+            .Where(x => x.SeasonId == season.Id)
+            .ToListAsync();
+
+        var pitchers = await _dbContext.PlayerSeasons
+            .Include(x => x.Player)
+            .ThenInclude(x => x.PlayerGameIdHistory)
+            .Where(x => x.SeasonId == season.Id)
+            .ToListAsync();
+
+        // reset the season schedule for all teams since we are re-importing it
+        foreach (var seasonTeamHistory in seasonTeamHistories)
+        {
+            foreach (var teamSeasonSchedule in seasonTeamHistory.HomeSeasonSchedule
+                         .Union(seasonTeamHistory.AwaySeasonSchedule))
+            {
+                _dbContext.TeamSeasonSchedules.Remove(teamSeasonSchedule);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        foreach (var csvGameSchedule in schedule)
+        {
+            var homeTeam = seasonTeamHistories
+                               .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                   .Any(y => y.GameId == csvGameSchedule.HomeTeamId))
+                           ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvGameSchedule.HomeTeamId} " +
+                                                  $"and season ID {csvGameSchedule.SeasonId}");
+
+            var awayTeam = seasonTeamHistories
+                               .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                   .Any(y => y.GameId == csvGameSchedule.AwayTeamId))
+                           ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvGameSchedule.AwayTeamId} " +
+                                                  $"and season ID {csvGameSchedule.SeasonId}");
+
+            var newScheduleEntry = new TeamSeasonSchedule
+            {
+                HomeTeamHistory = homeTeam,
+                AwayTeamHistory = awayTeam,
+                Day = csvGameSchedule.Day,
+                GlobalGameNumber = csvGameSchedule.GlobalGameNumber
+            };
+
+            var isGamePlayed = csvGameSchedule.HomeScore is not null && csvGameSchedule.AwayScore is not null;
+            if (isGamePlayed)
+            {
+                newScheduleEntry.HomeScore = csvGameSchedule.HomeScore;
+                newScheduleEntry.AwayScore = csvGameSchedule.AwayScore;
+
+                var homePitcherSeason =
+                    pitchers
+                        .SingleOrDefault(x => x.Player.PlayerGameIdHistory
+                            .Any(y => y.GameId == csvGameSchedule.HomePitcherId))
+                    ?? throw new Exception($"No pitcher found for player ID {csvGameSchedule.HomePitcherId} " +
+                                           $"and season ID {csvGameSchedule.SeasonId}");
+
+                var awayPitcherSeason =
+                    pitchers
+                        .SingleOrDefault(x => x.Player.PlayerGameIdHistory
+                            .Any(y => y.GameId == csvGameSchedule.AwayPitcherId))
+                    ?? throw new Exception($"No pitcher found for player ID {csvGameSchedule.AwayPitcherId} " +
+                                           $"and season ID {csvGameSchedule.SeasonId}");
+
+                newScheduleEntry.HomePitcherSeason = homePitcherSeason;
+                newScheduleEntry.AwayPitcherSeason = awayPitcherSeason;
+            }
+
+            _dbContext.TeamSeasonSchedules.Add(newScheduleEntry);
+        }
+
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddPlayoffScheduleAsync(List<CsvPlayoffSchedule> schedule)
