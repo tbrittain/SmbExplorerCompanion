@@ -517,11 +517,107 @@ public class CsvImportRepository
 
             if (isRegularSeason)
             {
-                throw new NotImplementedException();
+                // overwrite the PlayerTeamHistory entries with what is present on the CSV
+                var isCurrentFreeAgent = csvBattingStat.CurrentTeamId is null;
+                var playerTeamHistories = new List<PlayerTeamHistory>();
+                
+                if (isCurrentFreeAgent)
+                {
+                    playerTeamHistories.Add(new PlayerTeamHistory
+                    {
+                        Order = 1,
+                        SeasonTeamHistoryId = null
+                    });
+                }
+                
+                // The most recent team should never be null, based on the constraints of how we export
+                // the batting CSV data in the other app
+                var mostRecentTeam = csvBattingStat.PreviousTeamId
+                                     ?? throw new Exception($"No previous team ID found for player ID {csvBattingStat.PlayerId} " +
+                                                            $"and season ID {csvBattingStat.SeasonId}");
+                
+                // Get the SeasonTeamHistory record for the most recent team
+                var mostRecentSeasonTeamHistory = seasonTeamHistories
+                                                      .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                          .Any(y => y.GameId == mostRecentTeam))
+                                                  ?? throw new Exception($"No SeasonTeamHistory record found for team ID {mostRecentTeam} " +
+                                                                         $"and season ID {csvBattingStat.SeasonId}");
+
+                playerTeamHistories.Add(new PlayerTeamHistory
+                {
+                    Order = isCurrentFreeAgent ? 2 : 1,
+                    SeasonTeamHistoryId = mostRecentSeasonTeamHistory.Id
+                });
+                
+                var secondMostRecentTeam = csvBattingStat.SecondPreviousTeamId;
+                if (secondMostRecentTeam is not null)
+                {
+                    var secondMostRecentTeamHistory = seasonTeamHistories
+                                                          .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                              .Any(y => y.GameId == secondMostRecentTeam))
+                                                      ?? throw new Exception(
+                                                          $"No SeasonTeamHistory record found for team ID {secondMostRecentTeam} " +
+                                                          $"and season ID {csvBattingStat.SeasonId}");
+
+                    playerTeamHistories.Add(new PlayerTeamHistory
+                    {
+                        Order = isCurrentFreeAgent ? 3 : 2,
+                        SeasonTeamHistoryId = secondMostRecentTeamHistory.Id
+                    });
+                }
+                
+                playerSeason.PlayerTeamHistory = playerTeamHistories;
             }
             else
             {
-                throw new NotImplementedException();
+                var playerTeamHistories = await _dbContext.PlayerSeasons
+                    .Include(x => x.PlayerTeamHistory)
+                    .ThenInclude(x => x.SeasonTeamHistory)
+                    // TODO: Check if this works due to team potentially being null
+                    .ThenInclude(x => x!.Team)
+                    .ThenInclude(x => x.TeamGameIdHistory)
+                    .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == currentSeason.Id)
+                    .SelectMany(x => x.PlayerTeamHistory)
+                    .ToListAsync();
+                
+                                // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
+                if (playerTeamHistories.First().SeasonTeamHistory is null)
+                {
+                    // This means that the last team that was recorded for this player was them being a free agent, and we need to update it
+                    // to indicate that they were signed by a team for the postseason
+                    playerTeamHistories.First().SeasonTeamHistory = seasonTeamHistories
+                                                                        .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                                            .Any(y => y.GameId == csvBattingStat.CurrentTeamId))
+                                                                    ?? throw new Exception(
+                                                                        $"No SeasonTeamHistory record found for team ID {csvBattingStat.CurrentTeamId} " +
+                                                                        $"and season ID {csvBattingStat.SeasonId}");
+                }
+                else if (playerTeamHistories
+                             .First().SeasonTeamHistory!.Team.TeamGameIdHistory
+                             .First().GameId != csvBattingStat.CurrentTeamId)
+                {
+                    // This means that the team ID on the CSV import does not match the team ID on Order 1 in the player team history
+                    // We will then need to add a new player team history record to indicate that they were signed by a team for the postseason
+                    // and also update the orders of the existing records
+                    var newPlayerTeamHistory = new PlayerTeamHistory
+                    {
+                        Order = 1,
+                        SeasonTeamHistory = seasonTeamHistories
+                                                .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                    .Any(y => y.GameId == csvBattingStat.CurrentTeamId))
+                                            ?? throw new Exception(
+                                                $"No SeasonTeamHistory record found for team ID {csvBattingStat.CurrentTeamId} " +
+                                                $"and season ID {csvBattingStat.SeasonId}")
+                    };
+
+                    // update the orders of the existing records
+                    foreach (var playerTeamHistory in playerTeamHistories)
+                    {
+                        playerTeamHistory.Order++;
+                    }
+
+                    playerTeamHistories.Add(newPlayerTeamHistory);
+                }
             }
             
             // Here, add the batting-specific stats. Attempt to find an existing record, and if it doesn't exist, create a new one
