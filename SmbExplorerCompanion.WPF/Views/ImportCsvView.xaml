@@ -55,7 +55,7 @@
                 <StackPanel
                     Grid.Column="0"
                     Grid.Row="1">
-                    <Button Command="{Binding SelectSeasonPitchingCsvCommand}">
+                    <Button Command="{Binding SelectSeasonBattingCsvCommand}">
                         <Label Content="Select Season Batting CSV" />
                     </Button>
                     <Label Content="{Binding SeasonBattingCsvPath}" />

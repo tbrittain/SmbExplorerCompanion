@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Database.Entities;
-using Team = SmbExplorerCompanion.Database.Entities.Team;
 
 namespace SmbExplorerCompanion.Database.Services;
 
@@ -19,7 +18,7 @@ public class CsvMappingRepository
         foreach (var csvTeam in teams)
         {
             var season = await _dbContext.Seasons
-                .SingleOrDefaultAsync(x => x.Id == csvTeam.SeasonId);
+                .SingleOrDefaultAsync(x => x.Id == csvTeam.SeasonId, cancellationToken);
             if (season is null)
             {
                 season = new Season
@@ -28,11 +27,11 @@ public class CsvMappingRepository
                     Number = csvTeam.SeasonNum
                 };
                 _dbContext.Seasons.Add(season);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
 
             var conference = await _dbContext.Conferences
-                .SingleOrDefaultAsync(x => x.Name == csvTeam.ConferenceName);
+                .SingleOrDefaultAsync(x => x.Name == csvTeam.ConferenceName, cancellationToken);
             if (conference is null)
             {
                 conference = new Conference
@@ -41,11 +40,11 @@ public class CsvMappingRepository
                     Name = csvTeam.ConferenceName
                 };
                 _dbContext.Conferences.Add(conference);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
 
             var division = await _dbContext.Divisions
-                .SingleOrDefaultAsync(x => x.Name == csvTeam.DivisionName);
+                .SingleOrDefaultAsync(x => x.Name == csvTeam.DivisionName, cancellationToken);
             if (division is null)
             {
                 division = new Division
@@ -54,7 +53,7 @@ public class CsvMappingRepository
                     Name = csvTeam.DivisionName
                 };
                 _dbContext.Divisions.Add(division);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
 
             Team? team;
@@ -63,14 +62,14 @@ public class CsvMappingRepository
                 .Include(x => x.Team)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.TeamNameHistory)
-                .SingleOrDefaultAsync(x => x.GameId == csvTeam.TeamId);
+                .SingleOrDefaultAsync(x => x.GameId == csvTeam.TeamId, cancellationToken);
             if (teamGameIdHistory is null)
             {
                 // attempt to locate team based on the team name
                 var teamNameHistory = await _dbContext.TeamNameHistory
                     .Include(x => x.SeasonTeamHistory)
                     .ThenInclude(x => x.Team)
-                    .SingleOrDefaultAsync(x => x.Name == csvTeam.TeamName);
+                    .SingleOrDefaultAsync(x => x.Name == csvTeam.TeamName, cancellationToken);
 
                 // assume the team is new and does not exist if there is no equivalent team matching the name
                 if (teamNameHistory is null)
@@ -86,7 +85,7 @@ public class CsvMappingRepository
                         }
                     };
                     _dbContext.Teams.Add(team);
-                    await _dbContext.SaveChangesAsync();
+                    await _dbContext.SaveChangesAsync(cancellationToken);
                 }
                 else
                 {
@@ -101,7 +100,8 @@ public class CsvMappingRepository
             var newSeasonTeamHistory = false;
             var seasonTeamHistory = await _dbContext.SeasonTeamHistory
                 .Include(x => x.Team)
-                .SingleOrDefaultAsync(x => x.TeamId == team.Id && x.SeasonId == season.Id);
+                .Include(x => x.TeamNameHistory)
+                .SingleOrDefaultAsync(x => x.TeamId == team.Id && x.SeasonId == season.Id, cancellationToken);
 
             if (seasonTeamHistory is null)
             {
@@ -109,8 +109,17 @@ public class CsvMappingRepository
                 seasonTeamHistory = new SeasonTeamHistory
                 {
                     SeasonId = season.Id,
-                    TeamId = team.Id
+                    TeamId = team.Id,
+                    TeamNameHistory = new TeamNameHistory
+                    {
+                        Name = csvTeam.TeamName
+                    }
                 };
+            }
+            else
+            {
+                // if the season team history already exists, then we need to check if the team name is different
+                seasonTeamHistory.TeamNameHistory.Name = csvTeam.TeamName;
             }
 
             seasonTeamHistory.Budget = csvTeam.Budget;
@@ -136,6 +145,10 @@ public class CsvMappingRepository
             seasonTeamHistory.TotalAccuracy = csvTeam.TotalAccuracy;
             seasonTeamHistory.DivisionId = division.Id;
 
+            if (newSeasonTeamHistory)
+                team.SeasonTeamHistory.Add(seasonTeamHistory);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
             // get the last team name history for this team, and if the name is different, add a new team name history
             var lastTeamNameHistory = team.SeasonTeamHistory.Last().TeamNameHistory;
             if (lastTeamNameHistory.Name != csvTeam.TeamName)
@@ -145,7 +158,7 @@ public class CsvMappingRepository
                     Name = csvTeam.TeamName
                 };
                 _dbContext.TeamNameHistory.Add(teamNameHistory);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
                 seasonTeamHistory.TeamNameHistoryId = teamNameHistory.Id;
             }
@@ -154,22 +167,20 @@ public class CsvMappingRepository
                 seasonTeamHistory.TeamNameHistoryId = lastTeamNameHistory.Id;
             }
 
-            if (newSeasonTeamHistory)
-                _dbContext.SeasonTeamHistory.Add(seasonTeamHistory);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
     // Import step #2
     public async Task AddOverallPlayersAsync(List<CsvOverallPlayer> players, CancellationToken cancellationToken)
     {
-        var batHandedness = await _dbContext.BatHandedness.ToListAsync();
-        var throwHandedness = await _dbContext.ThrowHandedness.ToListAsync();
-        var positions = await _dbContext.Positions.ToListAsync();
-        var chemistry = await _dbContext.Chemistry.ToListAsync();
-        var pitcherRoles = await _dbContext.PitcherRoles.ToListAsync();
-        var traits = await _dbContext.Traits.ToListAsync();
-        var pitchTypes = await _dbContext.PitchTypes.ToListAsync();
+        var batHandedness = await _dbContext.BatHandedness.ToListAsync(cancellationToken: cancellationToken);
+        var throwHandedness = await _dbContext.ThrowHandedness.ToListAsync(cancellationToken: cancellationToken);
+        var positions = await _dbContext.Positions.ToListAsync(cancellationToken: cancellationToken);
+        var chemistry = await _dbContext.Chemistry.ToListAsync(cancellationToken: cancellationToken);
+        var pitcherRoles = await _dbContext.PitcherRoles.ToListAsync(cancellationToken: cancellationToken);
+        var traits = await _dbContext.Traits.ToListAsync(cancellationToken: cancellationToken);
+        var pitchTypes = await _dbContext.PitchTypes.ToListAsync(cancellationToken: cancellationToken);
 
         foreach (var csvOverallPlayer in players)
         {
@@ -184,7 +195,7 @@ public class CsvMappingRepository
                 .Include(x => x.Player)
                 .ThenInclude(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Traits)
-                .SingleOrDefaultAsync(x => x.GameId == csvOverallPlayer.PlayerId);
+                .SingleOrDefaultAsync(x => x.GameId == csvOverallPlayer.PlayerId, cancellationToken);
 
             if (playerGameIdHistory is null)
             {
@@ -200,8 +211,10 @@ public class CsvMappingRepository
                                 && x.BatHandedness.Name == csvOverallPlayer.BatHand
                                 && x.ThrowHandedness.Name == csvOverallPlayer.ThrowHand
                                 && x.PrimaryPosition.Name == csvOverallPlayer.Position
-                                && (x.PitcherRole == null || x.PitcherRole.Name == csvOverallPlayer.PitcherRole))
-                    .SingleOrDefaultAsync();
+                                && (x.PitcherRole == null || x.PitcherRole.Name == csvOverallPlayer.PitcherRole)
+                                && x.FirstName == csvOverallPlayer.FirstName
+                                && x.LastName == csvOverallPlayer.LastName)
+                    .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
                 if (player is null)
                 {
@@ -223,7 +236,7 @@ public class CsvMappingRepository
                             : null,
                         PlayerGameIdHistory = new List<PlayerGameIdHistory>
                         {
-                            new PlayerGameIdHistory
+                            new()
                             {
                                 GameId = csvOverallPlayer.PlayerId
                             }
@@ -231,7 +244,7 @@ public class CsvMappingRepository
                     };
 
                     _dbContext.Players.Add(player);
-                    await _dbContext.SaveChangesAsync();
+                    await _dbContext.SaveChangesAsync(cancellationToken);
                 }
             }
             else
@@ -246,16 +259,20 @@ public class CsvMappingRepository
                 .Include(x => x.PlayerTeamHistory)
                 .Include(x => x.SecondaryPosition)
                 .Include(x => x.Traits)
-                .SingleOrDefaultAsync(x => x.PlayerId == player.Id && x.SeasonId == csvOverallPlayer.SeasonId) ?? new PlayerSeason
+                .SingleOrDefaultAsync(x => x.PlayerId == player.Id && x.SeasonId == csvOverallPlayer.SeasonId,
+                    cancellationToken) ?? new PlayerSeason
             {
                 PlayerId = player.Id,
-                SeasonId = csvOverallPlayer.SeasonId,
+                SeasonId = csvOverallPlayer.SeasonId
             };
 
             playerSeason.Age = csvOverallPlayer.Age;
             playerSeason.Salary = csvOverallPlayer.Salary;
-            playerSeason.SecondaryPosition = positions.SingleOrDefault(x => x.Name == csvOverallPlayer.SecondaryPosition) ??
-                                             throw new Exception($"No position found with value {csvOverallPlayer.SecondaryPosition}");
+            playerSeason.SecondaryPosition =
+                string.IsNullOrEmpty(csvOverallPlayer.SecondaryPosition)
+                    ? null
+                    : positions.SingleOrDefault(x => x.Name == csvOverallPlayer.SecondaryPosition) ??
+                      throw new Exception($"No position found with value {csvOverallPlayer.SecondaryPosition}");
 
             var csvTraits = new List<string>();
             if (!string.IsNullOrEmpty(csvOverallPlayer.Trait1))
@@ -265,7 +282,8 @@ public class CsvMappingRepository
 
             playerSeason.Traits = csvTraits
                 .Select(x => traits
-                    .SingleOrDefault(y => y.Name == x) ?? throw new Exception($"No trait found with value {x}"))
+                    // TODO: SMB4 hardcoded here
+                    .SingleOrDefault(y => y.Name == x && !y.IsSmb3) ?? throw new Exception($"No trait found with value {x}"))
                 .ToList();
 
             if (player.PitcherRole is not null)
@@ -288,8 +306,6 @@ public class CsvMappingRepository
                     .ToList();
             }
 
-            playerSeason.SecondaryPosition = positions.SingleOrDefault(x => x.Name == csvOverallPlayer.SecondaryPosition);
-
             playerSeason.GameStats = new PlayerSeasonGameStat
             {
                 Power = csvOverallPlayer.Power,
@@ -304,7 +320,7 @@ public class CsvMappingRepository
 
             if (playerSeason.Id == default)
                 _dbContext.PlayerSeasons.Add(playerSeason);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -314,7 +330,7 @@ public class CsvMappingRepository
         CancellationToken cancellationToken = default)
     {
         var currentSeason = await _dbContext.Seasons
-                                .SingleOrDefaultAsync(x => x.Id == pitchingStats.First().SeasonId, cancellationToken: cancellationToken)
+                                .SingleOrDefaultAsync(x => x.Id == pitchingStats.First().SeasonId, cancellationToken)
                             ?? throw new Exception("No season found with the given season ID");
 
         var seasonTeamHistories = await _dbContext.SeasonTeamHistory
@@ -328,7 +344,7 @@ public class CsvMappingRepository
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
-                                          .SingleOrDefaultAsync(x => x.GameId == csvPitchingStat.PlayerId, cancellationToken: cancellationToken)
+                                          .SingleOrDefaultAsync(x => x.GameId == csvPitchingStat.PlayerId, cancellationToken)
                                       ?? throw new Exception($"No player found with the given player ID {csvPitchingStat.PlayerId}");
 
             var playerSeason = playerGameIdHistory.Player.PlayerSeasons.SingleOrDefault(x => x.SeasonId == currentSeason.Id)
@@ -342,13 +358,11 @@ public class CsvMappingRepository
                 var playerTeamHistories = new List<PlayerTeamHistory>();
 
                 if (isCurrentFreeAgent)
-                {
                     playerTeamHistories.Add(new PlayerTeamHistory
                     {
                         Order = 1,
                         SeasonTeamHistoryId = null
                     });
-                }
 
                 // The most recent team should never be null, based on the constraints of how we export
                 // the pitching CSV data in the other app
@@ -469,19 +483,18 @@ public class CsvMappingRepository
             playerSeasonPitchingStat.RunsAllowed = csvPitchingStat.RunsAllowed;
             playerSeasonPitchingStat.WildPitches = csvPitchingStat.WildPitches;
             playerSeasonPitchingStat.BattingAverageAgainst = csvPitchingStat.BattingAverageAgainst;
-            playerSeasonPitchingStat.Fip = csvPitchingStat.Fip;
-            playerSeasonPitchingStat.Whip = csvPitchingStat.Whip;
-            playerSeasonPitchingStat.WinPercentage = csvPitchingStat.WinPercentage;
-            playerSeasonPitchingStat.OpponentObp = csvPitchingStat.OpponentObp;
-            playerSeasonPitchingStat.StrikeoutsPerWalk = csvPitchingStat.StrikeoutsPerWalk;
-            playerSeasonPitchingStat.StrikeoutsPerNine = csvPitchingStat.StrikeoutsPerNine;
-            playerSeasonPitchingStat.WalksPerNine = csvPitchingStat.WalksPerNine;
-            playerSeasonPitchingStat.HitsPerNine = csvPitchingStat.HitsPerNine;
-            playerSeasonPitchingStat.HomeRunsPerNine = csvPitchingStat.HomeRunsPerNine;
-            playerSeasonPitchingStat.PitchesPerInning = csvPitchingStat.PitchesPerInning;
-            playerSeasonPitchingStat.PitchesPerGame = csvPitchingStat.PitchesPerGame;
-            playerSeasonPitchingStat.EraMinus = csvPitchingStat.EraMinus;
-            playerSeasonPitchingStat.FipMinus = csvPitchingStat.FipMinus;
+            playerSeasonPitchingStat.Fip = GetNormalizedDouble(csvPitchingStat.Fip);
+            playerSeasonPitchingStat.Whip = GetNormalizedDouble(csvPitchingStat.Whip);
+            playerSeasonPitchingStat.WinPercentage = GetNormalizedDouble(csvPitchingStat.WinPercentage);
+            playerSeasonPitchingStat.OpponentObp = GetNormalizedDouble(csvPitchingStat.OpponentObp);
+            playerSeasonPitchingStat.StrikeoutsPerWalk = GetNormalizedDouble(csvPitchingStat.StrikeoutsPerWalk);
+            playerSeasonPitchingStat.StrikeoutsPerNine = GetNormalizedDouble(csvPitchingStat.StrikeoutsPerNine);
+            playerSeasonPitchingStat.HitsPerNine = GetNormalizedDouble(csvPitchingStat.HitsPerNine);
+            playerSeasonPitchingStat.HomeRunsPerNine = GetNormalizedDouble(csvPitchingStat.HomeRunsPerNine);
+            playerSeasonPitchingStat.PitchesPerInning = GetNormalizedDouble(csvPitchingStat.PitchesPerInning);
+            playerSeasonPitchingStat.PitchesPerGame = GetNormalizedDouble(csvPitchingStat.PitchesPerGame);
+            playerSeasonPitchingStat.EraMinus = GetNormalizedDouble(csvPitchingStat.EraMinus);
+            playerSeasonPitchingStat.FipMinus = GetNormalizedDouble(csvPitchingStat.FipMinus);
 
             if (playerSeasonPitchingStat.Id == default)
                 playerSeason.PitchingStats.Add(playerSeasonPitchingStat);
@@ -495,9 +508,8 @@ public class CsvMappingRepository
         bool isRegularSeason = true,
         CancellationToken cancellationToken = default)
     {
-        // Perform the same steps that we have with the pitching stats in the above method, but with the batting equivalents
         var currentSeason = await _dbContext.Seasons
-                                .SingleOrDefaultAsync(x => x.Id == battingStats.First().SeasonId, cancellationToken: cancellationToken)
+                                .SingleOrDefaultAsync(x => x.Id == battingStats.First().SeasonId, cancellationToken)
                             ?? throw new Exception("No season found with the given season ID");
 
         var seasonTeamHistories = await _dbContext.SeasonTeamHistory
@@ -511,7 +523,7 @@ public class CsvMappingRepository
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
-                                          .SingleOrDefaultAsync(x => x.GameId == csvBattingStat.PlayerId, cancellationToken: cancellationToken)
+                                          .SingleOrDefaultAsync(x => x.GameId == csvBattingStat.PlayerId, cancellationToken)
                                       ?? throw new Exception($"No player found with the given player ID {csvBattingStat.PlayerId}");
 
             var playerSeason = playerGameIdHistory.Player.PlayerSeasons.SingleOrDefault(x => x.SeasonId == currentSeason.Id)
@@ -525,32 +537,29 @@ public class CsvMappingRepository
                 var playerTeamHistories = new List<PlayerTeamHistory>();
 
                 if (isCurrentFreeAgent)
-                {
                     playerTeamHistories.Add(new PlayerTeamHistory
                     {
                         Order = 1,
                         SeasonTeamHistoryId = null
                     });
-                }
 
-                // The most recent team should never be null, based on the constraints of how we export
-                // the batting CSV data in the other app
-                var mostRecentTeam = csvBattingStat.PreviousTeamId
-                                     ?? throw new Exception($"No previous team ID found for player ID {csvBattingStat.PlayerId} " +
-                                                            $"and season ID {csvBattingStat.SeasonId}");
-
-                // Get the SeasonTeamHistory record for the most recent team
-                var mostRecentSeasonTeamHistory = seasonTeamHistories
-                                                      .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                          .Any(y => y.GameId == mostRecentTeam))
-                                                  ?? throw new Exception($"No SeasonTeamHistory record found for team ID {mostRecentTeam} " +
-                                                                         $"and season ID {csvBattingStat.SeasonId}");
-
-                playerTeamHistories.Add(new PlayerTeamHistory
+                var mostRecentTeam = csvBattingStat.PreviousTeamId;
+                // This means the player was a free agent for the entire season
+                if (mostRecentTeam is not null)
                 {
-                    Order = isCurrentFreeAgent ? 2 : 1,
-                    SeasonTeamHistoryId = mostRecentSeasonTeamHistory.Id
-                });
+                    // Get the SeasonTeamHistory record for the most recent team
+                    var mostRecentSeasonTeamHistory = seasonTeamHistories
+                                                          .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                              .Any(y => y.GameId == mostRecentTeam))
+                                                      ?? throw new Exception($"No SeasonTeamHistory record found for team ID {mostRecentTeam} " +
+                                                                             $"and season ID {csvBattingStat.SeasonId}");
+
+                    playerTeamHistories.Add(new PlayerTeamHistory
+                    {
+                        Order = isCurrentFreeAgent ? 2 : 1,
+                        SeasonTeamHistoryId = mostRecentSeasonTeamHistory.Id
+                    });
+                }
 
                 var secondMostRecentTeam = csvBattingStat.SecondPreviousTeamId;
                 if (secondMostRecentTeam is not null)
@@ -650,23 +659,23 @@ public class CsvMappingRepository
             playerSeasonBattingStat.Walks = csvBattingStat.Walks;
             playerSeasonBattingStat.Strikeouts = csvBattingStat.Strikeouts;
             playerSeasonBattingStat.HitByPitch = csvBattingStat.HitByPitch;
-            playerSeasonBattingStat.Obp = csvBattingStat.Obp;
-            playerSeasonBattingStat.Slg = csvBattingStat.Slg;
-            playerSeasonBattingStat.Ops = csvBattingStat.Ops;
-            playerSeasonBattingStat.Woba = csvBattingStat.Woba;
-            playerSeasonBattingStat.Iso = csvBattingStat.Iso;
-            playerSeasonBattingStat.Babip = csvBattingStat.Babip;
+            playerSeasonBattingStat.Obp = GetNormalizedDouble(csvBattingStat.Obp);
+            playerSeasonBattingStat.Slg = GetNormalizedDouble(csvBattingStat.Slg);
+            playerSeasonBattingStat.Ops = GetNormalizedDouble(csvBattingStat.Ops);
+            playerSeasonBattingStat.Woba = GetNormalizedDouble(csvBattingStat.Woba);
+            playerSeasonBattingStat.Iso = GetNormalizedDouble(csvBattingStat.Iso);
+            playerSeasonBattingStat.Babip = GetNormalizedDouble(csvBattingStat.Babip);
             playerSeasonBattingStat.SacrificeHits = csvBattingStat.SacrificeHits;
             playerSeasonBattingStat.SacrificeFlies = csvBattingStat.SacrificeFlies;
-            playerSeasonBattingStat.BattingAverage = csvBattingStat.BattingAverage;
+            playerSeasonBattingStat.BattingAverage = GetNormalizedDouble(csvBattingStat.BattingAverage);
             playerSeasonBattingStat.Errors = csvBattingStat.Errors;
             playerSeasonBattingStat.PassedBalls = csvBattingStat.PassedBalls;
-            playerSeasonBattingStat.PaPerGame = csvBattingStat.PaPerGame;
-            playerSeasonBattingStat.AbPerHomeRun = csvBattingStat.AbPerHomeRun;
-            playerSeasonBattingStat.StrikeoutPercentage = csvBattingStat.StrikeoutPercentage;
-            playerSeasonBattingStat.WalkPercentage = csvBattingStat.WalkPercentage;
-            playerSeasonBattingStat.ExtraBaseHitPercentage = csvBattingStat.ExtraBaseHitPercentage;
-            playerSeasonBattingStat.OpsPlus = csvBattingStat.OpsPlus;
+            playerSeasonBattingStat.PaPerGame = GetNormalizedDouble(csvBattingStat.PaPerGame);
+            playerSeasonBattingStat.AbPerHomeRun = GetNormalizedDouble(csvBattingStat.AbPerHomeRun);
+            playerSeasonBattingStat.StrikeoutPercentage = GetNormalizedDouble(csvBattingStat.StrikeoutPercentage);
+            playerSeasonBattingStat.WalkPercentage = GetNormalizedDouble(csvBattingStat.WalkPercentage);
+            playerSeasonBattingStat.ExtraBaseHitPercentage = GetNormalizedDouble(csvBattingStat.ExtraBaseHitPercentage);
+            playerSeasonBattingStat.OpsPlus = GetNormalizedDouble(csvBattingStat.OpsPlus);
 
             if (playerSeasonBattingStat.Id == default)
                 playerSeason.BattingStats.Add(playerSeasonBattingStat);
@@ -675,11 +684,20 @@ public class CsvMappingRepository
         }
     }
 
+    private static double? GetNormalizedDouble(double? value)
+    {
+        return value is null
+            ? null
+            : double.IsNaN(value.Value) || double.IsInfinity(value.Value)
+                ? null
+                : value;
+    }
+
     public async Task AddSeasonScheduleAsync(List<CsvSeasonSchedule> schedule, CancellationToken cancellationToken)
     {
         var seasonId = schedule.First().SeasonId;
         var season = await _dbContext.Seasons
-                         .SingleOrDefaultAsync(x => x.Id == seasonId, cancellationToken: cancellationToken)
+                         .SingleOrDefaultAsync(x => x.Id == seasonId, cancellationToken)
                      ?? throw new Exception($"No season found with ID {seasonId}");
 
         var seasonTeamHistories = await _dbContext.SeasonTeamHistory
@@ -694,7 +712,7 @@ public class CsvMappingRepository
             .Where(x => x.SeasonId == season.Id)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        var numberOfGamesInSeason = schedule.Count / schedule.Max(x => x.Day);
+        var numberOfGamesInSeason = schedule.Max(x => x.Day);
         season.NumGamesRegularSeason = numberOfGamesInSeason;
 
         // reset the season schedule for all teams in case we are re-importing it
@@ -767,7 +785,7 @@ public class CsvMappingRepository
     {
         var seasonId = schedule.First().SeasonId;
         var season = await _dbContext.Seasons
-                         .SingleOrDefaultAsync(x => x.Id == seasonId, cancellationToken: cancellationToken)
+                         .SingleOrDefaultAsync(x => x.Id == seasonId, cancellationToken)
                      ?? throw new Exception($"No season found with ID {seasonId}");
 
         var seasonTeamHistories = await _dbContext.SeasonTeamHistory

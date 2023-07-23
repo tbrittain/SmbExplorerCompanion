@@ -722,7 +722,7 @@ public class SmbExplorerCompanionDbContext : DbContext
             },
             new()
             {
-                Name = "Off-Speed Hitter",
+                Name = "Off-speed Hitter",
                 Chemistry = disciplinedChemistry,
                 IsPositive = true,
                 IsSmb3 = false
