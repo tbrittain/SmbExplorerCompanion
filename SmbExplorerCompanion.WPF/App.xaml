@@ -10,8 +10,8 @@
                 <views:MainWindow />
             </DataTemplate>
 
-            <DataTemplate DataType="{x:Type viewModels:LandingViewModel}">
-                <views:LandingView />
+            <DataTemplate DataType="{x:Type viewModels:FranchiseSelectViewModel}">
+                <views:FranchiseSelectView />
             </DataTemplate>
             
             <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">

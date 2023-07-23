@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SmbExplorerCompanion.WPF.Views.LandingView"
+﻿<UserControl x:Class="SmbExplorerCompanion.WPF.Views.FranchiseSelectView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,7 +8,7 @@
              xmlns:models="clr-namespace:SmbExplorerCompanion.WPF.Models"
              xmlns:system="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance viewModels:LandingViewModel}">
+             d:DataContext="{d:DesignInstance viewModels:FranchiseSelectViewModel}">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

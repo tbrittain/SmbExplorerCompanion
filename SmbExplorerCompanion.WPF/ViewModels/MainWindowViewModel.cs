@@ -33,7 +33,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public Task Initialize()
     {
-        NavigationService.NavigateTo<LandingViewModel>();
+        NavigationService.NavigateTo<FranchiseSelectViewModel>();
         return Task.CompletedTask;
     }
     

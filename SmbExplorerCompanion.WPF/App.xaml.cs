@@ -52,7 +52,7 @@ public partial class App
                 DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
             })
             .AddTransient<MainWindowViewModel>()
-            .AddTransient<LandingViewModel>()
+            .AddTransient<FranchiseSelectViewModel>()
             .AddTransient<HomeViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
