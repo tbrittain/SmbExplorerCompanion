@@ -2,12 +2,15 @@
 using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Csv;
 
 public class ImportPlayoffDataRequest : IRequest<OneOf<Success, Exception>>
 {
-    public ImportPlayoffDataRequest(string playoffStatsPitchingCsvFilePath, string playoffStatsBattingCsvFilePath, string playoffScheduleCsvFilePath)
+    public ImportPlayoffDataRequest(string playoffStatsPitchingCsvFilePath,
+        string playoffStatsBattingCsvFilePath,
+        string playoffScheduleCsvFilePath)
     {
         PlayoffStatsPitchingCsvFilePath = playoffStatsPitchingCsvFilePath;
         PlayoffStatsBattingCsvFilePath = playoffStatsBattingCsvFilePath;
@@ -17,7 +20,7 @@ public class ImportPlayoffDataRequest : IRequest<OneOf<Success, Exception>>
     private string PlayoffStatsPitchingCsvFilePath { get; }
     private string PlayoffStatsBattingCsvFilePath { get; }
     private string PlayoffScheduleCsvFilePath { get; }
-    
+
     // ReSharper disable once UnusedType.Global
     public class ImportPlayoffDataHandler : IRequestHandler<ImportPlayoffDataRequest, OneOf<Success, Exception>>
     {
@@ -30,27 +33,13 @@ public class ImportPlayoffDataRequest : IRequest<OneOf<Success, Exception>>
 
         public async Task<OneOf<Success, Exception>> Handle(ImportPlayoffDataRequest request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _csvImportRepository.ImportPlayoffStatsPitching(request.PlayoffStatsPitchingCsvFilePath, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                return e;
-            }
+            var filePaths = new ImportPlayoffFilePaths(request.PlayoffStatsPitchingCsvFilePath,
+                request.PlayoffStatsBattingCsvFilePath,
+                request.PlayoffScheduleCsvFilePath);
 
             try
             {
-                await _csvImportRepository.ImportPlayoffStatsBatting(request.PlayoffStatsBattingCsvFilePath, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                return e;
-            }
-
-            try
-            {
-                await _csvImportRepository.ImportPlayoffSchedule(request.PlayoffScheduleCsvFilePath, cancellationToken);
+                await _csvImportRepository.ImportPlayoffs(filePaths, cancellationToken);
             }
             catch (Exception e)
             {

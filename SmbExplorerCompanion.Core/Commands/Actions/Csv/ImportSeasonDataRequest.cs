@@ -2,18 +2,21 @@
 using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Csv;
 
 public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
 {
     public ImportSeasonDataRequest(
+        int franchiseId,
         string teamsCsvFilePath,
         string overallPlayersCsvFilePath,
         string seasonStatsPitchingCsvFilePath,
         string seasonStatsBattingCsvFilePath,
         string seasonScheduleCsvFilePath)
     {
+        FranchiseId = franchiseId;
         TeamsCsvFilePath = teamsCsvFilePath;
         OverallPlayersCsvFilePath = overallPlayersCsvFilePath;
         SeasonStatsPitchingCsvFilePath = seasonStatsPitchingCsvFilePath;
@@ -21,6 +24,7 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
         SeasonScheduleCsvFilePath = seasonScheduleCsvFilePath;
     }
 
+    private int FranchiseId { get; }
     private string TeamsCsvFilePath { get; }
     private string OverallPlayersCsvFilePath { get; }
     private string SeasonStatsPitchingCsvFilePath { get; }
@@ -39,51 +43,22 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
 
         public async Task<OneOf<Success, Exception>> Handle(ImportSeasonDataRequest request, CancellationToken cancellationToken)
         {
+            var filePaths = new ImportSeasonFilePaths(
+                request.TeamsCsvFilePath,
+                request.OverallPlayersCsvFilePath,
+                request.SeasonStatsPitchingCsvFilePath,
+                request.SeasonStatsBattingCsvFilePath,
+                request.SeasonScheduleCsvFilePath);
+
             try
             {
-                await _csvImportRepository.ImportTeams(request.TeamsCsvFilePath, cancellationToken);
+                await _csvImportRepository.ImportSeason(filePaths, request.FranchiseId, cancellationToken);
             }
             catch (Exception e)
             {
                 return e;
             }
 
-            try
-            {
-                await _csvImportRepository.ImportOverallPlayers(request.OverallPlayersCsvFilePath, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                return e;
-            }
-            
-            try
-            {
-                await _csvImportRepository.ImportSeasonStatsPitching(request.SeasonStatsPitchingCsvFilePath, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                return e;
-            }
-            
-            try
-            {
-                await _csvImportRepository.ImportSeasonStatsBatting(request.SeasonStatsBattingCsvFilePath, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                return e;
-            }
-            
-            try
-            {
-                await _csvImportRepository.ImportSeasonSchedule(request.SeasonScheduleCsvFilePath, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                return e;
-            }
-            
             return new Success();
         }
     }
