@@ -6,7 +6,43 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:ImportCsvViewModel}">
-    <Grid>
-        <Label>This is the import CSV view</Label>
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <GroupBox Header="Regular season">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    Orientation="Vertical">
+                    <Button>
+                        <Label Content="Select Teams CSV" />
+                    </Button>
+                    <Label Content="{Binding TeamsCsvPath}"/>
+                </StackPanel>
+                <StackPanel
+                    Grid.Column="1"
+                    Grid.Row="0"
+                    Orientation="Vertical">
+                    <Button>
+                        <Label Content="Select Overall Players CSV" />
+                    </Button>
+                    <Label Content="{Binding OverallPlayersCsvPath}"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Playoffs">
+            <Grid>
+                
+            </Grid>
+        </GroupBox>
+    </StackPanel>
 </UserControl>

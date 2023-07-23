@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -66,5 +65,12 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         NavigationService.NavigateTo<ImportCsvViewModel>();
         return Task.CompletedTask;
+    }
+
+    override public void Dispose()
+    {
+        _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
+        NavigationService.PropertyChanged -= NavigationServiceOnPropertyChanged;
+        base.Dispose();
     }
 }
