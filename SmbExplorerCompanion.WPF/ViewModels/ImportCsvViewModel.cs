@@ -2,6 +2,7 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using Microsoft.Win32;
 using SmbExplorerCompanion.Core.Commands.Actions.Csv;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -153,5 +154,88 @@ public partial class ImportCsvViewModel : ViewModelBase
         {
             MessageBox.Show("Successfully imported playoff data!");
         }
+    }
+
+    [RelayCommand]
+    private void SelectSeasonTeamsCsv()
+    {
+        var filePath = GetUserProvidedCsv("Teams");
+        if (filePath is null) return;
+        
+        TeamsCsvPath = filePath;
+    }
+
+    [RelayCommand]
+    private void SelectSeasonOverallPlayersCsv()
+    {
+        var filePath = GetUserProvidedCsv("Overall Players");
+        if (filePath is null) return;
+        
+        OverallPlayersCsvPath = filePath;
+    }
+    
+    [RelayCommand]
+    private void SelectSeasonBattingCsv()
+    {
+        var filePath = GetUserProvidedCsv("Batting");
+        if (filePath is null) return;
+        
+        SeasonBattingCsvPath = filePath;
+    }
+    
+    [RelayCommand]
+    private void SelectSeasonPitchingCsv()
+    {
+        var filePath = GetUserProvidedCsv("Pitching");
+        if (filePath is null) return;
+        
+        SeasonPitchingCsvPath = filePath;
+    }
+    
+    [RelayCommand]
+    private void SelectSeasonScheduleCsv()
+    {
+        var filePath = GetUserProvidedCsv("Schedule");
+        if (filePath is null) return;
+        
+        SeasonScheduleCsvPath = filePath;
+    }
+    
+    [RelayCommand]
+    private void SelectPlayoffPitchingCsv()
+    {
+        var filePath = GetUserProvidedCsv("Playoff Pitching");
+        if (filePath is null) return;
+        
+        PlayoffPitchingCsvPath = filePath;
+    }
+    
+    [RelayCommand]
+    private void SelectPlayoffBattingCsv()
+    {
+        var filePath = GetUserProvidedCsv("Playoff Batting");
+        if (filePath is null) return;
+        
+        PlayoffBattingCsvPath = filePath;
+    }
+
+    [RelayCommand]
+    private void SelectPlayoffScheduleCsv()
+    {
+        var filePath = GetUserProvidedCsv("Playoff Schedule");
+        if (filePath is null) return;
+        
+        PlayoffScheduleCsvPath = filePath;
+    }
+
+    private static string? GetUserProvidedCsv(string csvTitle)
+    {
+        var openFileDialog = new OpenFileDialog
+        {
+            Filter = "CSV Files (*.csv)|*.csv",
+            Title = $"Select {csvTitle} CSV File"
+        };
+
+        return openFileDialog.ShowDialog() == true ? openFileDialog.FileName : null;
     }
 }

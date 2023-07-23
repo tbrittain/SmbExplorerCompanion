@@ -25,7 +25,8 @@
                     Grid.Column="0"
                     Grid.Row="0"
                     Orientation="Vertical">
-                    <Button>
+                    <Button
+                        Command="{Binding SelectSeasonTeamsCsvCommand}">
                         <Label Content="Select Teams CSV" />
                     </Button>
                     <Label Content="{Binding TeamsCsvPath}" />
@@ -35,7 +36,7 @@
                     Grid.Column="1"
                     Grid.Row="0"
                     Orientation="Vertical">
-                    <Button>
+                    <Button Command="{Binding SelectSeasonOverallPlayersCsvCommand}">
                         <Label Content="Select Overall Players CSV" />
                     </Button>
                     <Label Content="{Binding OverallPlayersCsvPath}" />
@@ -45,7 +46,7 @@
                     Grid.Column="2"
                     Grid.Row="0"
                     Orientation="Vertical">
-                    <Button>
+                    <Button Command="{Binding SelectSeasonPitchingCsvCommand}">
                         <Label Content="Select Season Pitching CSV" />
                     </Button>
                     <Label Content="{Binding SeasonPitchingCsvPath}" />
@@ -54,7 +55,7 @@
                 <StackPanel
                     Grid.Column="0"
                     Grid.Row="1">
-                    <Button>
+                    <Button Command="{Binding SelectSeasonPitchingCsvCommand}">
                         <Label Content="Select Season Batting CSV" />
                     </Button>
                     <Label Content="{Binding SeasonBattingCsvPath}" />
@@ -63,7 +64,7 @@
                 <StackPanel
                     Grid.Column="1"
                     Grid.Row="1">
-                    <Button>
+                    <Button Command="{Binding SelectSeasonScheduleCsvCommand}">
                         <Label Content="Select Season Schedule CSV" />
                     </Button>
                     <Label Content="{Binding SeasonScheduleCsvPath}" />
@@ -96,7 +97,7 @@
                 <StackPanel
                     Grid.Row="0"
                     Grid.Column="0">
-                    <Button>
+                    <Button Command="{Binding SelectPlayoffPitchingCsvCommand}">
                         <Label Content="Select Playoffs Pitching CSV"></Label>
                     </Button>
                     <Label Content="{Binding PlayoffPitchingCsvPath}" />
@@ -105,7 +106,7 @@
                 <StackPanel
                     Grid.Row="0"
                     Grid.Column="1">
-                    <Button>
+                    <Button Command="{Binding SelectPlayoffBattingCsvCommand}">
                         <Label Content="Select Playoffs Batting CSV"></Label>
                     </Button>
                     <Label Content="{Binding PlayoffBattingCsvPath}" />
@@ -114,7 +115,7 @@
                 <StackPanel
                     Grid.Row="0"
                     Grid.Column="2">
-                    <Button>
+                    <Button Command="{Binding SelectPlayoffScheduleCsvCommand}">
                         <Label Content="Select Playoffs Schedule CSV"></Label>
                     </Button>
                     <Label Content="{Binding PlayoffScheduleCsvPath}" />
