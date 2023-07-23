@@ -344,6 +344,7 @@ public class CsvMappingRepository
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
+                                          .ThenInclude(x => x.PitchingStats)
                                           .SingleOrDefaultAsync(x => x.GameId == csvPitchingStat.PlayerId, cancellationToken)
                                       ?? throw new Exception($"No player found with the given player ID {csvPitchingStat.PlayerId}");
 
@@ -523,6 +524,7 @@ public class CsvMappingRepository
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
+                                          .ThenInclude(x => x.BattingStats)
                                           .SingleOrDefaultAsync(x => x.GameId == csvBattingStat.PlayerId, cancellationToken)
                                       ?? throw new Exception($"No player found with the given player ID {csvBattingStat.PlayerId}");
 
@@ -808,28 +810,33 @@ public class CsvMappingRepository
             {
                 _dbContext.TeamPlayoffSchedules.Remove(teamPlayoffSchedule);
             }
+            
+            var potentialTeamIds = seasonTeamHistory.Team.TeamGameIdHistory
+                .Select(x => x.GameId)
+                .ToList();
 
-            var madePlayoffs = schedule.Any(x => seasonTeamHistories.Any(y => y.Team.TeamGameIdHistory
-                .Any(z => z.GameId == x.HomeTeamId || z.GameId == x.AwayTeamId)));
+            var madePlayoffs = schedule
+                .Any(x => potentialTeamIds.Contains(x.HomeTeamId) || potentialTeamIds.Contains(x.AwayTeamId));
             if (madePlayoffs)
             {
+                var teamGameId = schedule
+                    .Where(x => potentialTeamIds.Contains(x.HomeTeamId))
+                    .Select(x => x.HomeTeamId)
+                    .First();
+
                 // Try to get the team's seed from the Team1
                 var teamSeed = schedule
-                    .Where(x => seasonTeamHistories
-                        .Any(y => y.Team.TeamGameIdHistory
-                            .Any(z => z.GameId == x.Team1Id)))
+                    .Where(x => x.Team1Id == teamGameId)
                     .Select(x => x.Team1Seed)
-                    .SingleOrDefault();
+                    .FirstOrDefault();
 
                 // Fall back to Team2
                 if (teamSeed == default)
                 {
                     teamSeed = schedule
-                        .Where(x => seasonTeamHistories
-                            .Any(y => y.Team.TeamGameIdHistory
-                                .Any(z => z.GameId == x.Team2Id)))
+                        .Where(x => x.Team2Id == teamGameId)
                         .Select(x => x.Team2Seed)
-                        .SingleOrDefault();
+                        .FirstOrDefault();
 
                     if (teamSeed == default)
                         throw new Exception($"No team seed found for team ID {seasonTeamHistory.Team.Id} and season ID {season.Id}");
@@ -838,15 +845,11 @@ public class CsvMappingRepository
                 seasonTeamHistory.PlayoffSeed = teamSeed;
 
                 var homeGames = schedule
-                    .Where(x => seasonTeamHistories
-                        .Any(y => y.Team.TeamGameIdHistory
-                            .Any(z => z.GameId == x.HomeTeamId)))
+                    .Where(x => x.HomeTeamId == teamGameId)
                     .ToList();
 
                 var awayGames = schedule
-                    .Where(x => seasonTeamHistories
-                        .Any(y => y.Team.TeamGameIdHistory
-                            .Any(z => z.GameId == x.AwayTeamId)))
+                    .Where(x => x.AwayTeamId == teamGameId)
                     .ToList();
 
                 seasonTeamHistory.PlayoffWins = homeGames.Count(x => x.HomeScore > x.AwayScore) +
