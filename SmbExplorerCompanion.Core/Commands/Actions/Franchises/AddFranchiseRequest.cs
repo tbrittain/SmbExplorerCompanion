@@ -12,7 +12,7 @@ public class AddFranchiseRequest : IRequest<OneOf<FranchiseDto, Exception>>
         Name = name;
     }
 
-    private string Name { get; set; }
+    private string Name { get; }
     
     // ReSharper disable once UnusedType.Global
     public class AddFranchiseHandler : IRequestHandler<AddFranchiseRequest, OneOf<FranchiseDto, Exception>>

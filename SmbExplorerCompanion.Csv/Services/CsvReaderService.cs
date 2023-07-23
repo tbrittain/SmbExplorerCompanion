@@ -60,6 +60,7 @@ public class CsvReaderService
         return schedule;
     }
     
+    // This applies to both the Season and Playoff versions of the stat
     public async Task<List<SeasonStatBatting>> ReadSeasonStatBattingAsync(string filePath)
     {
         var stats = new List<SeasonStatBatting>();
@@ -78,6 +79,7 @@ public class CsvReaderService
         return stats;
     }
     
+    // This applies to both the Season and Playoff versions of the stat
     public async Task<List<SeasonStatPitching>> ReadSeasonStatPitchingAsync(string filePath)
     {
         var stats = new List<SeasonStatPitching>();
