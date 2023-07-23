@@ -103,6 +103,12 @@ public class SmbExplorerCompanionDbContext : DbContext
             .HasOne(x => x.PrimaryPosition)
             .WithMany(x => x.PrimaryPositionPlayers)
             .HasForeignKey(x => x.PrimaryPositionId);
+        
+        modelBuilder.Entity<Season>()
+            .HasOne(s => s.ChampionshipWinner)
+            .WithOne(cw => cw.Season)
+            .HasForeignKey<ChampionshipWinner>(cw => cw.SeasonId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         base.OnModelCreating(modelBuilder);
     }
