@@ -33,7 +33,8 @@ public class ImportPlayoffDataRequest : IRequest<OneOf<Success, Exception>>
 
         public async Task<OneOf<Success, Exception>> Handle(ImportPlayoffDataRequest request, CancellationToken cancellationToken)
         {
-            var filePaths = new ImportPlayoffFilePaths(request.PlayoffStatsPitchingCsvFilePath,
+            var filePaths = new ImportPlayoffFilePaths(
+                request.PlayoffStatsPitchingCsvFilePath,
                 request.PlayoffStatsBattingCsvFilePath,
                 request.PlayoffScheduleCsvFilePath);
 
