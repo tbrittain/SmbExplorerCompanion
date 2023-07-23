@@ -52,6 +52,18 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LookupSeeds",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SeededAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LookupSeeds", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PitcherRoles",
                 columns: table => new
                 {
@@ -970,6 +982,9 @@ namespace SmbExplorerCompanion.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "LookupSeeds");
+
             migrationBuilder.DropTable(
                 name: "PitchTypePlayerSeason");
 

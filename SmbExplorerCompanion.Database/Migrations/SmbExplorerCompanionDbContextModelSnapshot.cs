@@ -176,6 +176,19 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.ToTable("Chemistry");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Lookups.LookupSeed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SeededAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LookupSeeds");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Lookups.PitchType", b =>
                 {
                     b.Property<int>("Id")

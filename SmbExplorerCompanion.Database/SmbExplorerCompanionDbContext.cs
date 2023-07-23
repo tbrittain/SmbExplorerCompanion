@@ -44,6 +44,7 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<TeamGameIdHistory> TeamGameIdHistory { get; set; } = default!;
     public virtual DbSet<TeamLogoHistory> TeamLogoHistory { get; set; } = default!;
     public virtual DbSet<TeamNameHistory> TeamNameHistory { get; set; } = default!;
+    public virtual DbSet<LookupSeed> LookupSeeds { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -117,6 +118,10 @@ public class SmbExplorerCompanionDbContext : DbContext
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<SmbExplorerCompanionDbContext>();
+
+        var seedId = Guid.Parse("8833f86a-cf8d-4674-b621-bca065272ba2");
+        if (dbContext.LookupSeeds.Any(x => x.Id == seedId)) return;
+
         using var transaction = dbContext.Database.BeginTransaction();
 
         dbContext.BatHandedness.AddRange(
@@ -1040,6 +1045,7 @@ public class SmbExplorerCompanionDbContext : DbContext
         };
 
         dbContext.Traits.AddRange(smb3Traits);
+        dbContext.LookupSeeds.Add(new LookupSeed {Id = seedId});
 
         dbContext.SaveChanges();
         transaction.CommitAsync();

@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230723003520_Initial")]
+    [Migration("20230723195826_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -177,6 +177,19 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Chemistry");
+                });
+
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Lookups.LookupSeed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SeededAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LookupSeeds");
                 });
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Lookups.PitchType", b =>
