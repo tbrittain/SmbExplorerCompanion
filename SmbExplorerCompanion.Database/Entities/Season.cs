@@ -9,7 +9,7 @@ public class Season
     /// </summary>
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
-    public int Number { get; set; } = default!;
+    public int Number { get; set; }
 
     // In theory, this could change if the franchise is migrated to a new league,
     // and the user modifies the number of games per season. We will need to compute this value
@@ -18,4 +18,6 @@ public class Season
 
     public virtual ICollection<PlayerSeason> PlayerSeasons { get; set; } = new HashSet<PlayerSeason>();
     public virtual ICollection<SeasonTeamHistory> SeasonTeamHistory { get; set; } = new HashSet<SeasonTeamHistory>();
+    public int? ChampionshipWinnerId { get; set; }
+    public virtual ChampionshipWinner? ChampionshipWinner { get; set; }
 }

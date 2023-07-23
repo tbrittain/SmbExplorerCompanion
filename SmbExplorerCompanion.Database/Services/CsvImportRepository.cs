@@ -689,7 +689,10 @@ public class CsvImportRepository
             .Where(x => x.SeasonId == season.Id)
             .ToListAsync();
 
-        // reset the season schedule for all teams since we are re-importing it
+        var numberOfGamesInSeason = schedule.Count / schedule.Max(x => x.Day);
+        season.NumGamesRegularSeason = numberOfGamesInSeason;
+
+        // reset the season schedule for all teams in case we are re-importing it
         foreach (var seasonTeamHistory in seasonTeamHistories)
         {
             foreach (var teamSeasonSchedule in seasonTeamHistory.HomeSeasonSchedule
@@ -703,17 +706,19 @@ public class CsvImportRepository
 
         foreach (var csvGameSchedule in schedule)
         {
-            var homeTeam = seasonTeamHistories
-                               .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                   .Any(y => y.GameId == csvGameSchedule.HomeTeamId))
-                           ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvGameSchedule.HomeTeamId} " +
-                                                  $"and season ID {csvGameSchedule.SeasonId}");
+            var homeTeam =
+                seasonTeamHistories
+                    .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                        .Any(y => y.GameId == csvGameSchedule.HomeTeamId))
+                ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvGameSchedule.HomeTeamId} " +
+                                       $"and season ID {csvGameSchedule.SeasonId}");
 
-            var awayTeam = seasonTeamHistories
-                               .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                   .Any(y => y.GameId == csvGameSchedule.AwayTeamId))
-                           ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvGameSchedule.AwayTeamId} " +
-                                                  $"and season ID {csvGameSchedule.SeasonId}");
+            var awayTeam =
+                seasonTeamHistories
+                    .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                        .Any(y => y.GameId == csvGameSchedule.AwayTeamId))
+                ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvGameSchedule.AwayTeamId} " +
+                                       $"and season ID {csvGameSchedule.SeasonId}");
 
             var newScheduleEntry = new TeamSeasonSchedule
             {
@@ -755,5 +760,181 @@ public class CsvImportRepository
 
     public async Task AddPlayoffScheduleAsync(List<CsvPlayoffSchedule> schedule)
     {
+        var seasonId = schedule.First().SeasonId;
+        var season = await _dbContext.Seasons
+                         .SingleOrDefaultAsync(x => x.Id == seasonId)
+                     ?? throw new Exception($"No season found with ID {seasonId}");
+
+        var seasonTeamHistories = await _dbContext.SeasonTeamHistory
+            .Include(x => x.Team)
+            .ThenInclude(x => x.TeamGameIdHistory)
+            .Where(x => x.SeasonId == season.Id)
+            .ToListAsync();
+
+        var pitchers = await _dbContext.PlayerSeasons
+            .Include(x => x.Player)
+            .ThenInclude(x => x.PlayerGameIdHistory)
+            .Where(x => x.SeasonId == season.Id)
+            .ToListAsync();
+
+        // reset the playoff schedule for all teams in case we are re-importing it
+        foreach (var seasonTeamHistory in seasonTeamHistories)
+        {
+            foreach (var teamPlayoffSchedule in seasonTeamHistory.HomePlayoffSchedule
+                         .Union(seasonTeamHistory.AwayPlayoffSchedule))
+            {
+                _dbContext.TeamPlayoffSchedules.Remove(teamPlayoffSchedule);
+            }
+
+            var madePlayoffs = schedule.Any(x => seasonTeamHistories.Any(y => y.Team.TeamGameIdHistory
+                .Any(z => z.GameId == x.HomeTeamId || z.GameId == x.AwayTeamId)));
+            if (madePlayoffs)
+            {
+                // Try to get the team's seed from the Team1
+                var teamSeed = schedule
+                    .Where(x => seasonTeamHistories
+                        .Any(y => y.Team.TeamGameIdHistory
+                            .Any(z => z.GameId == x.Team1Id)))
+                    .Select(x => x.Team1Seed)
+                    .SingleOrDefault();
+
+                // Fall back to Team2
+                if (teamSeed == default)
+                {
+                    teamSeed = schedule
+                        .Where(x => seasonTeamHistories
+                            .Any(y => y.Team.TeamGameIdHistory
+                                .Any(z => z.GameId == x.Team2Id)))
+                        .Select(x => x.Team2Seed)
+                        .SingleOrDefault();
+
+                    if (teamSeed == default)
+                        throw new Exception($"No team seed found for team ID {seasonTeamHistory.Team.Id} and season ID {season.Id}");
+                }
+
+                seasonTeamHistory.PlayoffSeed = teamSeed;
+
+                var homeGames = schedule
+                    .Where(x => seasonTeamHistories
+                        .Any(y => y.Team.TeamGameIdHistory
+                            .Any(z => z.GameId == x.HomeTeamId)))
+                    .ToList();
+
+                var awayGames = schedule
+                    .Where(x => seasonTeamHistories
+                        .Any(y => y.Team.TeamGameIdHistory
+                            .Any(z => z.GameId == x.AwayTeamId)))
+                    .ToList();
+
+                seasonTeamHistory.PlayoffWins = homeGames.Count(x => x.HomeScore > x.AwayScore) +
+                                                awayGames.Count(x => x.AwayScore > x.HomeScore);
+                seasonTeamHistory.PlayoffLosses = homeGames.Count(x => x.HomeScore < x.AwayScore) +
+                                                  awayGames.Count(x => x.AwayScore < x.HomeScore);
+
+                seasonTeamHistory.PlayoffRunsScored = homeGames.Sum(x => x.HomeScore) +
+                                                      awayGames.Sum(x => x.AwayScore);
+                seasonTeamHistory.PlayoffRunsAllowed = homeGames.Sum(x => x.AwayScore) +
+                                                       awayGames.Sum(x => x.HomeScore);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        foreach (var csvPlayoffSchedule in schedule)
+        {
+            var homeTeam =
+                seasonTeamHistories
+                    .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                        .Any(y => y.GameId == csvPlayoffSchedule.HomeTeamId))
+                ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvPlayoffSchedule.HomeTeamId} " +
+                                       $"and season ID {csvPlayoffSchedule.SeasonId}");
+
+            var awayTeam =
+                seasonTeamHistories
+                    .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                        .Any(y => y.GameId == csvPlayoffSchedule.AwayTeamId))
+                ?? throw new Exception($"No SeasonTeamHistory record found for team ID {csvPlayoffSchedule.AwayTeamId} " +
+                                       $"and season ID {csvPlayoffSchedule.SeasonId}");
+
+            var newScheduleEntry = new TeamPlayoffSchedule
+            {
+                HomeTeamHistory = homeTeam,
+                AwayTeamHistory = awayTeam,
+                SeriesNumber = csvPlayoffSchedule.SeriesNum,
+                GlobalGameNumber = csvPlayoffSchedule.GlobalGameNumber
+            };
+
+            var isGamePlayed = csvPlayoffSchedule.HomeScore is not null && csvPlayoffSchedule.AwayScore is not null;
+            if (isGamePlayed)
+            {
+                newScheduleEntry.HomeScore = csvPlayoffSchedule.HomeScore;
+                newScheduleEntry.AwayScore = csvPlayoffSchedule.AwayScore;
+
+                var homePitcherSeason =
+                    pitchers
+                        .SingleOrDefault(x => x.Player.PlayerGameIdHistory
+                            .Any(y => y.GameId == csvPlayoffSchedule.HomePitcherId))
+                    ?? throw new Exception($"No pitcher found for player ID {csvPlayoffSchedule.HomePitcherId} " +
+                                           $"and season ID {csvPlayoffSchedule.SeasonId}");
+
+                var awayPitcherSeason =
+                    pitchers
+                        .SingleOrDefault(x => x.Player.PlayerGameIdHistory
+                            .Any(y => y.GameId == csvPlayoffSchedule.AwayPitcherId))
+                    ?? throw new Exception($"No pitcher found for player ID {csvPlayoffSchedule.AwayPitcherId} " +
+                                           $"and season ID {csvPlayoffSchedule.SeasonId}");
+
+                newScheduleEntry.HomePitcherSeason = homePitcherSeason;
+                newScheduleEntry.AwayPitcherSeason = awayPitcherSeason;
+            }
+
+            _dbContext.TeamPlayoffSchedules.Add(newScheduleEntry);
+        }
+
+        var isAnyGameNotPlayed = schedule.Any(x => x.HomeScore is null || x.AwayScore is null);
+        if (!isAnyGameNotPlayed)
+        {
+            // The Playoffs should have completed at this point, so we can add the ChampionshipWinner record
+            var maxSeriesNumber = schedule.Max(x => x.SeriesNum);
+
+            var winningTeamIds = schedule.Where(x => x.SeriesNum == maxSeriesNumber)
+                .Select(championshipGames => championshipGames.HomeScore > championshipGames.AwayScore
+                    ? championshipGames.HomeTeamId
+                    : championshipGames.AwayTeamId)
+                .ToList();
+
+            var championshipWinnerTeamId = winningTeamIds
+                .GroupBy(x => x)
+                .OrderByDescending(x => x.Count())
+                .First();
+
+            var championshipWinnerTeam =
+                seasonTeamHistories
+                    .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                        .Any(y => y.GameId == championshipWinnerTeamId.Key))
+                ?? throw new Exception($"No SeasonTeamHistory record found for team ID {championshipWinnerTeamId.Key} " +
+                                       $"and season ID {season.Id}");
+
+            var championshipWinner = new ChampionshipWinner
+            {
+                Season = season,
+                SeasonTeamHistory = championshipWinnerTeam
+            };
+
+            var playerSeasons = await _dbContext.PlayerSeasons
+                .Where(x => x.PlayerTeamHistory
+                    .Any(y => y.SeasonTeamHistory != null &&
+                              y.SeasonTeamHistory.Team.Id == championshipWinnerTeam.Id &&
+                              y.Order == 1))
+                .Include(x => x.Season)
+                .Where(x => x.Season.Id == season.Id)
+                .ToListAsync();
+
+            championshipWinner.PlayerSeasons = playerSeasons;
+
+            _dbContext.ChampionshipWinners.Add(championshipWinner);
+        }
+
+        await _dbContext.SaveChangesAsync();
     }
 }
