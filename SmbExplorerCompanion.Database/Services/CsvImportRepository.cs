@@ -1,4 +1,5 @@
-﻿using SmbExplorerCompanion.Core.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects;
 using SmbExplorerCompanion.Core.ValueObjects.Exceptions;
 using SmbExplorerCompanion.Csv.Services;
@@ -50,6 +51,13 @@ public class CsvImportRepository : ICsvImportRepository
     public async Task ImportPlayoffs(ImportPlayoffFilePaths filePaths, CancellationToken cancellationToken)
     {
         foreach (var filePath in filePaths) ValidateFile(filePath);
+
+        var seasonId = await _csvReaderService.GetSeasonIdFromPlayoffPitching(filePaths.PlayoffStatsPitching);
+        var season = await _dbContext.Seasons
+            .SingleOrDefaultAsync(x => x.Id == seasonId, cancellationToken: cancellationToken);
+
+        if (season is null)
+            throw new Exception("Season not found. Please import the regular season data first.");
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 

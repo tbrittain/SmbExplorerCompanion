@@ -115,4 +115,17 @@ public class CsvReaderService
         
         return teams;
     }
+
+    public Task<int> GetSeasonIdFromPlayoffPitching(string filePath)
+    {
+        using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        
+        csv.Context.RegisterClassMap<SeasonStatPitching.SeasonStatPitchingCsvMapping>();
+
+        var record = csv.GetRecord<SeasonStatPitching>();
+        if (record != null) return Task.FromResult(record.SeasonId);
+
+        throw new Exception("Could not find season ID in playoff pitching CSV");
+    }
 }
