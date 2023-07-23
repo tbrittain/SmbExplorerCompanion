@@ -11,22 +11,39 @@
         TextElement.FontSize="14"
         FontFamily="{materialDesign:MaterialDesignFont}"
         mc:Ignorable="d"
-        Title="SMB Explorer Companion" 
-        Height="1280" 
+        Title="SMB Explorer Companion"
+        Height="1280"
         Width="720"
         ResizeMode="CanResize"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="200"/>
+            <ColumnDefinition MinWidth="200" />
             <ColumnDefinition Width="5*" />
         </Grid.ColumnDefinitions>
-        
+
         <StackPanel
             IsEnabled="{Binding SidebarEnabled}"
             Grid.Column="0"
             Orientation="Vertical"
             Background="WhiteSmoke">
+
+            <Button Command="{Binding NavigateToHomeCommand}">
+                <TextBlock
+                    Text="Home"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
+
+            <Button Command="{Binding NavigateToImportCsvCommand}">
+                <TextBlock
+                    Text="Import season data"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
+
         </StackPanel>
         <ContentControl
             Grid.Column="1"

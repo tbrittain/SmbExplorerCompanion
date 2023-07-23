@@ -6,7 +6,7 @@ using SmbExplorerCompanion.WPF.ViewModels;
 
 namespace SmbExplorerCompanion.WPF.Services;
 
-public sealed class NavigationService : INavigationService, INotifyPropertyChanged
+public sealed class NavigationService : INavigationService
 {
     private readonly Func<Type, ViewModelBase> _viewModelFactory;
 
