@@ -408,7 +408,6 @@ public class CsvMappingRepository
                 var playerTeamHistories = await _dbContext.PlayerSeasons
                     .Include(x => x.PlayerTeamHistory)
                     .ThenInclude(x => x.SeasonTeamHistory)
-                    // TODO: Check if this works due to team potentially being null
                     .ThenInclude(x => x!.Team)
                     .ThenInclude(x => x.TeamGameIdHistory)
                     .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == currentSeason.Id)
@@ -587,7 +586,6 @@ public class CsvMappingRepository
                 var playerTeamHistories = await _dbContext.PlayerSeasons
                     .Include(x => x.PlayerTeamHistory)
                     .ThenInclude(x => x.SeasonTeamHistory)
-                    // TODO: Check if this works due to team potentially being null
                     .ThenInclude(x => x!.Team)
                     .ThenInclude(x => x.TeamGameIdHistory)
                     .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == currentSeason.Id)
@@ -948,15 +946,17 @@ public class CsvMappingRepository
             };
 
             var playerSeasons = await _dbContext.PlayerSeasons
+                .Include(x => x.PlayerTeamHistory)
+                .ThenInclude(y => y.SeasonTeamHistory)
                 .Where(x => x.PlayerTeamHistory
                     .Any(y => y.SeasonTeamHistory != null &&
-                              y.SeasonTeamHistory.Team.Id == championshipWinnerTeam.Id &&
+                              y.SeasonTeamHistory.Id == championshipWinnerTeam.Id &&
                               y.Order == 1))
-                .Include(x => x.Season)
-                .Where(x => x.Season.Id == season.Id)
+                .Where(x => x.SeasonId == season.Id)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             championshipWinner.PlayerSeasons = playerSeasons;
+            season.ChampionshipWinner = championshipWinner;
 
             _dbContext.ChampionshipWinners.Add(championshipWinner);
         }
