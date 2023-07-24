@@ -1,4 +1,4 @@
-﻿namespace SmbExplorerCompanion.Core.Entities;
+﻿namespace SmbExplorerCompanion.Core.Entities.Franchises;
 
 public class FranchiseDto
 {

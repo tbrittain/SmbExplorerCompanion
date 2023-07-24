@@ -2,6 +2,7 @@
 using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities;
+using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Mappings;
 

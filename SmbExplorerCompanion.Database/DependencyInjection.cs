@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SmbExplorerCompanion.Core.Entities;
+using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Csv.Services;
 using SmbExplorerCompanion.Database.Services;

@@ -1,5 +1,6 @@
 ﻿using Riok.Mapperly.Abstractions;
 using SmbExplorerCompanion.Core.Entities;
+using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.WPF.Models;
 
 namespace SmbExplorerCompanion.WPF.Mappings;
