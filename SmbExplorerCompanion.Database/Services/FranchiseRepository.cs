@@ -41,7 +41,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         try
         {
             var franchise =
-                await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == Id, cancellationToken: cancellationToken);
+                await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == Id, cancellationToken);
             if (franchise is null) return new None();
 
             var mapper = new FranchiseMapping();
@@ -73,7 +73,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         }
     }
 
-    public async Task<OneOf<IEnumerable<FranchiseDto>, Exception>> AddRangeAsync(IEnumerable<FranchiseDto> entities,
+    public Task<OneOf<IEnumerable<FranchiseDto>, Exception>> AddRangeAsync(IEnumerable<FranchiseDto> entities,
         CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
@@ -85,7 +85,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         if (entity.Id == default) return new None();
         var existingFranchise =
             await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == entity.Id,
-                cancellationToken: cancellationToken);
+                cancellationToken);
         if (existingFranchise is null) return new None();
 
         var mapper = new FranchiseMapping();
@@ -99,7 +99,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         return franchiseDto;
     }
 
-    public async Task<OneOf<FranchiseDto, None, Exception>> DeleteAsync(int Id,
+    public Task<OneOf<FranchiseDto, None, Exception>> DeleteAsync(int Id,
         CancellationToken cancellationToken = default)
     {
         // TODO: This is a tricky one since we will need to delete all the related entities as well

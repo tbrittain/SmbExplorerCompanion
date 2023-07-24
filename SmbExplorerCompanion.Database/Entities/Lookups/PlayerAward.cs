@@ -8,8 +8,9 @@ public class PlayerAward
     public bool IsBuiltIn { get; set; }
 
     /// <summary>
-    /// The importance of the award. 0 is the most important, and the higher the number, the less important the award.
-    /// General guidelines: 0 = MVP, 1 = Cy Young, Silver Slugger, 2 = Gold Glove, Playoff MVP, Championship MVP, 3 = All-Star
+    ///     The importance of the award. 0 is the most important, and the higher the number, the less important the award.
+    ///     General guidelines: 0 = MVP, 1 = Cy Young, Silver Slugger, 2 = Gold Glove, Playoff MVP, Championship MVP, 3 =
+    ///     All-Star
     /// </summary>
     public int Importance { get; set; }
 

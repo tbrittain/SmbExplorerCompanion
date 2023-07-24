@@ -12,13 +12,12 @@ public class PlayerSeason
     public int Age { get; set; }
     public int Salary { get; set; }
 
-    public virtual ICollection<PitcherPitchTypeHistory> PitcherPitchTypeHistory { get; set; } =
-        new HashSet<PitcherPitchTypeHistory>();
+    public virtual ICollection<PitchType> PitchTypes { get; set; } = new HashSet<PitchType>();
 
-    public int SecondaryPositionId { get; set; }
-    public virtual Position SecondaryPosition { get; set; } = default!;
+    public int? SecondaryPositionId { get; set; }
+    public virtual Position? SecondaryPosition { get; set; } = default!;
 
-    public virtual ICollection<PlayerTeamHistory> TeamHistory { get; set; } =
+    public virtual ICollection<PlayerTeamHistory> PlayerTeamHistory { get; set; } =
         new HashSet<PlayerTeamHistory>();
 
     // This is one-to-one because a player's game stats are not modified during the postseason

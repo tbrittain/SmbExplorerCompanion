@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Windows;
+using CommunityToolkit.Mvvm.Input;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IApplicationContext _applicationContext;
 
@@ -15,6 +15,20 @@ public class MainWindowViewModel : ViewModelBase
         _applicationContext = applicationContext;
 
         _applicationContext.PropertyChanged += ApplicationContextOnPropertyChanged;
+        NavigationService.PropertyChanged += NavigationServiceOnPropertyChanged;
+    }
+
+    private void NavigationServiceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // TODO: Was going to use this to conditionally change the background color of the selected sidebar item
+        // switch (e.PropertyName)
+        // {
+        //     case nameof(INavigationService.CurrentView):
+        //     {
+        //         OnPropertyChanged(nameof(SidebarVisibility));
+        //         break;
+        //     }
+        // }
     }
 
     private void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -33,12 +47,30 @@ public class MainWindowViewModel : ViewModelBase
 
     public Task Initialize()
     {
-        NavigationService.NavigateTo<LandingViewModel>();
+        NavigationService.NavigateTo<FranchiseSelectViewModel>();
         return Task.CompletedTask;
     }
     
     public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
+    
+    [RelayCommand]
+    public Task NavigateToHome()
+    {
+        NavigationService.NavigateTo<HomeViewModel>();
+        return Task.CompletedTask;
+    }
 
-    public Visibility SidebarVisibility =>
-        _applicationContext.IsFranchiseSelected ? Visibility.Visible : Visibility.Collapsed;
+    [RelayCommand]
+    public Task NavigateToImportCsv()
+    {
+        NavigationService.NavigateTo<ImportCsvViewModel>();
+        return Task.CompletedTask;
+    }
+
+    override public void Dispose()
+    {
+        _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
+        NavigationService.PropertyChanged -= NavigationServiceOnPropertyChanged;
+        base.Dispose();
+    }
 }

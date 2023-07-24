@@ -2,9 +2,9 @@
 
 namespace SmbExplorerCompanion.WPF.Views;
 
-public partial class LandingView : UserControl
+public partial class ImportCsvView : UserControl
 {
-    public LandingView()
+    public ImportCsvView()
     {
         InitializeComponent();
     }

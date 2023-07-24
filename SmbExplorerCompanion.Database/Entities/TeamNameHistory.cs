@@ -7,6 +7,6 @@ public class TeamNameHistory
 
     public int? TeamLogoHistoryId { get; set; }
     public virtual TeamLogoHistory? TeamLogoHistory { get; set; } = default!;
-    
+
     public virtual ICollection<SeasonTeamHistory> SeasonTeamHistory { get; set; } = new HashSet<SeasonTeamHistory>();
 }

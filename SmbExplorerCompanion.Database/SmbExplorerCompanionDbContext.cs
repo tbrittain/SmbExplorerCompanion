@@ -8,6 +8,14 @@ namespace SmbExplorerCompanion.Database;
 
 public class SmbExplorerCompanionDbContext : DbContext
 {
+    public SmbExplorerCompanionDbContext()
+    {
+    }
+
+    public SmbExplorerCompanionDbContext(DbContextOptions<SmbExplorerCompanionDbContext> options) : base(options)
+    {
+    }
+
     public virtual DbSet<Chemistry> Chemistry { get; set; } = default!;
     public virtual DbSet<PitcherRole> PitcherRoles { get; set; } = default!;
     public virtual DbSet<PitchType> PitchTypes { get; set; } = default!;
@@ -20,7 +28,6 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<Conference> Conferences { get; set; } = default!;
     public virtual DbSet<Division> Divisions { get; set; } = default!;
     public virtual DbSet<Franchise> Franchises { get; set; } = default!;
-    public virtual DbSet<PitcherPitchTypeHistory> PitcherPitchTypeHistory { get; set; } = default!;
     public virtual DbSet<Player> Players { get; set; } = default!;
     public virtual DbSet<PlayerGameIdHistory> PlayerGameIdHistory { get; set; } = default!;
     public virtual DbSet<PlayerSeason> PlayerSeasons { get; set; } = default!;
@@ -31,21 +38,13 @@ public class SmbExplorerCompanionDbContext : DbContext
     public virtual DbSet<Season> Seasons { get; set; } = default!;
     public virtual DbSet<SeasonTeamHistory> SeasonTeamHistory { get; set; } = default!;
     public virtual DbSet<Team> Teams { get; set; } = default!;
-    public virtual DbSet<TeamDivisionHistory> TeamDivisionHistory { get; set; } = default!;
     public virtual DbSet<TeamSeasonSchedule> TeamSeasonSchedules { get; set; } = default!;
     public virtual DbSet<TeamPlayoffSchedule> TeamPlayoffSchedules { get; set; } = default!;
     public virtual DbSet<ChampionshipWinner> ChampionshipWinners { get; set; } = default!;
     public virtual DbSet<TeamGameIdHistory> TeamGameIdHistory { get; set; } = default!;
     public virtual DbSet<TeamLogoHistory> TeamLogoHistory { get; set; } = default!;
     public virtual DbSet<TeamNameHistory> TeamNameHistory { get; set; } = default!;
-
-    public SmbExplorerCompanionDbContext()
-    {
-    }
-
-    public SmbExplorerCompanionDbContext(DbContextOptions<SmbExplorerCompanionDbContext> options) : base(options)
-    {
-    }
+    public virtual DbSet<LookupSeed> LookupSeeds { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -105,6 +104,12 @@ public class SmbExplorerCompanionDbContext : DbContext
             .HasOne(x => x.PrimaryPosition)
             .WithMany(x => x.PrimaryPositionPlayers)
             .HasForeignKey(x => x.PrimaryPositionId);
+        
+        modelBuilder.Entity<Season>()
+            .HasOne(s => s.ChampionshipWinner)
+            .WithOne(cw => cw.Season)
+            .HasForeignKey<ChampionshipWinner>(cw => cw.SeasonId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         base.OnModelCreating(modelBuilder);
     }
@@ -113,17 +118,21 @@ public class SmbExplorerCompanionDbContext : DbContext
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<SmbExplorerCompanionDbContext>();
+
+        var seedId = Guid.Parse("8833f86a-cf8d-4674-b621-bca065272ba2");
+        if (dbContext.LookupSeeds.Any(x => x.Id == seedId)) return;
+
         using var transaction = dbContext.Database.BeginTransaction();
 
         dbContext.BatHandedness.AddRange(
-            new BatHandedness {Name = "Right"},
-            new BatHandedness {Name = "Left"},
-            new BatHandedness {Name = "Switch"}
+            new BatHandedness {Name = "R"},
+            new BatHandedness {Name = "L"},
+            new BatHandedness {Name = "S"}
         );
 
         dbContext.ThrowHandedness.AddRange(
-            new ThrowHandedness {Name = "Right"},
-            new ThrowHandedness {Name = "Left"}
+            new ThrowHandedness {Name = "R"},
+            new ThrowHandedness {Name = "L"}
         );
 
         dbContext.PitcherRoles.AddRange(
@@ -161,202 +170,202 @@ public class SmbExplorerCompanionDbContext : DbContext
 
         var playerAwards = new List<PlayerAward>
         {
-            new PlayerAward
+            new()
             {
                 Name = "MVP",
                 OriginalName = "MVP",
                 Importance = 0,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Triple Crown (Batting)",
                 OriginalName = "Triple Crown (Batting)",
                 Importance = 0,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Triple Crown (Pitching)",
                 OriginalName = "Triple Crown (Pitching)",
                 Importance = 0,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Cy Young",
                 OriginalName = "Cy Young",
                 Importance = 1,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Silver Slugger",
                 OriginalName = "Silver Slugger",
                 Importance = 1,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY",
                 OriginalName = "ROY",
                 Importance = 1,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Gold Glove",
                 OriginalName = "Gold Glove",
                 Importance = 2,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Playoff MVP",
                 OriginalName = "Playoff MVP",
                 Importance = 2,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Championship MVP",
                 OriginalName = "Championship MVP",
                 Importance = 2,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Batting Title",
                 OriginalName = "Batting Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Home Run Title",
                 OriginalName = "Home Run Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "RBI Title",
                 OriginalName = "RBI Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "ERA Title",
                 OriginalName = "ERA Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Wins Title",
                 OriginalName = "Wins Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "Strikeouts Title",
                 OriginalName = "Strikeouts Title",
                 Importance = 3,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
-            new PlayerAward
+            new()
             {
                 Name = "All-Star",
                 OriginalName = "All-Star",
                 Importance = 4,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-2",
                 OriginalName = "MVP-2",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-3",
                 OriginalName = "MVP-3",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-4",
                 OriginalName = "MVP-4",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "MVP-5",
                 OriginalName = "MVP-5",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-2",
                 OriginalName = "Cy Young-2",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-3",
                 OriginalName = "Cy Young-3",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-4",
                 OriginalName = "Cy Young-4",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "Cy Young-5",
                 OriginalName = "Cy Young-5",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-2",
                 OriginalName = "ROY-2",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-3",
                 OriginalName = "ROY-3",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-4",
                 OriginalName = "ROY-4",
                 Importance = 5,
-                IsBuiltIn = true,
+                IsBuiltIn = true
             },
             new()
             {
                 Name = "ROY-5",
                 OriginalName = "ROY-5",
                 Importance = 5,
-                IsBuiltIn = true,
-            },
+                IsBuiltIn = true
+            }
         };
 
         dbContext.PlayerAwards.AddRange(playerAwards);
@@ -713,7 +722,7 @@ public class SmbExplorerCompanionDbContext : DbContext
             },
             new()
             {
-                Name = "Off-Speed Hitter",
+                Name = "Off-speed Hitter",
                 Chemistry = disciplinedChemistry,
                 IsPositive = true,
                 IsSmb3 = false
@@ -906,7 +915,7 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Chemistry = competitiveChemistry,
                 IsPositive = true,
                 IsSmb3 = false
-            },
+            }
         };
 
         dbContext.Traits.AddRange(smb4Traits);
@@ -1032,10 +1041,11 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Name = "K Dud",
                 IsPositive = false,
                 IsSmb3 = true
-            },
+            }
         };
 
         dbContext.Traits.AddRange(smb3Traits);
+        dbContext.LookupSeeds.Add(new LookupSeed {Id = seedId});
 
         dbContext.SaveChanges();
         transaction.CommitAsync();

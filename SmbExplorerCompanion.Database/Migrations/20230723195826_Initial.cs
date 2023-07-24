@@ -52,6 +52,18 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LookupSeeds",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SeededAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LookupSeeds", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PitcherRoles",
                 columns: table => new
                 {
@@ -111,8 +123,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    NumGamesRegularSeason = table.Column<int>(type: "INTEGER", nullable: false)
+                    Number = table.Column<int>(type: "INTEGER", nullable: false),
+                    NumGamesRegularSeason = table.Column<int>(type: "INTEGER", nullable: false),
+                    ChampionshipWinnerId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -329,25 +342,6 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TeamDivisionHistory",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    DivisionId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TeamDivisionHistory", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TeamDivisionHistory_Divisions_DivisionId",
-                        column: x => x.DivisionId,
-                        principalTable: "Divisions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SeasonTeamHistory",
                 columns: table => new
                 {
@@ -357,10 +351,15 @@ namespace SmbExplorerCompanion.Database.Migrations
                     TeamId = table.Column<int>(type: "INTEGER", nullable: false),
                     Budget = table.Column<long>(type: "INTEGER", nullable: false),
                     Payroll = table.Column<long>(type: "INTEGER", nullable: false),
-                    PayrollPerGame = table.Column<double>(type: "REAL", nullable: false),
+                    Surplus = table.Column<long>(type: "INTEGER", nullable: false),
+                    SurplusPerGame = table.Column<double>(type: "REAL", nullable: false),
                     Wins = table.Column<int>(type: "INTEGER", nullable: false),
                     Losses = table.Column<int>(type: "INTEGER", nullable: false),
                     GamesBehind = table.Column<double>(type: "REAL", nullable: false),
+                    WinPercentage = table.Column<double>(type: "REAL", nullable: false),
+                    PythagoreanWinPercentage = table.Column<double>(type: "REAL", nullable: false),
+                    ExpectedWins = table.Column<int>(type: "INTEGER", nullable: false),
+                    ExpectedLosses = table.Column<int>(type: "INTEGER", nullable: false),
                     RunsScored = table.Column<int>(type: "INTEGER", nullable: false),
                     RunsAllowed = table.Column<int>(type: "INTEGER", nullable: false),
                     TotalPower = table.Column<int>(type: "INTEGER", nullable: false),
@@ -376,22 +375,22 @@ namespace SmbExplorerCompanion.Database.Migrations
                     PlayoffLosses = table.Column<int>(type: "INTEGER", nullable: true),
                     PlayoffRunsScored = table.Column<int>(type: "INTEGER", nullable: true),
                     PlayoffRunsAllowed = table.Column<int>(type: "INTEGER", nullable: true),
-                    TeamDivisionHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
+                    DivisionId = table.Column<int>(type: "INTEGER", nullable: false),
                     TeamNameHistoryId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SeasonTeamHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SeasonTeamHistory_Seasons_SeasonId",
-                        column: x => x.SeasonId,
-                        principalTable: "Seasons",
+                        name: "FK_SeasonTeamHistory_Divisions_DivisionId",
+                        column: x => x.DivisionId,
+                        principalTable: "Divisions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_SeasonTeamHistory_TeamDivisionHistory_TeamDivisionHistoryId",
-                        column: x => x.TeamDivisionHistoryId,
-                        principalTable: "TeamDivisionHistory",
+                        name: "FK_SeasonTeamHistory_Seasons_SeasonId",
+                        column: x => x.SeasonId,
+                        principalTable: "Seasons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -414,7 +413,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    SeasonTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false)
+                    SeasonTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SeasonId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -425,6 +425,11 @@ namespace SmbExplorerCompanion.Database.Migrations
                         principalTable: "SeasonTeamHistory",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChampionshipWinners_Seasons_SeasonId",
+                        column: x => x.SeasonId,
+                        principalTable: "Seasons",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -437,7 +442,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     SeasonId = table.Column<int>(type: "INTEGER", nullable: false),
                     Age = table.Column<int>(type: "INTEGER", nullable: false),
                     Salary = table.Column<int>(type: "INTEGER", nullable: false),
-                    SecondaryPositionId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SecondaryPositionId = table.Column<int>(type: "INTEGER", nullable: true),
                     ChampionshipWinnerId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
@@ -458,8 +463,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                         name: "FK_PlayerSeasons_Positions_SecondaryPositionId",
                         column: x => x.SecondaryPositionId,
                         principalTable: "Positions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PlayerSeasons_Seasons_SeasonId",
                         column: x => x.SeasonId,
@@ -469,26 +473,24 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PitcherPitchTypeHistory",
+                name: "PitchTypePlayerSeason",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PlayerSeasonId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PitchTypeId = table.Column<int>(type: "INTEGER", nullable: false)
+                    PitchTypesId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PlayerSeasonsId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PitcherPitchTypeHistory", x => x.Id);
+                    table.PrimaryKey("PK_PitchTypePlayerSeason", x => new { x.PitchTypesId, x.PlayerSeasonsId });
                     table.ForeignKey(
-                        name: "FK_PitcherPitchTypeHistory_PitchTypes_PitchTypeId",
-                        column: x => x.PitchTypeId,
+                        name: "FK_PitchTypePlayerSeason_PitchTypes_PitchTypesId",
+                        column: x => x.PitchTypesId,
                         principalTable: "PitchTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PitcherPitchTypeHistory_PlayerSeasons_PlayerSeasonId",
-                        column: x => x.PlayerSeasonId,
+                        name: "FK_PitchTypePlayerSeason_PlayerSeasons_PlayerSeasonsId",
+                        column: x => x.PlayerSeasonsId,
                         principalTable: "PlayerSeasons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -616,7 +618,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     HomeRuns = table.Column<int>(type: "INTEGER", nullable: false),
                     Walks = table.Column<int>(type: "INTEGER", nullable: false),
                     Strikeouts = table.Column<int>(type: "INTEGER", nullable: false),
-                    InningsPitched = table.Column<double>(type: "REAL", nullable: false),
+                    InningsPitched = table.Column<double>(type: "REAL", nullable: true),
                     EarnedRunAverage = table.Column<double>(type: "REAL", nullable: true),
                     TotalPitches = table.Column<int>(type: "INTEGER", nullable: false),
                     Saves = table.Column<int>(type: "INTEGER", nullable: false),
@@ -632,12 +634,13 @@ namespace SmbExplorerCompanion.Database.Migrations
                     Whip = table.Column<double>(type: "REAL", nullable: true),
                     WinPercentage = table.Column<double>(type: "REAL", nullable: true),
                     OpponentObp = table.Column<double>(type: "REAL", nullable: true),
+                    StrikeoutsPerWalk = table.Column<double>(type: "REAL", nullable: true),
                     StrikeoutsPerNine = table.Column<double>(type: "REAL", nullable: true),
                     WalksPerNine = table.Column<double>(type: "REAL", nullable: true),
                     HitsPerNine = table.Column<double>(type: "REAL", nullable: true),
                     HomeRunsPerNine = table.Column<double>(type: "REAL", nullable: true),
                     PitchesPerInning = table.Column<double>(type: "REAL", nullable: true),
-                    PitcherPerGame = table.Column<double>(type: "REAL", nullable: true),
+                    PitchesPerGame = table.Column<double>(type: "REAL", nullable: true),
                     EraMinus = table.Column<double>(type: "REAL", nullable: true),
                     FipMinus = table.Column<double>(type: "REAL", nullable: true),
                     IsRegularSeason = table.Column<bool>(type: "INTEGER", nullable: false)
@@ -684,7 +687,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PlayerSeasonId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SeasonTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SeasonTeamHistoryId = table.Column<int>(type: "INTEGER", nullable: true),
                     Order = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -700,8 +703,7 @@ namespace SmbExplorerCompanion.Database.Migrations
                         name: "FK_PlayerTeamHistory_SeasonTeamHistory_SeasonTeamHistoryId",
                         column: x => x.SeasonTeamHistoryId,
                         principalTable: "SeasonTeamHistory",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -789,6 +791,12 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ChampionshipWinners_SeasonId",
+                table: "ChampionshipWinners",
+                column: "SeasonId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ChampionshipWinners_SeasonTeamHistoryId",
                 table: "ChampionshipWinners",
                 column: "SeasonTeamHistoryId",
@@ -805,14 +813,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                 column: "ConferenceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PitcherPitchTypeHistory_PitchTypeId",
-                table: "PitcherPitchTypeHistory",
-                column: "PitchTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PitcherPitchTypeHistory_PlayerSeasonId",
-                table: "PitcherPitchTypeHistory",
-                column: "PlayerSeasonId");
+                name: "IX_PitchTypePlayerSeason_PlayerSeasonsId",
+                table: "PitchTypePlayerSeason",
+                column: "PlayerSeasonsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PlayerAwardPlayerSeason_PlayerSeasonsId",
@@ -901,14 +904,14 @@ namespace SmbExplorerCompanion.Database.Migrations
                 column: "SeasonTeamHistoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SeasonTeamHistory_DivisionId",
+                table: "SeasonTeamHistory",
+                column: "DivisionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SeasonTeamHistory_SeasonId",
                 table: "SeasonTeamHistory",
                 column: "SeasonId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SeasonTeamHistory_TeamDivisionHistoryId",
-                table: "SeasonTeamHistory",
-                column: "TeamDivisionHistoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SeasonTeamHistory_TeamId",
@@ -919,11 +922,6 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "IX_SeasonTeamHistory_TeamNameHistoryId",
                 table: "SeasonTeamHistory",
                 column: "TeamNameHistoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TeamDivisionHistory_DivisionId",
-                table: "TeamDivisionHistory",
-                column: "DivisionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TeamGameIdHistory_TeamId",
@@ -985,7 +983,10 @@ namespace SmbExplorerCompanion.Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "PitcherPitchTypeHistory");
+                name: "LookupSeeds");
+
+            migrationBuilder.DropTable(
+                name: "PitchTypePlayerSeason");
 
             migrationBuilder.DropTable(
                 name: "PlayerAwardPlayerSeason");
@@ -1054,10 +1055,10 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "ThrowHandedness");
 
             migrationBuilder.DropTable(
-                name: "Seasons");
+                name: "Divisions");
 
             migrationBuilder.DropTable(
-                name: "TeamDivisionHistory");
+                name: "Seasons");
 
             migrationBuilder.DropTable(
                 name: "TeamNameHistory");
@@ -1066,13 +1067,10 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "Teams");
 
             migrationBuilder.DropTable(
-                name: "Divisions");
+                name: "Conferences");
 
             migrationBuilder.DropTable(
                 name: "TeamLogoHistory");
-
-            migrationBuilder.DropTable(
-                name: "Conferences");
 
             migrationBuilder.DropTable(
                 name: "Franchises");

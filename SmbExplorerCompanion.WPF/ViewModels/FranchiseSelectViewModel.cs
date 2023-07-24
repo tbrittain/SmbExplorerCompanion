@@ -14,15 +14,15 @@ using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
-public partial class LandingViewModel : ViewModelBase
+public partial class FranchiseSelectViewModel : ViewModelBase
 {
-    private const string LandingViewModelDialogIdentifier = nameof(LandingViewModel);
+    private const string LandingViewModelDialogIdentifier = nameof(FranchiseSelectViewModel);
     private readonly IMediator _mediator;
     private readonly IApplicationContext _applicationContext;
     private readonly INavigationService _navigationService;
     private Franchise? _selectedFranchise;
 
-    public LandingViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
+    public FranchiseSelectViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
         _mediator = mediator;
         _applicationContext = applicationContext;
