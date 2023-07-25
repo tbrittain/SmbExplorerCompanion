@@ -1,15 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.WPF.Services;
-
-public interface IApplicationContext
-{
-    public int? SelectedFranchiseId { get; set; }
-    public bool IsFranchiseSelected { get; }
-    event PropertyChangedEventHandler? PropertyChanged;
-}
 
 public sealed class ApplicationContext : IApplicationContext, INotifyPropertyChanged
 {

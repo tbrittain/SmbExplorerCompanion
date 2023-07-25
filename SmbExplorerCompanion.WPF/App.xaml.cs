@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using SmbExplorerCompanion.Core;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database;
 using SmbExplorerCompanion.WPF.Services;
 using SmbExplorerCompanion.WPF.ViewModels;

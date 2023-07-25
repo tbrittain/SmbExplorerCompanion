@@ -11,17 +11,20 @@ public class CsvImportRepository : ICsvImportRepository
     private readonly CsvMappingRepository _csvMappingRepository;
     private readonly CsvReaderService _csvReaderService;
     private readonly SmbExplorerCompanionDbContext _dbContext;
+    private readonly IApplicationContext _applicationContext;
 
     public CsvImportRepository(CsvMappingRepository csvMappingRepository,
         CsvReaderService csvReaderService,
-        SmbExplorerCompanionDbContext dbContext)
+        SmbExplorerCompanionDbContext dbContext,
+        IApplicationContext applicationContext)
     {
         _csvMappingRepository = csvMappingRepository;
         _csvReaderService = csvReaderService;
         _dbContext = dbContext;
+        _applicationContext = applicationContext;
     }
 
-    public async Task ImportSeason(ImportSeasonFilePaths filePaths, int franchiseId, CancellationToken cancellationToken)
+    public async Task ImportSeason(ImportSeasonFilePaths filePaths, CancellationToken cancellationToken)
     {
         foreach (var filePath in filePaths) ValidateFile(filePath);
 

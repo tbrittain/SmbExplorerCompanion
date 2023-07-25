@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using Microsoft.Win32;
 using SmbExplorerCompanion.Core.Commands.Actions.Csv;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;

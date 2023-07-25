@@ -4,6 +4,6 @@ namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface ICsvImportRepository
 {
-    public Task ImportSeason(ImportSeasonFilePaths filePaths, int franchiseId, CancellationToken cancellationToken);
+    public Task ImportSeason(ImportSeasonFilePaths filePaths, CancellationToken cancellationToken);
     public Task ImportPlayoffs(ImportPlayoffFilePaths filePaths, CancellationToken cancellationToken);
 }

@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Franchises;
 using SmbExplorerCompanion.Core.Commands.Queries.Franchises;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings;
 using SmbExplorerCompanion.WPF.Models;

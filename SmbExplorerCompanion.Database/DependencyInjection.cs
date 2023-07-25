@@ -13,6 +13,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<SmbExplorerCompanionDbContext>()
             .AddScoped<IRepository<FranchiseDto>, FranchiseRepository>()
+            .AddScoped<ITeamRepository, TeamRepository>()
             .AddTransient<CsvReaderService>()
             .AddTransient<CsvMappingRepository>()
             .AddTransient<ICsvImportRepository, CsvImportRepository>();

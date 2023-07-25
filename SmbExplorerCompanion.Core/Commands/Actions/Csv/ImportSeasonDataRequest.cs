@@ -9,14 +9,12 @@ namespace SmbExplorerCompanion.Core.Commands.Actions.Csv;
 public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
 {
     public ImportSeasonDataRequest(
-        int franchiseId,
         string teamsCsvFilePath,
         string overallPlayersCsvFilePath,
         string seasonStatsPitchingCsvFilePath,
         string seasonStatsBattingCsvFilePath,
         string seasonScheduleCsvFilePath)
     {
-        FranchiseId = franchiseId;
         TeamsCsvFilePath = teamsCsvFilePath;
         OverallPlayersCsvFilePath = overallPlayersCsvFilePath;
         SeasonStatsPitchingCsvFilePath = seasonStatsPitchingCsvFilePath;
@@ -24,7 +22,6 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
         SeasonScheduleCsvFilePath = seasonScheduleCsvFilePath;
     }
 
-    private int FranchiseId { get; }
     private string TeamsCsvFilePath { get; }
     private string OverallPlayersCsvFilePath { get; }
     private string SeasonStatsPitchingCsvFilePath { get; }

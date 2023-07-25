@@ -1,6 +1,8 @@
-﻿namespace SmbExplorerCompanion.Core.Interfaces;
+﻿using SmbExplorerCompanion.Core.Entities.Teams;
+
+namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface ITeamRepository
 {
-    
+    public Task<IEnumerable<HistoricalTeam>> GetHistoricalTeams();
 }
