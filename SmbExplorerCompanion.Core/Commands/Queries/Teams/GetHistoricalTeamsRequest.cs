@@ -5,10 +5,10 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Teams;
 
-public class GetHistoricalTeamsRequest : IRequest<OneOf<IEnumerable<HistoricalTeam>, Exception>>
+public class GetHistoricalTeamsRequest : IRequest<OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
 {
     // ReSharper disable once UnusedType.Global
-    public class GetHistoricalTeamsHandler : IRequestHandler<GetHistoricalTeamsRequest, OneOf<IEnumerable<HistoricalTeam>, Exception>>
+    public class GetHistoricalTeamsHandler : IRequestHandler<GetHistoricalTeamsRequest, OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
     {
         private readonly ITeamRepository _teamRepository;
 
@@ -17,7 +17,7 @@ public class GetHistoricalTeamsRequest : IRequest<OneOf<IEnumerable<HistoricalTe
             _teamRepository = teamRepository;
         }
 
-        public async Task<OneOf<IEnumerable<HistoricalTeam>, Exception>> Handle(GetHistoricalTeamsRequest request,
+        public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> Handle(GetHistoricalTeamsRequest request,
             CancellationToken cancellationToken) =>
             await _teamRepository.GetHistoricalTeams(cancellationToken);
     }

@@ -5,5 +5,5 @@ namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface ITeamRepository
 {
-    public Task<OneOf<IEnumerable<HistoricalTeam>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken);
+    public Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken);
 }

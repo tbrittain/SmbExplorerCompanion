@@ -32,7 +32,7 @@ public class CsvImportRepository : ICsvImportRepository
 
         try
         {
-            await ImportTeams(filePaths.Teams, franchiseId, cancellationToken);
+            await ImportTeams(filePaths.Teams, cancellationToken);
 
             await ImportOverallPlayers(filePaths.OverallPlayers, cancellationToken);
 
@@ -81,8 +81,9 @@ public class CsvImportRepository : ICsvImportRepository
         }
     }
 
-    private async Task ImportTeams(string filePath, int franchiseId, CancellationToken cancellationToken)
+    private async Task ImportTeams(string filePath, CancellationToken cancellationToken)
     {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
         var teams = await _csvReaderService.ReadTeamsAsync(filePath);
         await _csvMappingRepository.AddTeamsAsync(teams, franchiseId, cancellationToken);
     }

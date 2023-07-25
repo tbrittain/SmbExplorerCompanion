@@ -16,7 +16,7 @@ public class TeamRepository : ITeamRepository
         _applicationContext = applicationContext;
     }
 
-    public async Task<OneOf<IEnumerable<HistoricalTeam>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
+    public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
         var teamsQueryable = _dbContext
@@ -51,7 +51,7 @@ public class TeamRepository : ITeamRepository
             var historicalTeams = teams
                 .Select(x =>
                 {
-                    var team = new HistoricalTeam
+                    var team = new HistoricalTeamDto
                     {
                         Id = x.Id
                     };
@@ -125,7 +125,7 @@ public class TeamRepository : ITeamRepository
                 .ToList();
 
             if (cancellationToken.IsCancellationRequested)
-                return Array.Empty<HistoricalTeam>();
+                return Array.Empty<HistoricalTeamDto>();
 
             return historicalTeams;
         }

@@ -1,4 +1,4 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Teams;
+﻿namespace SmbExplorerCompanion.WPF.Models.Teams;
 
 public class HistoricalTeam
 {
@@ -7,8 +7,8 @@ public class HistoricalTeam
     public int NumGames { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }
-    public double WinLossPct => (double)NumWins / NumGames;
-    public int GamesOver500 => NumWins - NumLosses;
+    public double WinLossPct { get; set; }
+    public int GamesOver500 { get; set; }
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }
     public int NumChampionships { get; set; }
