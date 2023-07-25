@@ -122,7 +122,6 @@ public partial class ImportCsvViewModel : ViewModelBase
     private async Task ImportSeasonData()
     {
         var response = await _mediator.Send(new ImportSeasonDataRequest(
-            _applicationContext.SelectedFranchiseId!.Value,
             TeamsCsvPath,
             OverallPlayersCsvPath,
             SeasonPitchingCsvPath,

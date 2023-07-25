@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using OneOf;
-using SmbExplorerCompanion.Core.Entities;
 using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Core.Interfaces;
 
@@ -18,9 +17,8 @@ public class GetAllFranchisesRequest : IRequest<OneOf<IEnumerable<FranchiseDto>,
             _franchiseRepository = franchiseRepository;
         }
 
-        public async Task<OneOf<IEnumerable<FranchiseDto>, Exception>> Handle(GetAllFranchisesRequest request, CancellationToken cancellationToken)
-        {
-            return await _franchiseRepository.GetAllAsync(cancellationToken);
-        }
+        public async Task<OneOf<IEnumerable<FranchiseDto>, Exception>>
+            Handle(GetAllFranchisesRequest request, CancellationToken cancellationToken) =>
+            await _franchiseRepository.GetAllAsync(cancellationToken);
     }
 }

@@ -49,7 +49,7 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
 
             try
             {
-                await _csvImportRepository.ImportSeason(filePaths, request.FranchiseId, cancellationToken);
+                await _csvImportRepository.ImportSeason(filePaths, cancellationToken);
             }
             catch (Exception e)
             {
