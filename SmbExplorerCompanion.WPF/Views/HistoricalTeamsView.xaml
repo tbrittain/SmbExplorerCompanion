@@ -6,7 +6,7 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HistoricalTeamsViewModel}">
-    <StackPanel>
+    <ScrollViewer>
         <DataGrid
             ItemsSource="{Binding HistoricalTeams}"
             AutoGenerateColumns="True"
@@ -14,6 +14,7 @@
             CanUserDeleteRows="False"
             CanUserReorderColumns="False"
             CanUserSortColumns="True"
-            CanUserResizeColumns="True" />
-    </StackPanel>
+            CanUserResizeColumns="True"
+            SelectionMode="Single"/>
+    </ScrollViewer>
 </UserControl>

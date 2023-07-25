@@ -35,6 +35,14 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Left" />
             </Button>
+            
+            <Button Command="{Binding NavigateToTeamsCommand}">
+                <TextBlock
+                    Text="Teams"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
 
             <Button Command="{Binding NavigateToImportCsvCommand}">
                 <TextBlock

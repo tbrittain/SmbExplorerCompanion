@@ -55,18 +55,25 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
     
     [RelayCommand]
-    public Task NavigateToHome()
+    private Task NavigateToHome()
     {
         NavigationService.NavigateTo<HomeViewModel>();
         return Task.CompletedTask;
     }
 
     [RelayCommand]
-    public Task NavigateToImportCsv()
+    private Task NavigateToImportCsv()
     {
         NavigationService.NavigateTo<ImportCsvViewModel>();
         return Task.CompletedTask;
     }
+
+    [RelayCommand]
+    private Task NavigateToTeams()
+    {
+        NavigationService.NavigateTo<HistoricalTeamsViewModel>();
+        return Task.CompletedTask;
+    } 
 
     override public void Dispose()
     {
