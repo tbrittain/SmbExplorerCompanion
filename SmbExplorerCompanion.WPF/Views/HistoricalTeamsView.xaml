@@ -6,7 +6,7 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HistoricalTeamsViewModel}">
-    <ScrollViewer>
+    <ScrollViewer Name="ScrollViewer">
         <DataGrid
             ItemsSource="{Binding HistoricalTeams}"
             AutoGenerateColumns="True"
