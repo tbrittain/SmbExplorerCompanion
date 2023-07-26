@@ -12,13 +12,13 @@ public sealed class NavigationService : INavigationService
     private readonly Func<Type, ViewModelBase> _viewModelFactory;
 
     private ViewModelBase _currentViewModel = null!;
+    private readonly Stack<ViewModelBase> _navigationStack = new();
+    private readonly Dictionary<string, object> _parameters = new();
 
     public NavigationService(Func<Type, ViewModelBase> viewModelFactory)
     {
         _viewModelFactory = viewModelFactory;
     }
-
-    public Stack<ViewModelBase> NavigationStack { get; } = new();
 
     public ViewModelBase CurrentView
     {
@@ -29,16 +29,55 @@ public sealed class NavigationService : INavigationService
     public void NavigateTo<TViewModelBase>() where TViewModelBase : ViewModelBase
     {
         var viewModelBase = _viewModelFactory.Invoke(typeof(TViewModelBase));
-        NavigationStack.Push(viewModelBase);
+        _navigationStack.Push(viewModelBase);
+
+        OnPropertyChanged(nameof(CanNavigateBack));
+        CurrentView = viewModelBase;
+    }
+
+    public void NavigateTo<T>(params Tuple<string, object>[] parameters) where T : ViewModelBase
+    {
+        var viewModelBase = _viewModelFactory.Invoke(typeof(T));
+        _navigationStack.Push(viewModelBase);
+
+        foreach (var (parameterName, parameterValue) in parameters)
+        {
+            _parameters.Add(parameterName, parameterValue);
+        }
+
+        OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
     }
 
     public void NavigateBack()
     {
-        if (!NavigationStack.Any()) return;
+        if (!_navigationStack.Any()) return;
 
-        NavigationStack.Pop();
-        CurrentView = NavigationStack.Peek();
+        _navigationStack.Pop();
+
+        OnPropertyChanged(nameof(CanNavigateBack));
+        CurrentView = _navigationStack.Peek();
+    }
+
+    public bool CanNavigateBack => _navigationStack.Any();
+
+    public bool TryGetParameter<T>(string parameterName, out T parameterValue) where T : notnull
+    {
+        var parameterExists = _parameters.TryGetValue(parameterName, out var parameter);
+
+        if (!parameterExists)
+        {
+            parameterValue = default!;
+            return false;
+        }
+
+        parameterValue = (T) parameter!;
+        return true;
+    }
+
+    public void ClearParameters()
+    {
+        _parameters.Clear();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
