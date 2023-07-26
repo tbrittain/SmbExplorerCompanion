@@ -26,7 +26,7 @@ public class TeamRepository : ITeamRepository
             .ThenInclude(x => x.Division)
             .ThenInclude(x => x.Conference)
             .Where(x => x.SeasonTeamHistory.First().Division.Conference.FranchiseId == franchiseId);
-        
+
         try
         {
             var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
@@ -96,7 +96,7 @@ public class TeamRepository : ITeamRepository
                     .Where(x => x.TeamId == team.Id)
                     .SelectMany(y => y.PlayerTeamHistory)
                     .ToListAsync(cancellationToken: cancellationToken);
-                
+
                 playerTeamHistories.Add(team.Id, histories);
             }
 
@@ -105,7 +105,7 @@ public class TeamRepository : ITeamRepository
                 {
                     var team = new HistoricalTeamDto
                     {
-                        Id = x.Id,
+                        TeamId = x.Id,
                         CurrentName = x.CurrentName,
                         NumGames = x.NumGames,
                         NumWins = x.NumWins,
@@ -151,11 +151,11 @@ public class TeamRepository : ITeamRepository
                     var earnedRuns = teamPlayers
                         .SelectMany(y => y.PlayerSeason.PitchingStats)
                         .Sum(y => y.EarnedRuns);
-                    
+
                     var inningsPitched = teamPlayers
                         .SelectMany(y => y.PlayerSeason.PitchingStats)
                         .Sum(y => y.InningsPitched ?? 0);
-                    
+
                     team.EarnedRunAverage = earnedRuns / inningsPitched * 9;
 
                     return team;
@@ -176,6 +176,95 @@ public class TeamRepository : ITeamRepository
 
     public async Task<OneOf<TeamOverviewDto, Exception>> GetTeamOverview(int teamId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
+            .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+
+        var teamOverviewDto = await _dbContext.SeasonTeamHistory
+            .Include(x => x.TeamNameHistory)
+            .Include(x => x.ChampionshipWinner)
+            .Include(x => x.HomePlayoffSchedule)
+            .Include(x => x.AwayPlayoffSchedule)
+            .Where(x => x.TeamId == teamId)
+            .GroupBy(_ => true)
+            .Select(x => new TeamOverviewDto
+            {
+                TeamId = teamId,
+                CurrentTeamName = x.OrderByDescending(y => y.SeasonId).First().TeamNameHistory.Name,
+                NumSeasons = x.Count(),
+                NumWins = x.Sum(y => y.Wins),
+                NumLosses = x.Sum(y => y.Losses),
+                NumPlayoffAppearances = x.Count(y => y.HomePlayoffSchedule.Any() || y.AwayPlayoffSchedule.Any()),
+                NumDivisionsWon = x.Count(y => y.GamesBehind == 0),
+                NumConferenceTitles = x
+                    .Select(seasonTeamHistory => seasonTeamHistory.HomePlayoffSchedule
+                        .Where(y => y.SeriesNumber == maxPlayoffSeries)
+                        .ToList())
+                    .Count(homePlayoffSchedule => homePlayoffSchedule.Any()),
+                NumChampionships = x.Count(y => y.ChampionshipWinner != null),
+            })
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        var teamHistories = await _dbContext.SeasonTeamHistory
+            .Include(x => x.Season)
+            .Include(x => x.Division)
+            .ThenInclude(x => x.Conference)
+            .Include(x => x.TeamNameHistory)
+            .Include(x => x.ChampionshipWinner)
+            .Include(x => x.HomePlayoffSchedule)
+            .Include(x => x.AwayPlayoffSchedule)
+            .Where(x => x.TeamId == teamId)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        teamOverviewDto.TeamHistory = teamHistories
+            .Select(x => new TeamOverviewSeasonHistoryDto
+            {
+                SeasonTeamId = x.Id,
+                SeasonNumber = x.Season.Number,
+                DivisionName = x.Division.Name,
+                ConferenceName = x.Division.Conference.Name,
+                TeamName = x.TeamNameHistory.Name,
+                Wins = x.Wins,
+                Losses = x.Losses,
+                GamesBehind = x.GamesBehind,
+                PlayoffWins = x.PlayoffWins,
+                PlayoffLosses = x.PlayoffLosses,
+                PlayoffSeed = x.PlayoffSeed,
+                WonConference = x.HomePlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries) ||
+                                x.AwayPlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries),
+                WonChampionship = x.ChampionshipWinner != null,
+            })
+            .OrderBy(x => x.SeasonNumber)
+            .ToList();
+
+        var topPlayers = await _dbContext.Players
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.PlayerTeamHistory)
+            .Where(x => x.PlayerSeasons
+                .Any(y => y.PlayerTeamHistory
+                    .Any(z => z.SeasonTeamHistory!.TeamId == teamId)))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        teamOverviewDto.TopPlayers = topPlayers
+            .Select(x => new TeamTopPlayerHistoryDto
+            {
+                PlayerId = x.Id,
+                NumSeasonsWithTeam = x.PlayerSeasons
+                    .Count(y => y.PlayerTeamHistory
+                        .Any(z => z.SeasonTeamHistory!.TeamId == teamId)),
+                AverageOpsPlus = x.PlayerSeasons
+                    .Where(y => y.PlayerTeamHistory
+                        .Any(z => z.SeasonTeamHistory!.TeamId == teamId))
+                    .SelectMany(y => y.BattingStats)
+                    .Average(y => y.OpsPlus ?? 0),
+                WeightedOpsPlus = x.PlayerSeasons
+                    .Where(y => y.PlayerTeamHistory
+                        .Any(z => z.SeasonTeamHistory!.TeamId == teamId))
+                    .SelectMany(y => y.BattingStats)
+                    .Sum(y => (y.OpsPlus ?? 0) * y.AtBats),
+            })
+            .OrderByDescending(x => x.WeightedOpsPlus)
+            .ToList();
+
+        return teamOverviewDto;
     }
 }
