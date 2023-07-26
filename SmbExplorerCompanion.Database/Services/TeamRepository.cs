@@ -82,6 +82,7 @@ public class TeamRepository : ITeamRepository
             Dictionary<int, List<PlayerTeamHistory>> playerTeamHistories = new();
             foreach (var team in teams)
             {
+                // TODO: May want to do the same aggregations here as we did above, but for team-player-specific stats
                 var histories = await _dbContext.SeasonTeamHistory
                     .Include(x => x.PlayerTeamHistory)
                     .ThenInclude(x => x.PlayerSeason)
@@ -171,5 +172,10 @@ public class TeamRepository : ITeamRepository
         {
             return e;
         }
+    }
+
+    public async Task<OneOf<TeamOverviewDto, Exception>> GetTeamOverview(int teamId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

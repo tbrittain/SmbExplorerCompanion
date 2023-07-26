@@ -57,6 +57,7 @@ public partial class App
             .AddTransient<HomeViewModel>()
             .AddTransient<ImportCsvViewModel>()
             .AddTransient<HistoricalTeamsViewModel>()
+            .AddTransient<TeamOverviewViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
             // NavigationService calls this Func to get the ViewModel instance

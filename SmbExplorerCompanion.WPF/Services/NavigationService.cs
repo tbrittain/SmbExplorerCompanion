@@ -37,13 +37,13 @@ public sealed class NavigationService : INavigationService
 
     public void NavigateTo<T>(params Tuple<string, object>[] parameters) where T : ViewModelBase
     {
-        var viewModelBase = _viewModelFactory.Invoke(typeof(T));
-        _navigationStack.Push(viewModelBase);
-
         foreach (var (parameterName, parameterValue) in parameters)
         {
             _parameters.Add(parameterName, parameterValue);
         }
+        
+        var viewModelBase = _viewModelFactory.Invoke(typeof(T));
+        _navigationStack.Push(viewModelBase);
 
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;

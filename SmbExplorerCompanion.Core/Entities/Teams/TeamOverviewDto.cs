@@ -1,0 +1,16 @@
+﻿namespace SmbExplorerCompanion.Core.Entities.Teams;
+
+public class TeamOverviewDto
+{
+    public int TeamId { get; set; }
+    public string CurrentTeamName { get; set; } = string.Empty;
+    public List<TeamOverviewHistoryDto> TeamHistory { get; set; } = new();
+    public int NumSeasons { get; set; }
+    public int NumWins { get; set; }
+    public int NumLosses { get; set; }
+    public double WinPercentage => NumSeasons == 0 ? 0 : (double) NumWins / NumSeasons;
+    public int NumPlayoffAppearances { get; set; }
+    public int NumDivisionsWon { get; set; }
+    public int NumConferenceTitles { get; set; }
+    public int NumChampionships { get; set; }
+}

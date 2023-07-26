@@ -9,12 +9,13 @@
     <ScrollViewer Name="ScrollViewer">
         <DataGrid
             ItemsSource="{Binding HistoricalTeams}"
+            SelectedItem="{Binding SelectedHistoricalTeam}"
             AutoGenerateColumns="True"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
             CanUserReorderColumns="False"
             CanUserSortColumns="True"
             CanUserResizeColumns="True"
-            SelectionMode="Single"/>
+            SelectionMode="Single" />
     </ScrollViewer>
 </UserControl>
