@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using SmbExplorerCompanion.WPF.ViewModels;
 
@@ -17,6 +18,8 @@ public sealed class NavigationService : INavigationService
         _viewModelFactory = viewModelFactory;
     }
 
+    public Stack<ViewModelBase> NavigationStack { get; } = new();
+
     public ViewModelBase CurrentView
     {
         get => _currentViewModel;
@@ -26,7 +29,16 @@ public sealed class NavigationService : INavigationService
     public void NavigateTo<TViewModelBase>() where TViewModelBase : ViewModelBase
     {
         var viewModelBase = _viewModelFactory.Invoke(typeof(TViewModelBase));
+        NavigationStack.Push(viewModelBase);
         CurrentView = viewModelBase;
+    }
+
+    public void NavigateBack()
+    {
+        if (!NavigationStack.Any()) return;
+
+        NavigationStack.Pop();
+        CurrentView = NavigationStack.Peek();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
