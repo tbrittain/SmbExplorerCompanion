@@ -19,6 +19,7 @@ public static class DependencyInjection
             })
             .AddScoped<IRepository<FranchiseDto>, FranchiseRepository>()
             .AddScoped<ITeamRepository, TeamRepository>()
+            .AddScoped<IPlayerRepository, PlayerRepository>()
             .AddTransient<CsvReaderService>()
             .AddTransient<CsvMappingRepository>()
             .AddTransient<ICsvImportRepository, CsvImportRepository>();
