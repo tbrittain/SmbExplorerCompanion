@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SmbExplorerCompanion.Core.Entities;
 using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Core.Interfaces;
@@ -11,7 +12,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDatabase(this IServiceCollection services)
     {
-        services.AddDbContext<SmbExplorerCompanionDbContext>()
+        services.AddDbContext<SmbExplorerCompanionDbContext>((provider, builder) =>
+            {
+                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+                builder.UseLoggerFactory(loggerFactory);
+            })
             .AddScoped<IRepository<FranchiseDto>, FranchiseRepository>()
             .AddScoped<ITeamRepository, TeamRepository>()
             .AddTransient<CsvReaderService>()

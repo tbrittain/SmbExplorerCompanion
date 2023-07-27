@@ -181,6 +181,7 @@ public class TeamRepository : ITeamRepository
             var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
                 .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
 
+            // TODO: This is throwing an exception that the Sequence contains no elements
             var teamOverviewDto = await _dbContext.SeasonTeamHistory
                 .Include(x => x.TeamNameHistory)
                 .Include(x => x.ChampionshipWinner)

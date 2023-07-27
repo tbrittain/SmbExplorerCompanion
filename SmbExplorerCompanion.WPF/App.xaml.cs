@@ -46,6 +46,7 @@ public partial class App
     private static Task ConfigureServices(IServiceCollection services)
     {
         services
+            .AddLogging()
             .AddCore()
             .AddDatabase()
             .AddSingleton<MainWindow>(serviceProvider => new MainWindow

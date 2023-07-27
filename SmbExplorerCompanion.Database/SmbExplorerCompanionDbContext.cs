@@ -50,6 +50,12 @@ public class SmbExplorerCompanionDbContext : DbContext
     {
         var connectionString = Path.Combine(BaseApplicationDirectory, "SmbExplorerCompanion.db");
         optionsBuilder.UseSqlite($"Data Source={connectionString}");
+
+        #if DEBUG
+        optionsBuilder.EnableSensitiveDataLogging();
+        optionsBuilder.EnableDetailedErrors();
+        #endif
+        
         base.OnConfiguring(optionsBuilder);
     }
 

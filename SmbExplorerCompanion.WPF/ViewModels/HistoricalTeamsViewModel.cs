@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
@@ -34,8 +33,8 @@ public class HistoricalTeamsViewModel : ViewModelBase
                 .Select(x => mapper.FromDto(x))
                 .ToObservableCollection();
         }
-        
-        this.PropertyChanged += OnPropertyChanged;
+
+        PropertyChanged += OnPropertyChanged;
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -66,5 +65,15 @@ public class HistoricalTeamsViewModel : ViewModelBase
             new(TeamOverviewViewModel.TeamIdProp, team.Id)
         };
         _navigationService.NavigateTo<TeamOverviewViewModel>(parameters);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            PropertyChanged -= OnPropertyChanged;
+        }
+
+        base.Dispose(disposing);
     }
 }
