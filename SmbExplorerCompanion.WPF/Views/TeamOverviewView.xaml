@@ -6,7 +6,90 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TeamOverviewViewModel}">
-    <Grid>
-        <Label Content="The team will go here"/>
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <!-- TODO Team header with general overall stats -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <!-- TODO This will be a team logo -->
+            <Rectangle Grid.Column="0" />
+
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="16" Text="Team name:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamOverview.CurrentTeamName}" FontSize="16" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Seasons:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamOverview.NumSeasons}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Record:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamRecord}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Divisions won:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamOverview.NumDivisionsWon}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Playoff Appearances:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamOverview.NumPlayoffAppearances}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Conference Titles:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamOverview.NumConferenceTitles}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Championships:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding TeamOverview.NumChampionships}" FontSize="14" />
+                </StackPanel>
+
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition MaxHeight="500" />
+            </Grid.RowDefinitions>
+
+            <ScrollViewer>
+                <DataGrid
+                    ItemsSource="{Binding TeamOverview.TeamHistory}"
+                    AutoGenerateColumns="True"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    CanUserReorderColumns="False"
+                    CanUserSortColumns="True"
+                    CanUserResizeColumns="True"
+                    SelectionMode="Single" />
+            </ScrollViewer>
+        </Grid>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition MaxHeight="500" />
+            </Grid.RowDefinitions>
+
+            <ScrollViewer>
+                <DataGrid
+                    ItemsSource="{Binding TeamOverview.TopPlayers}"
+                    AutoGenerateColumns="True"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    CanUserReorderColumns="False"
+                    CanUserSortColumns="True"
+                    CanUserResizeColumns="True"
+                    SelectionMode="Single" />
+            </ScrollViewer>
+        </Grid>
+    </StackPanel>
 </UserControl>

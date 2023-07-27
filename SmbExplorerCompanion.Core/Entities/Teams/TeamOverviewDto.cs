@@ -9,7 +9,7 @@ public class TeamOverviewDto
     public int NumSeasons { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }
-    public double WinPercentage => NumSeasons == 0 ? 0 : (double) NumWins / NumLosses;
+    public double WinPercentage => NumSeasons == 0 ? 0 : (double) NumWins / (NumLosses + NumWins);
     public int NumPlayoffAppearances { get; set; }
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }

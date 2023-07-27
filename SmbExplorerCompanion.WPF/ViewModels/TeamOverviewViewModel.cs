@@ -46,5 +46,7 @@ public class TeamOverviewViewModel : ViewModelBase
 
     public int TeamId { get; set; }
 
+    public string TeamRecord => $"{TeamOverview.NumWins}-{TeamOverview.NumLosses}, {TeamOverview.WinPercentage:F3} W-L%";
+
     public TeamOverview TeamOverview { get; set; }
 }
