@@ -11,7 +11,6 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public partial class ImportCsvViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
-    private readonly IApplicationContext _applicationContext;
     private string _teamsCsvPath = string.Empty;
     private string _overallPlayersCsvPath = string.Empty;
     private string _seasonBattingCsvPath = string.Empty;
@@ -21,10 +20,9 @@ public partial class ImportCsvViewModel : ViewModelBase
     private string _playoffBattingCsvPath = string.Empty;
     private string _playoffScheduleCsvPath = string.Empty;
 
-    public ImportCsvViewModel(IMediator mediator, IApplicationContext applicationContext)
+    public ImportCsvViewModel(IMediator mediator)
     {
         _mediator = mediator;
-        _applicationContext = applicationContext;
     }
 
     public string TeamsCsvPath
@@ -121,7 +119,6 @@ public partial class ImportCsvViewModel : ViewModelBase
     private async Task ImportSeasonData()
     {
         var response = await _mediator.Send(new ImportSeasonDataRequest(
-            _applicationContext.SelectedFranchiseId!.Value,
             TeamsCsvPath,
             OverallPlayersCsvPath,
             SeasonPitchingCsvPath,

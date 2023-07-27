@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -21,14 +22,22 @@ public partial class MainWindowViewModel : ViewModelBase
     private void NavigationServiceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         // TODO: Was going to use this to conditionally change the background color of the selected sidebar item
-        // switch (e.PropertyName)
-        // {
-        //     case nameof(INavigationService.CurrentView):
-        //     {
-        //         OnPropertyChanged(nameof(SidebarVisibility));
-        //         break;
-        //     }
-        // }
+        switch (e.PropertyName)
+        {
+            case nameof(INavigationService.CanNavigateBack):
+            {
+                NavigateBackCommand.NotifyCanExecuteChanged();
+                break;
+            }
+        }
+    }
+
+    private bool CanNavigateBack() => NavigationService.CanNavigateBack;
+
+    [RelayCommand(CanExecute = nameof(CanNavigateBack))]
+    private void NavigateBack()
+    {
+        NavigationService.NavigateBack();
     }
 
     private void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -54,18 +63,25 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
     
     [RelayCommand]
-    public Task NavigateToHome()
+    private Task NavigateToHome()
     {
         NavigationService.NavigateTo<HomeViewModel>();
         return Task.CompletedTask;
     }
 
     [RelayCommand]
-    public Task NavigateToImportCsv()
+    private Task NavigateToImportCsv()
     {
         NavigationService.NavigateTo<ImportCsvViewModel>();
         return Task.CompletedTask;
     }
+
+    [RelayCommand]
+    private Task NavigateToTeams()
+    {
+        NavigationService.NavigateTo<HistoricalTeamsViewModel>();
+        return Task.CompletedTask;
+    } 
 
     override public void Dispose()
     {

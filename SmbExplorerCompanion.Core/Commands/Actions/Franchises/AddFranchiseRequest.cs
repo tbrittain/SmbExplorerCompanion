@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using OneOf;
 using SmbExplorerCompanion.Core.Entities;
+using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Franchises;

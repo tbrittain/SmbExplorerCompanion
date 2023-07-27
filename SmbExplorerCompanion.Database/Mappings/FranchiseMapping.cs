@@ -1,5 +1,5 @@
 ﻿using Riok.Mapperly.Abstractions;
-using SmbExplorerCompanion.Core.Entities;
+using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Database.Entities;
 
 namespace SmbExplorerCompanion.Database.Mappings;

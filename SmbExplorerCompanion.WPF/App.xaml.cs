@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using SmbExplorerCompanion.Core;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database;
 using SmbExplorerCompanion.WPF.Services;
 using SmbExplorerCompanion.WPF.ViewModels;
@@ -45,6 +46,7 @@ public partial class App
     private static Task ConfigureServices(IServiceCollection services)
     {
         services
+            .AddLogging()
             .AddCore()
             .AddDatabase()
             .AddSingleton<MainWindow>(serviceProvider => new MainWindow
@@ -55,6 +57,8 @@ public partial class App
             .AddTransient<FranchiseSelectViewModel>()
             .AddTransient<HomeViewModel>()
             .AddTransient<ImportCsvViewModel>()
+            .AddTransient<HistoricalTeamsViewModel>()
+            .AddTransient<TeamOverviewViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
             // NavigationService calls this Func to get the ViewModel instance

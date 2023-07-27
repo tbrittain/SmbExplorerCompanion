@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -7,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Franchises;
 using SmbExplorerCompanion.Core.Commands.Queries.Franchises;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings;
 using SmbExplorerCompanion.WPF.Models;
@@ -39,7 +39,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
             var mapper = new FranchiseMapping();
             Franchises = franchises
                 .Select(x => mapper
-                    .FranchiseDtoToFranchise(x))
+                    .FromDto(x))
                 .ToObservableCollection();
         }
     }
@@ -91,6 +91,6 @@ public partial class FranchiseSelectViewModel : ViewModelBase
         }
 
         var mapper = new FranchiseMapping();
-        Franchises.Add(mapper.FranchiseDtoToFranchise(franchise));
+        Franchises.Add(mapper.FromDto(franchise));
     }
 }

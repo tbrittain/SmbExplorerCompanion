@@ -22,6 +22,14 @@
                 <views:ImportCsvView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type viewModels:HistoricalTeamsViewModel}">
+                <views:HistoricalTeamsView />
+            </DataTemplate>
+            
+            <DataTemplate DataType="{x:Type viewModels:TeamOverviewViewModel}">
+                <views:TeamOverviewView />
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
                 <ResourceDictionary

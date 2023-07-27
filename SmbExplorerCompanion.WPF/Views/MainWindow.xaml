@@ -28,9 +28,27 @@
             Orientation="Vertical"
             Background="WhiteSmoke">
 
+            <Button
+                Command="{Binding NavigateBackCommand}"
+                Margin="0, 0, 0, 10">
+                <TextBlock
+                    Text="Go back"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
+
             <Button Command="{Binding NavigateToHomeCommand}">
                 <TextBlock
                     Text="Home"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
+            
+            <Button Command="{Binding NavigateToTeamsCommand}">
+                <TextBlock
+                    Text="Teams"
                     FontSize="15"
                     FontWeight="Bold"
                     HorizontalAlignment="Left" />
