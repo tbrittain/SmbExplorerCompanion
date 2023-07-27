@@ -7,15 +7,14 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TeamOverviewViewModel}">
     <StackPanel Orientation="Vertical">
-        <!-- TODO Team header with general overall stats -->
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
             <!-- TODO This will be a team logo -->
-            <Rectangle Grid.Column="0" />
+            <Rectangle Grid.Column="0" Stroke="Red" Margin="5" Height="130" Width="130" />
 
             <StackPanel Grid.Column="1" Orientation="Vertical">
                 <StackPanel Orientation="Horizontal">
