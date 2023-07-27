@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerSeasonPitchingOverview
+public class PlayerPitchingOverview
 {
     public int SeasonNumber { get; set; }
     public int Age { get; set; }
@@ -34,4 +34,7 @@ public class PlayerSeasonPitchingOverview
     public double WalksPerNine { get; set; }
     public double StrikeoutsPerNine { get; set; }
     public double StrikeoutToWalkRatio { get; set; }
+    public int Salary { get; set; }
+    public string Traits { get; set; } = string.Empty;
+    public string PitchTypes { get; set; } = string.Empty;
 }

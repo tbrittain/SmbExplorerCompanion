@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerSeasonBattingOverview
+public class PlayerBattingOverview
 {
     public int SeasonNumber { get; set; }
     public int Age { get; set; }
@@ -30,7 +30,7 @@ public class PlayerSeasonBattingOverview
     public int SacrificeHits { get; set; }
     public int SacrificeFlies { get; set; }
     public int Errors { get; set; }
+    public int Salary { get; set; }
     public string SecondaryPosition { get; set; } = string.Empty;
-    public string Trait1 { get; set; } = string.Empty;
-    public string Trait2 { get; set; } = string.Empty;
+    public string Traits { get; set; } = string.Empty;
 }
