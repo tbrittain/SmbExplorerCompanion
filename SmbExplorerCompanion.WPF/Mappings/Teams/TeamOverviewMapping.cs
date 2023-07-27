@@ -5,7 +5,7 @@ using SmbExplorerCompanion.WPF.Models.Teams;
 namespace SmbExplorerCompanion.WPF.Mappings.Teams;
 
 [Mapper]
-public partial class HistoricalTeamMapping
+public partial class TeamOverviewMapping
 {
-    public partial HistoricalTeam FromDto(HistoricalTeamDto historicalTeamDto);
+    public partial TeamOverview FromDto(TeamOverviewDto teamOverviewDto);
 }

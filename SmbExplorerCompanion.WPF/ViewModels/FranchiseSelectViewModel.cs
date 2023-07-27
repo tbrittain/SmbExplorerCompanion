@@ -39,7 +39,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
             var mapper = new FranchiseMapping();
             Franchises = franchises
                 .Select(x => mapper
-                    .FranchiseDtoToFranchise(x))
+                    .FromDto(x))
                 .ToObservableCollection();
         }
     }
@@ -91,6 +91,6 @@ public partial class FranchiseSelectViewModel : ViewModelBase
         }
 
         var mapper = new FranchiseMapping();
-        Franchises.Add(mapper.FranchiseDtoToFranchise(franchise));
+        Franchises.Add(mapper.FromDto(franchise));
     }
 }

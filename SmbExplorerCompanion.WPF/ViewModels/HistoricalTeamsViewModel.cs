@@ -31,7 +31,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
         {
             var mapper = new HistoricalTeamMapping();
             HistoricalTeams = historicalTeams
-                .Select(x => mapper.HistoricalTeamFromHistoricalTeamDto(x))
+                .Select(x => mapper.FromDto(x))
                 .ToObservableCollection();
         }
         
