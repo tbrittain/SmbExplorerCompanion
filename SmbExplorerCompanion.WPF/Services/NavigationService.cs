@@ -29,8 +29,11 @@ public sealed class NavigationService : INavigationService
     public void NavigateTo<TViewModelBase>() where TViewModelBase : ViewModelBase
     {
         var viewModelBase = _viewModelFactory.Invoke(typeof(TViewModelBase));
-        _navigationStack.Push(viewModelBase);
-
+        if (viewModelBase is not FranchiseSelectViewModel)
+        {
+            _navigationStack.Push(viewModelBase);
+        }
+        
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
     }
@@ -51,7 +54,7 @@ public sealed class NavigationService : INavigationService
 
     public void NavigateBack()
     {
-        if (!_navigationStack.Any()) return;
+        if (_navigationStack.Count <= 1) return;
 
         _navigationStack.Pop();
 
@@ -59,7 +62,7 @@ public sealed class NavigationService : INavigationService
         CurrentView = _navigationStack.Peek();
     }
 
-    public bool CanNavigateBack => _navigationStack.Any();
+    public bool CanNavigateBack => _navigationStack.Count > 1;
 
     public bool TryGetParameter<T>(string parameterName, out T parameterValue) where T : notnull
     {

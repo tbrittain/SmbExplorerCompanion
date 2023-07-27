@@ -22,14 +22,22 @@ public partial class MainWindowViewModel : ViewModelBase
     private void NavigationServiceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         // TODO: Was going to use this to conditionally change the background color of the selected sidebar item
-        // switch (e.PropertyName)
-        // {
-        //     case nameof(INavigationService.CurrentView):
-        //     {
-        //         OnPropertyChanged(nameof(SidebarVisibility));
-        //         break;
-        //     }
-        // }
+        switch (e.PropertyName)
+        {
+            case nameof(INavigationService.CanNavigateBack):
+            {
+                NavigateBackCommand.NotifyCanExecuteChanged();
+                break;
+            }
+        }
+    }
+
+    private bool CanNavigateBack() => NavigationService.CanNavigateBack;
+
+    [RelayCommand(CanExecute = nameof(CanNavigateBack))]
+    private void NavigateBack()
+    {
+        NavigationService.NavigateBack();
     }
 
     private void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
