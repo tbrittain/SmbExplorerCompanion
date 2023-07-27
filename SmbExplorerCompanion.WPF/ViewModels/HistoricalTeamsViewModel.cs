@@ -62,7 +62,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
     {
         var parameters = new Tuple<string, object>[]
         {
-            new(TeamOverviewViewModel.TeamIdProp, team.Id)
+            new(TeamOverviewViewModel.TeamIdProp, team.TeamId)
         };
         _navigationService.NavigateTo<TeamOverviewViewModel>(parameters);
     }

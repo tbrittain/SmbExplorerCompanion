@@ -27,10 +27,11 @@ public class TeamOverviewViewModel : ViewModelBase
             MessageBox.Show(message);
             throw new Exception(message);
         }
-
+        
+        TeamId = teamId;
         _navigationService.ClearParameters();
 
-        var teamOverviewResponse = _mediator.Send(new GetTeamOverviewRequest(teamId)).Result;
+        var teamOverviewResponse = _mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
         if (teamOverviewResponse.TryPickT1(out var exception, out var teamOverview))
         {
             MessageBox.Show(exception.Message);
@@ -41,8 +42,6 @@ public class TeamOverviewViewModel : ViewModelBase
             var mapper = new TeamOverviewMapping();
             TeamOverview = mapper.FromDto(teamOverview);
         }
-
-        TeamId = teamId;
     }
 
     public int TeamId { get; set; }

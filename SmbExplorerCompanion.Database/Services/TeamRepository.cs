@@ -181,7 +181,6 @@ public class TeamRepository : ITeamRepository
             var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
                 .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
 
-            // TODO: This is throwing an exception that the Sequence contains no elements
             var teamOverviewDto = await _dbContext.SeasonTeamHistory
                 .Include(x => x.TeamNameHistory)
                 .Include(x => x.ChampionshipWinner)
@@ -239,33 +238,62 @@ public class TeamRepository : ITeamRepository
                 .OrderBy(x => x.SeasonNumber)
                 .ToList();
 
+            // TODO: This will likely pull back more data the more seasons there are,
+            // so we will want to do some sort of ordering and limiting here in the future
             var topPlayers = await _dbContext.Players
+                .Include(x => x.PrimaryPosition)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PlayerTeamHistory)
+                .ThenInclude(x => x.SeasonTeamHistory)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.BattingStats)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.PitchingStats)
                 .Where(x => x.PlayerSeasons
                     .Any(y => y.PlayerTeamHistory
-                        .Any(z => z.SeasonTeamHistory!.TeamId == teamId)))
+                        .Any(z => z.SeasonTeamHistory != null && z.SeasonTeamHistory.TeamId == teamId)))
                 .ToListAsync(cancellationToken: cancellationToken);
 
             teamOverviewDto.TopPlayers = topPlayers
-                .Select(x => new TeamTopPlayerHistoryDto
+                .Select(x =>
                 {
-                    PlayerId = x.Id,
-                    NumSeasonsWithTeam = x.PlayerSeasons
-                        .Count(y => y.PlayerTeamHistory
-                            .Any(z => z.SeasonTeamHistory!.TeamId == teamId)),
-                    AverageOpsPlus = x.PlayerSeasons
+                    var dto = new TeamTopPlayerHistoryDto();
+                    dto.PlayerId = x.Id;
+                    dto.PlayerName = $"{x.FirstName} {x.LastName}";
+                    dto.PlayerPosition = x.PrimaryPosition.Name;
+
+                    var seasonsWithTeam = x.PlayerSeasons
                         .Where(y => y.PlayerTeamHistory
-                            .Any(z => z.SeasonTeamHistory!.TeamId == teamId))
-                        .SelectMany(y => y.BattingStats)
-                        .Average(y => y.OpsPlus ?? 0),
-                    WeightedOpsPlus = x.PlayerSeasons
-                        .Where(y => y.PlayerTeamHistory
-                            .Any(z => z.SeasonTeamHistory!.TeamId == teamId))
-                        .SelectMany(y => y.BattingStats)
-                        .Sum(y => (y.OpsPlus ?? 0) * y.AtBats),
+                            .Any(z => z.SeasonTeamHistory is not null && z.SeasonTeamHistory.TeamId == teamId))
+                        .ToList();
+                    dto.NumSeasonsWithTeam = seasonsWithTeam.Count;
+
+                    var isPitcher = x.PitcherRoleId is not null;
+                    dto.IsPitcher = isPitcher;
+
+                    if (isPitcher)
+                    {
+                        dto.AverageEraMinus = seasonsWithTeam
+                            .SelectMany(y => y.PitchingStats)
+                            .Average(y => y.EraMinus ?? 0);
+                        dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
+                            .SelectMany(y => y.PitchingStats)
+                            .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched * 2.25) ?? 0);
+                    }
+                    else
+                    {
+                        dto.AverageOpsPlus = seasonsWithTeam
+                            .SelectMany(y => y.BattingStats)
+                            .Average(y => y.OpsPlus ?? 0);
+                        dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
+                            .SelectMany(y => y.BattingStats)
+                            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats);
+                    }
+
+                    return dto;
                 })
-                .OrderByDescending(x => x.WeightedOpsPlus)
+                .OrderByDescending(x => x.WeightedOpsPlusOrEraMinus)
+                .Take(25)
                 .ToList();
 
             return teamOverviewDto;
