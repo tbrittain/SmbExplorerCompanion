@@ -65,7 +65,7 @@ public class PlayerOverviewViewModel : ViewModelBase
     public int PitcherGridRow => PlayerOverview.IsPitcher ? 0 : 1;
     public int BatterGridRow => PlayerOverview.IsPitcher ? 1 : 0;
 
-    public PlayerOverview PlayerOverview { get; set; }
+    public PlayerOverview PlayerOverview { get; }
 
-    private int PlayerId { get; set; }
+    private int PlayerId { get; }
 }

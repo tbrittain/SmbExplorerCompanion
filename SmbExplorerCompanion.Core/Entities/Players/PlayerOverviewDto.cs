@@ -6,6 +6,13 @@ public class PlayerOverviewDto
     public string PlayerName { get; set; } = string.Empty;
     public bool IsPitcher { get; set; }
     public int TotalSalary { get; set; }
+    public string BatHandedness { get; set; } = string.Empty;
+    public string ThrowHandedness { get; set; } = string.Empty;
+    public string PrimaryPosition { get; set; } = string.Empty;
+    public string? PitcherRole { get; set; }
+    public string Chemistry { get; set; } = string.Empty;
+    public string CurrentTeam { get; set; } = string.Empty;
+    public int? CurrentTeamId { get; set; }
 
     // Batting stats, applicable to both pitchers and batters
     public int AtBats { get; set; }

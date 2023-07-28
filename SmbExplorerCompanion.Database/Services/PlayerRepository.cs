@@ -49,7 +49,24 @@ public class PlayerRepository : IPlayerRepository
 
             playerOverviewDto.PlayerId = playerWithSeasons.Id;
             playerOverviewDto.PlayerName = $"{playerWithSeasons.FirstName} {playerWithSeasons.LastName}";
+
+            var currentTeam = playerWithSeasons.PlayerSeasons
+                .OrderByDescending(x => x.Season.Number)
+                .First()
+                .PlayerTeamHistory
+                .OrderByDescending(x => x.Order)
+                .First()
+                .SeasonTeamHistory;
+            playerOverviewDto.CurrentTeam = currentTeam?.TeamNameHistory
+                .Name ?? "Free Agent";
+            playerOverviewDto.CurrentTeamId = currentTeam?.TeamId;
             playerOverviewDto.IsPitcher = playerWithSeasons.PitcherRole is not null;
+            playerOverviewDto.BatHandedness = playerWithSeasons.BatHandedness.Name;
+            playerOverviewDto.ThrowHandedness = playerWithSeasons.ThrowHandedness.Name;
+            playerOverviewDto.PrimaryPosition = playerWithSeasons.PrimaryPosition.Name;
+            playerOverviewDto.PitcherRole = playerWithSeasons.PitcherRole?.Name;
+            // TODO: Asserting here because only supporting SMB4 for now
+            playerOverviewDto.Chemistry = playerWithSeasons.Chemistry!.Name;
             playerOverviewDto.TotalSalary = playerWithSeasons.PlayerSeasons
                 .Sum(x =>
                 {
