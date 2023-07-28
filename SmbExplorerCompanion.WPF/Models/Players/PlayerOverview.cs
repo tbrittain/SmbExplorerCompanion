@@ -11,6 +11,7 @@ public class PlayerOverview
     public string BatHandedness { get; set; } = string.Empty;
     public string ThrowHandedness { get; set; } = string.Empty;
     public string PrimaryPosition { get; set; } = string.Empty;
+    public string DisplayPosition => $"{PrimaryPosition}{(IsPitcher ? $" ({PitcherRole})" : "")}";
     public string? PitcherRole { get; set; }
     public string Chemistry { get; set; } = string.Empty;
     public string CurrentTeam { get; set; } = string.Empty;

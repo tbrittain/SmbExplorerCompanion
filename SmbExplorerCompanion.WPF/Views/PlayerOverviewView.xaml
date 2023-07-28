@@ -33,8 +33,8 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="Primary position:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.PrimaryPosition}" FontSize="14" />
+                    <TextBlock FontSize="14" Text="Position:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding PlayerOverview.DisplayPosition}" FontSize="14" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">

@@ -147,12 +147,12 @@ public class PlayerRepository : IPlayerRepository
             playerOverviewDto.Losses = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.PitchingStats.Sum(y => y.Losses));
             playerOverviewDto.Era = playerWithSeasons.PlayerSeasons
-                .Sum(x => x.PitchingStats.Sum(y => y.EarnedRuns)) == 0
+                .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched)) == 0
                 ? 0
                 : playerWithSeasons.PlayerSeasons
-                      .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched ?? 0)) /
-                  playerWithSeasons.PlayerSeasons
-                      .Sum(x => x.PitchingStats.Sum(y => y.EarnedRuns));
+                    .Sum(x => x.PitchingStats.Sum(y => y.EarnedRuns)) /
+                playerWithSeasons.PlayerSeasons
+                    .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched.GetValueOrDefault())) * 9;
             playerOverviewDto.Games = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.PitchingStats.Sum(y => y.GamesPlayed));
             playerOverviewDto.GamesStarted = playerWithSeasons.PlayerSeasons
