@@ -40,9 +40,14 @@ public class PlayerOverviewViewModel : ViewModelBase
         else
         {
             var mapper = new PlayerOverviewMapping();
-            PlayerOverview = mapper.FromDto(playerOverview);
+            var overview = mapper.FromDto(playerOverview);
+            overview.PopulateCareerStats();
+            PlayerOverview = overview;
         }
     }
+
+    public Visibility CareerPitchingVisibility => PlayerOverview.IsPitcher ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility CareerBattingVisibility => PlayerOverview.IsPitcher ? Visibility.Collapsed : Visibility.Visible;
 
     public Visibility OverallBattingVisibility => PlayerOverview.PlayerSeasonBatting.Any() ||
                                                   PlayerOverview.PlayerPlayoffBatting.Any()

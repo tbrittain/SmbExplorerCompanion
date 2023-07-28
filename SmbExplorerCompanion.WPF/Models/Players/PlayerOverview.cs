@@ -34,10 +34,55 @@ public class PlayerOverview
     public double Whip { get; set; }
     public double EraMinus { get; set; }
 
+    public void PopulateCareerStats()
+    {
+        if (IsPitcher)
+            PopulateCareerPitchingStats();
+        else
+            PopulateCareerBattingStats();
+    }
+
+    private void PopulateCareerBattingStats()
+    {
+        PlayerCareerBatting.Add(new PlayerCareerBattingOverview
+        {
+            AtBats = AtBats,
+            Hits = Hits,
+            HomeRuns = HomeRuns,
+            BattingAverage = BattingAverage,
+            Runs = Runs,
+            RunsBattedIn = RunsBattedIn,
+            StolenBases = StolenBases,
+            Obp = Obp,
+            Slg = Slg,
+            Ops = Ops,
+            OpsPlus = OpsPlus
+        });
+    }
+
+    private void PopulateCareerPitchingStats()
+    {
+        PlayerCareerPitching.Add(new PlayerCareerPitchingOverview
+        {
+            Wins = Wins,
+            Losses = Losses,
+            Era = Era,
+            Games = Games,
+            GamesStarted = GamesStarted,
+            Saves = Saves,
+            InningsPitched = InningsPitched,
+            Strikeouts = Strikeouts,
+            Whip = Whip,
+            EraMinus = EraMinus
+        });
+    }
+
+    public ObservableCollection<PlayerCareerBattingOverview> PlayerCareerBatting { get; set; } = new();
+    public ObservableCollection<PlayerCareerPitchingOverview> PlayerCareerPitching { get; set; } = new();
+
     public ObservableCollection<PlayerBattingOverview> PlayerSeasonBatting { get; set; } = new();
     public ObservableCollection<PlayerBattingOverview> PlayerPlayoffBatting { get; set; } = new();
     public ObservableCollection<PlayerPitchingOverview> PlayerSeasonPitching { get; set; } = new();
     public ObservableCollection<PlayerPitchingOverview> PlayerPlayoffPitching { get; set; } = new();
     public ObservableCollection<PlayerGameStatOverview> GameStats { get; set; } = new();
-
 }
