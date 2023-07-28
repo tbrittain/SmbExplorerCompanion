@@ -29,6 +29,8 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.GameStats)
                 .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.Season)
+                .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.BattingStats)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PitchingStats)
@@ -39,20 +41,20 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
-                .ThenInclude(x => x!.Division)
-                .ThenInclude(x => x.Conference)
+                .ThenInclude(x => x!.TeamNameHistory)
                 .Where(x => x.Id == playerId)
                 .SingleAsync(cancellationToken: cancellationToken);
 
             playerOverviewDto.PlayerId = playerWithSeasons.Id;
             playerOverviewDto.PlayerName = $"{playerWithSeasons.FirstName} {playerWithSeasons.LastName}";
             playerOverviewDto.IsPitcher = playerWithSeasons.PitcherRole is not null;
-            playerOverviewDto.TotalSalary = playerWithSeasons.PlayerSeasons.Sum(x =>
+            playerOverviewDto.TotalSalary = playerWithSeasons.PlayerSeasons
+                .Sum(x =>
             {
                 var mostRecentTeam = x.PlayerTeamHistory.First(y => y.Order == 1);
                 return mostRecentTeam.SeasonTeamHistory is null ? 0 : x.Salary;
             });
-            
+
             // Batting specific stats
             playerOverviewDto.AtBats = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.BattingStats.Sum(y => y.AtBats));
@@ -64,7 +66,7 @@ public class PlayerRepository : IPlayerRepository
                 .Sum(x => x.BattingStats.Sum(y => y.AtBats)) == 0
                 ? 0
                 : playerWithSeasons.PlayerSeasons
-                    .Sum(x => x.BattingStats.Sum(y => y.Hits)) /
+                      .Sum(x => x.BattingStats.Sum(y => y.Hits)) /
                   (double) playerWithSeasons.PlayerSeasons
                       .Sum(x => x.BattingStats.Sum(y => y.AtBats));
             playerOverviewDto.Runs = playerWithSeasons.PlayerSeasons
@@ -77,30 +79,30 @@ public class PlayerRepository : IPlayerRepository
                 .Sum(x => x.BattingStats.Sum(y => y.PlateAppearances)) == 0
                 ? 0
                 : (playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.Hits)) +
-                    playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.Walks)) +
-                    playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.HitByPitch))) /
+                       .Sum(x => x.BattingStats.Sum(y => y.Hits)) +
+                   playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.Walks)) +
+                   playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.HitByPitch))) /
                   (double) (playerWithSeasons.PlayerSeasons
-                      .Sum(x => x.BattingStats.Sum(y => y.PlateAppearances)) +
-                    playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.Walks)) +
-                    playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.HitByPitch)) +
-                    playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.SacrificeFlies)));
+                                .Sum(x => x.BattingStats.Sum(y => y.PlateAppearances)) +
+                            playerWithSeasons.PlayerSeasons
+                                .Sum(x => x.BattingStats.Sum(y => y.Walks)) +
+                            playerWithSeasons.PlayerSeasons
+                                .Sum(x => x.BattingStats.Sum(y => y.HitByPitch)) +
+                            playerWithSeasons.PlayerSeasons
+                                .Sum(x => x.BattingStats.Sum(y => y.SacrificeFlies)));
             playerOverviewDto.Slg = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.BattingStats.Sum(y => y.AtBats)) == 0
                 ? 0
                 : (playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.BattingStats.Sum(y => y.Singles)) +
-                    (playerWithSeasons.PlayerSeasons
-                         .Sum(x => x.BattingStats.Sum(y => y.Doubles)) * 2) +
-                    (playerWithSeasons.PlayerSeasons
-                         .Sum(x => x.BattingStats.Sum(y => y.Triples)) * 3) +
-                    (playerWithSeasons.PlayerSeasons
-                         .Sum(x => x.BattingStats.Sum(y => y.HomeRuns)) * 4)) /
+                       .Sum(x => x.BattingStats.Sum(y => y.Singles)) +
+                   (playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.Doubles)) * 2) +
+                   (playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.Triples)) * 3) +
+                   (playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.HomeRuns)) * 4)) /
                   (double) playerWithSeasons.PlayerSeasons
                       .Sum(x => x.BattingStats.Sum(y => y.AtBats));
             playerOverviewDto.Ops = playerOverviewDto.Obp + playerOverviewDto.Slg;
@@ -114,7 +116,7 @@ public class PlayerRepository : IPlayerRepository
                 })
                 .Where(x => x.OpsPlus is not null)
                 .Average(x => x.OpsPlus!.Value * (x.GamesBatting / (double) x.GamesPlayed));
-            
+
             // Pitching specific stats
             playerOverviewDto.Wins = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.PitchingStats.Sum(y => y.Wins));
@@ -124,7 +126,7 @@ public class PlayerRepository : IPlayerRepository
                 .Sum(x => x.PitchingStats.Sum(y => y.EarnedRuns)) == 0
                 ? 0
                 : playerWithSeasons.PlayerSeasons
-                    .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched ?? 0)) /
+                      .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched ?? 0)) /
                   playerWithSeasons.PlayerSeasons
                       .Sum(x => x.PitchingStats.Sum(y => y.EarnedRuns));
             playerOverviewDto.Games = playerWithSeasons.PlayerSeasons
@@ -141,12 +143,12 @@ public class PlayerRepository : IPlayerRepository
                 .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched)) == 0
                 ? 0
                 : (playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.PitchingStats.Sum(y => y.Hits)) +
-                    playerWithSeasons.PlayerSeasons
-                        .Sum(x => x.PitchingStats.Sum(y => y.Walks))) /
+                       .Sum(x => x.PitchingStats.Sum(y => y.Hits)) +
+                   playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.PitchingStats.Sum(y => y.Walks))) /
                   playerWithSeasons.PlayerSeasons
                       .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched ?? 0));
-            
+
             // It would be nice to calculate this in the same way as OPS+ above, but we don't have a number of
             // pitcher appearances stat to use in the calculation, as GamesPlayed is unreliable for pitchers
             playerOverviewDto.EraMinus = playerWithSeasons.PlayerSeasons
@@ -154,7 +156,239 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.EraMinus is not null)
                 .Average(x => x.EraMinus!.Value);
 
-            throw new NotImplementedException();
+            var battingSeasons = playerWithSeasons.PlayerSeasons
+                .Select(x => new
+                {
+                    SeasonNumber = x.Season.Number,
+                    TeamNames = string.Join(", ",
+                        x.PlayerTeamHistory
+                            .OrderBy(y => y.Order)
+                            .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
+                    Salary = x.PlayerTeamHistory
+                        .SingleOrDefault(y => y.Order == 1) is null ? 0 : x.Salary,
+                    SecondaryPosition = x.SecondaryPosition?.Name,
+                    Traits = string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                    x.Age,
+                    x.BattingStats
+                })
+                .ToList();
+
+            var pitchingSeasons = playerWithSeasons.PlayerSeasons
+                .Select(x => new
+                {
+                    SeasonNumber = x.Season.Number,
+                    TeamNames = string.Join(", ",
+                        x.PlayerTeamHistory
+                            .OrderBy(y => y.Order)
+                            .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
+                    Salary = x.PlayerTeamHistory
+                        .SingleOrDefault(y => y.Order == 1) is null ? 0 : x.Salary,
+                    Traits = string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                    x.Age,
+                    x.PitchingStats
+                })
+                .ToList();
+
+            var seasonBatting = battingSeasons
+                .Select(x =>
+                {
+                    var battingStat = x.BattingStats.SingleOrDefault(y => y.IsRegularSeason);
+                    if (battingStat is null) return null;
+
+                    return new PlayerBattingOverview
+                    {
+                        SeasonNumber = x.SeasonNumber,
+                        Age = x.Age,
+                        TeamNames = x.TeamNames,
+                        Salary = x.Salary,
+                        SecondaryPosition = x.SecondaryPosition,
+                        Traits = x.Traits,
+                        Games = battingStat.GamesBatting,
+                        PlateAppearances = battingStat.PlateAppearances,
+                        AtBats = battingStat.AtBats,
+                        Runs = battingStat.Runs,
+                        Hits = battingStat.Hits,
+                        Singles = battingStat.Singles,
+                        Doubles = battingStat.Doubles,
+                        Triples = battingStat.Triples,
+                        HomeRuns = battingStat.HomeRuns,
+                        RunsBattedIn = battingStat.RunsBattedIn,
+                        StolenBases = battingStat.StolenBases,
+                        CaughtStealing = battingStat.CaughtStealing,
+                        Walks = battingStat.Walks,
+                        Strikeouts = battingStat.Strikeouts,
+                        BattingAverage = battingStat.BattingAverage ?? 0,
+                        Obp = battingStat.Obp ?? 0,
+                        Slg = battingStat.Slg ?? 0,
+                        Ops = battingStat.Ops ?? 0,
+                        OpsPlus = battingStat.OpsPlus ?? 0,
+                        TotalBases = battingStat.TotalBases,
+                        HitByPitch = battingStat.HitByPitch,
+                        SacrificeHits = battingStat.SacrificeHits,
+                        SacrificeFlies = battingStat.SacrificeFlies,
+                        Errors = battingStat.Errors,
+                    };
+                })
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .ToList();
+
+            playerOverviewDto.PlayerSeasonBatting.AddRange(seasonBatting);
+            
+            var playoffBatting = battingSeasons
+                .Select(x =>
+                {
+                    var battingStat = x.BattingStats.SingleOrDefault(y => !y.IsRegularSeason);
+                    if (battingStat is null) return null;
+
+                    return new PlayerBattingOverview
+                    {
+                        SeasonNumber = x.SeasonNumber,
+                        Age = x.Age,
+                        TeamNames = x.TeamNames,
+                        Salary = x.Salary,
+                        SecondaryPosition = x.SecondaryPosition,
+                        Traits = x.Traits,
+                        Games = battingStat.GamesBatting,
+                        PlateAppearances = battingStat.PlateAppearances,
+                        AtBats = battingStat.AtBats,
+                        Runs = battingStat.Runs,
+                        Hits = battingStat.Hits,
+                        Singles = battingStat.Singles,
+                        Doubles = battingStat.Doubles,
+                        Triples = battingStat.Triples,
+                        HomeRuns = battingStat.HomeRuns,
+                        RunsBattedIn = battingStat.RunsBattedIn,
+                        StolenBases = battingStat.StolenBases,
+                        CaughtStealing = battingStat.CaughtStealing,
+                        Walks = battingStat.Walks,
+                        Strikeouts = battingStat.Strikeouts,
+                        BattingAverage = battingStat.BattingAverage ?? 0,
+                        Obp = battingStat.Obp ?? 0,
+                        Slg = battingStat.Slg ?? 0,
+                        Ops = battingStat.Ops ?? 0,
+                        OpsPlus = battingStat.OpsPlus ?? 0,
+                        TotalBases = battingStat.TotalBases,
+                        HitByPitch = battingStat.HitByPitch,
+                        SacrificeHits = battingStat.SacrificeHits,
+                        SacrificeFlies = battingStat.SacrificeFlies,
+                        Errors = battingStat.Errors,
+                    };
+                })
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .ToList();
+            
+            playerOverviewDto.PlayerPlayoffBatting.AddRange(playoffBatting);
+            
+            var seasonPitching = pitchingSeasons
+                .Select(x =>
+                {
+                    var pitchingStat = x.PitchingStats.SingleOrDefault(y => y.IsRegularSeason);
+                    if (pitchingStat is null) return null;
+
+                    return new PlayerPitchingOverview
+                    {
+                        SeasonNumber = x.SeasonNumber,
+                        Age = x.Age,
+                        TeamNames = x.TeamNames,
+                        Salary = x.Salary,
+                        Traits = x.Traits,
+                        Games = pitchingStat.GamesPlayed,
+                        GamesStarted = pitchingStat.GamesStarted,
+                        Wins = pitchingStat.Wins,
+                        Losses = pitchingStat.Losses,
+                        Saves = pitchingStat.Saves,
+                        InningsPitched = pitchingStat.InningsPitched ?? 0,
+                        Strikeouts = pitchingStat.Strikeouts,
+                        EarnedRuns = pitchingStat.EarnedRuns,
+                        Walks = pitchingStat.Walks,
+                        Hits = pitchingStat.Hits,
+                        HomeRuns = pitchingStat.HomeRuns,
+                        Whip = pitchingStat.Whip ?? 0,
+                        Era = pitchingStat.EarnedRunAverage ?? 0,
+                        EraMinus = pitchingStat.EraMinus ?? 0,
+                    };
+                })
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .ToList();
+            
+            playerOverviewDto.PlayerSeasonPitching.AddRange(seasonPitching);
+
+            var playoffPitching = pitchingSeasons
+                .Select(x =>
+                {
+                    var pitchingStat = x.PitchingStats.SingleOrDefault(y => !y.IsRegularSeason);
+                    if (pitchingStat is null) return null;
+
+                    return new PlayerPitchingOverview
+                    {
+                        SeasonNumber = x.SeasonNumber,
+                        Age = x.Age,
+                        TeamNames = x.TeamNames,
+                        Salary = x.Salary,
+                        Traits = x.Traits,
+                        Games = pitchingStat.GamesPlayed,
+                        GamesStarted = pitchingStat.GamesStarted,
+                        Wins = pitchingStat.Wins,
+                        Losses = pitchingStat.Losses,
+                        Saves = pitchingStat.Saves,
+                        InningsPitched = pitchingStat.InningsPitched ?? 0,
+                        Strikeouts = pitchingStat.Strikeouts,
+                        EarnedRuns = pitchingStat.EarnedRuns,
+                        Walks = pitchingStat.Walks,
+                        Hits = pitchingStat.Hits,
+                        HomeRuns = pitchingStat.HomeRuns,
+                        Whip = pitchingStat.Whip ?? 0,
+                        Era = pitchingStat.EarnedRunAverage ?? 0,
+                        EraMinus = pitchingStat.EraMinus ?? 0,
+                    };
+                })
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .ToList();
+
+            playerOverviewDto.PlayerPlayoffPitching.AddRange(playoffPitching);
+            
+            var gameStats = playerWithSeasons.PlayerSeasons
+                .Select(x => new
+                {
+                    SeasonNumber = x.Season.Number,
+                    TeamNames = string.Join(", ",
+                        x.PlayerTeamHistory
+                            .OrderBy(y => y.Order)
+                            .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
+                    Salary = x.PlayerTeamHistory
+                        .SingleOrDefault(y => y.Order == 1) is null ? 0 : x.Salary,
+                    Traits = string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                    SecondaryPosition = x.SecondaryPosition?.Name,
+                    x.Age,
+                    x.GameStats
+                })
+                .ToList();
+
+            playerOverviewDto.GameStats = gameStats
+                .Select(x => new PlayerGameStatOverview
+                {
+                    SeasonNumber = x.SeasonNumber,
+                    Age = x.Age,
+                    TeamNames = x.TeamNames,
+                    Salary = x.Salary,
+                    Traits = x.Traits,
+                    SecondaryPosition = x.SecondaryPosition,
+                    Power = x.GameStats.Power,
+                    Contact = x.GameStats.Contact,
+                    Speed = x.GameStats.Speed,
+                    Fielding = x.GameStats.Fielding,
+                    Arm = x.GameStats.Arm,
+                    Velocity = x.GameStats.Velocity,
+                    Junk = x.GameStats.Junk,
+                    Accuracy = x.GameStats.Accuracy,
+                })
+                .ToList();
+
+            return playerOverviewDto;
         }
         catch (Exception e)
         {

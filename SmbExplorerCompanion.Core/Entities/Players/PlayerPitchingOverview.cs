@@ -4,8 +4,7 @@ public class PlayerPitchingOverview
 {
     public int SeasonNumber { get; set; }
     public int Age { get; set; }
-    public string TeamName { get; set; } = string.Empty;
-    public string ConferenceName { get; set; } = string.Empty;
+    public string TeamNames { get; set; } = string.Empty;
     public int Wins { get; set; }
     public int Losses { get; set; }
     public double WinPercentage { get; set; }

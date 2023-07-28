@@ -4,8 +4,7 @@ public class PlayerBattingOverview
 {
     public int SeasonNumber { get; set; }
     public int Age { get; set; }
-    public string TeamName { get; set; } = string.Empty;
-    public string ConferenceName { get; set; } = string.Empty;
+    public string TeamNames { get; set; } = string.Empty;
     public int Games { get; set; }
     public int PlateAppearances { get; set; }
     public int AtBats { get; set; }
@@ -31,6 +30,6 @@ public class PlayerBattingOverview
     public int SacrificeFlies { get; set; }
     public int Errors { get; set; }
     public int Salary { get; set; }
-    public string SecondaryPosition { get; set; } = string.Empty;
+    public string? SecondaryPosition { get; set; } = string.Empty;
     public string Traits { get; set; } = string.Empty;
 }

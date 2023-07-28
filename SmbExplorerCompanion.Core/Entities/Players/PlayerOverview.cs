@@ -36,5 +36,5 @@ public class PlayerOverview
     public List<PlayerBattingOverview> PlayerPlayoffBatting { get; set; } = new();
     public List<PlayerPitchingOverview> PlayerSeasonPitching { get; set; } = new();
     public List<PlayerPitchingOverview> PlayerPlayoffPitching { get; set; } = new();
-    public List<PlayerSeasonGameStatOverview> GameStats { get; set; } = new();
+    public List<PlayerGameStatOverview> GameStats { get; set; } = new();
 }
