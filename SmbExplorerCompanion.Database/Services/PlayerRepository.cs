@@ -50,10 +50,10 @@ public class PlayerRepository : IPlayerRepository
             playerOverviewDto.IsPitcher = playerWithSeasons.PitcherRole is not null;
             playerOverviewDto.TotalSalary = playerWithSeasons.PlayerSeasons
                 .Sum(x =>
-            {
-                var mostRecentTeam = x.PlayerTeamHistory.First(y => y.Order == 1);
-                return mostRecentTeam.SeasonTeamHistory is null ? 0 : x.Salary;
-            });
+                {
+                    var mostRecentTeam = x.PlayerTeamHistory.First(y => y.Order == 1);
+                    return mostRecentTeam.SeasonTeamHistory is null ? 0 : x.Salary;
+                });
 
             // Batting specific stats
             playerOverviewDto.AtBats = playerWithSeasons.PlayerSeasons
@@ -106,16 +106,21 @@ public class PlayerRepository : IPlayerRepository
                   (double) playerWithSeasons.PlayerSeasons
                       .Sum(x => x.BattingStats.Sum(y => y.AtBats));
             playerOverviewDto.Ops = playerOverviewDto.Obp + playerOverviewDto.Slg;
-            playerOverviewDto.OpsPlus = playerWithSeasons.PlayerSeasons
+
+            var battingStats = playerWithSeasons.PlayerSeasons
                 .SelectMany(x => x.BattingStats)
-                .Select(x => new
-                {
-                    x.OpsPlus,
-                    x.GamesBatting,
-                    x.GamesPlayed
-                })
-                .Where(x => x.OpsPlus is not null)
-                .Average(x => x.OpsPlus!.Value * (x.GamesBatting / (double) x.GamesPlayed));
+                .ToList();
+
+            if (battingStats.Any())
+            {
+                playerOverviewDto.OpsPlus = battingStats
+                    .Where(x => x.OpsPlus is not null && x.IsRegularSeason)
+                    .Average(x => x.OpsPlus!.Value);
+            }
+            else
+            {
+                playerOverviewDto.OpsPlus = 0;
+            }
 
             // Pitching specific stats
             playerOverviewDto.Wins = playerWithSeasons.PlayerSeasons
@@ -149,12 +154,20 @@ public class PlayerRepository : IPlayerRepository
                   playerWithSeasons.PlayerSeasons
                       .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched ?? 0));
 
-            // It would be nice to calculate this in the same way as OPS+ above, but we don't have a number of
-            // pitcher appearances stat to use in the calculation, as GamesPlayed is unreliable for pitchers
-            playerOverviewDto.EraMinus = playerWithSeasons.PlayerSeasons
+            var pitchingStats = playerWithSeasons.PlayerSeasons
                 .SelectMany(x => x.PitchingStats)
-                .Where(x => x.EraMinus is not null)
-                .Average(x => x.EraMinus!.Value);
+                .ToList();
+
+            if (pitchingStats.Any())
+            {
+                playerOverviewDto.EraMinus = pitchingStats
+                    .Where(x => x.EraMinus is not null && x.IsRegularSeason)
+                    .Average(x => x.EraMinus!.Value);
+            }
+            else
+            {
+                playerOverviewDto.EraMinus = 0;
+            }
 
             var battingSeasons = playerWithSeasons.PlayerSeasons
                 .Select(x => new
@@ -165,9 +178,11 @@ public class PlayerRepository : IPlayerRepository
                             .OrderBy(y => y.Order)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     Salary = x.PlayerTeamHistory
-                        .SingleOrDefault(y => y.Order == 1) is null ? 0 : x.Salary,
+                        .SingleOrDefault(y => y.Order == 1) is null
+                        ? 0
+                        : x.Salary,
                     SecondaryPosition = x.SecondaryPosition?.Name,
-                    Traits = string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                    Traits = x.Traits.Any() ? string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
                     x.Age,
                     x.BattingStats
                 })
@@ -182,8 +197,10 @@ public class PlayerRepository : IPlayerRepository
                             .OrderBy(y => y.Order)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     Salary = x.PlayerTeamHistory
-                        .SingleOrDefault(y => y.Order == 1) is null ? 0 : x.Salary,
-                    Traits = string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                        .SingleOrDefault(y => y.Order == 1) is null
+                        ? 0
+                        : x.Salary,
+                    Traits = x.Traits.Any() ? string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
                     x.Age,
                     x.PitchingStats
                 })
@@ -234,7 +251,7 @@ public class PlayerRepository : IPlayerRepository
                 .ToList();
 
             playerOverviewDto.PlayerSeasonBatting.AddRange(seasonBatting);
-            
+
             var playoffBatting = battingSeasons
                 .Select(x =>
                 {
@@ -278,9 +295,9 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToList();
-            
+
             playerOverviewDto.PlayerPlayoffBatting.AddRange(playoffBatting);
-            
+
             var seasonPitching = pitchingSeasons
                 .Select(x =>
                 {
@@ -313,7 +330,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToList();
-            
+
             playerOverviewDto.PlayerSeasonPitching.AddRange(seasonPitching);
 
             var playoffPitching = pitchingSeasons
@@ -350,7 +367,7 @@ public class PlayerRepository : IPlayerRepository
                 .ToList();
 
             playerOverviewDto.PlayerPlayoffPitching.AddRange(playoffPitching);
-            
+
             var gameStats = playerWithSeasons.PlayerSeasons
                 .Select(x => new
                 {
@@ -360,7 +377,9 @@ public class PlayerRepository : IPlayerRepository
                             .OrderBy(y => y.Order)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     Salary = x.PlayerTeamHistory
-                        .SingleOrDefault(y => y.Order == 1) is null ? 0 : x.Salary,
+                        .SingleOrDefault(y => y.Order == 1) is null
+                        ? 0
+                        : x.Salary,
                     Traits = string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
                     SecondaryPosition = x.SecondaryPosition?.Name,
                     x.Age,

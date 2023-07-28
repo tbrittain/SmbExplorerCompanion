@@ -81,6 +81,7 @@
             <ScrollViewer>
                 <DataGrid
                     ItemsSource="{Binding TeamOverview.TopPlayers}"
+                    SelectedItem="{Binding SelectedPlayer}"
                     AutoGenerateColumns="True"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
