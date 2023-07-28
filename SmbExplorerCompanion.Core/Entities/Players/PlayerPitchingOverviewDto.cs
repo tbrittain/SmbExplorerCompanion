@@ -7,7 +7,7 @@ public class PlayerPitchingOverviewDto
     public string TeamNames { get; set; } = string.Empty;
     public int Wins { get; set; }
     public int Losses { get; set; }
-    public double WinPercentage { get; set; }
+    public double WinPercentage => Wins + Losses > 0 ? (double)Wins / (Wins + Losses) : 0;
     public double Era { get; set; }
     public int Games { get; set; }
     public int GamesStarted { get; set; }

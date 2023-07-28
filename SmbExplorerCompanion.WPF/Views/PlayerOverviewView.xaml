@@ -5,8 +5,129 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance viewModels:TeamOverviewViewModel}">
-    <Grid>
-        <Label Content="The player overview will go here" />
-    </Grid>
+             d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical">
+
+            <StackPanel
+                Orientation="Vertical"
+                Margin="0, 0, 0, 15">
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="16" Text="Player name:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding PlayerOverview.PlayerName}" FontSize="16" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Career earnings:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding PlayerOverview.TotalSalary}" FontSize="14" />
+                </StackPanel>
+
+                <!-- TODO: Career stats here -->
+            </StackPanel>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <Grid
+                    Grid.Row="{Binding BatterGridRow}"
+                    Visibility="{Binding OverallBattingVisibility}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="500" />
+                        <RowDefinition MaxHeight="500"></RowDefinition>
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" Visibility="{Binding SeasonBattingVisibility}">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock FontSize="14" Text="Season Batting" FontWeight="Bold" />
+                            <DataGrid
+                                ItemsSource="{Binding PlayerOverview.PlayerSeasonBatting}"
+                                AutoGenerateColumns="True"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserReorderColumns="False"
+                                CanUserSortColumns="True"
+                                CanUserResizeColumns="True"
+                                SelectionMode="Single" />
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Row="1" Visibility="{Binding PlayoffBattingVisibility}">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
+                            <DataGrid
+                                ItemsSource="{Binding PlayerOverview.PlayerPlayoffBatting}"
+                                AutoGenerateColumns="True"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserReorderColumns="False"
+                                CanUserSortColumns="True"
+                                CanUserResizeColumns="True"
+                                SelectionMode="Single" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid
+                    Grid.Row="{Binding PitcherGridRow}"
+                    Visibility="{Binding OverallPitchingVisibility}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="500" />
+                        <RowDefinition MaxHeight="500" />
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" Visibility="{Binding OverallPitchingVisibility}">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock FontSize="14" Text="Season Pitching" FontWeight="Bold" />
+                            <DataGrid
+                                ItemsSource="{Binding PlayerOverview.PlayerSeasonPitching}"
+                                AutoGenerateColumns="True"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserReorderColumns="False"
+                                CanUserSortColumns="True"
+                                CanUserResizeColumns="True"
+                                SelectionMode="Single" />
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Row="1" Visibility="{Binding PlayoffPitchingVisibility}">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock FontSize="14" Text="Playoff Pitching" FontWeight="Bold" />
+                            <DataGrid
+                                ItemsSource="{Binding PlayerOverview.PlayerPlayoffPitching}"
+                                AutoGenerateColumns="True"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserReorderColumns="False"
+                                CanUserSortColumns="True"
+                                CanUserResizeColumns="True"
+                                SelectionMode="Single" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+            
+            <Grid>
+                <ScrollViewer>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock FontSize="14" Text="Player Stats" FontWeight="Bold" />
+                        <DataGrid
+                            ItemsSource="{Binding PlayerOverview.GameStats}"
+                            AutoGenerateColumns="True"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

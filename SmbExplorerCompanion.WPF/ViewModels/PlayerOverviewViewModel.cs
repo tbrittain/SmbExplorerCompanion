@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
@@ -18,7 +19,7 @@ public class PlayerOverviewViewModel : ViewModelBase
     {
         _navigationService = navigationService;
         _mediator = mediator;
-        
+
         var ok = _navigationService.TryGetParameter<int>(PlayerIdProp, out var playerId);
         if (!ok)
         {
@@ -26,10 +27,10 @@ public class PlayerOverviewViewModel : ViewModelBase
             MessageBox.Show(message);
             throw new Exception(message);
         }
-        
+
         PlayerId = playerId;
         _navigationService.ClearParameters();
-        
+
         var playerOverviewResponse = _mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
         if (playerOverviewResponse.TryPickT1(out var exception, out var playerOverview))
         {
@@ -42,6 +43,22 @@ public class PlayerOverviewViewModel : ViewModelBase
             PlayerOverview = mapper.FromDto(playerOverview);
         }
     }
+
+    public Visibility OverallBattingVisibility => PlayerOverview.PlayerSeasonBatting.Any() ||
+                                                  PlayerOverview.PlayerPlayoffBatting.Any()
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+    public Visibility SeasonBattingVisibility => PlayerOverview.PlayerSeasonBatting.Any() ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility PlayoffBattingVisibility => PlayerOverview.PlayerPlayoffBatting.Any() ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility OverallPitchingVisibility => PlayerOverview.PlayerSeasonPitching.Any() ||
+                                                   PlayerOverview.PlayerPlayoffPitching.Any()
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+    public Visibility SeasonPitchingVisibility => PlayerOverview.PlayerSeasonPitching.Any() ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility PlayoffPitchingVisibility => PlayerOverview.PlayerPlayoffPitching.Any() ? Visibility.Visible : Visibility.Collapsed;
+
+    public int PitcherGridRow => PlayerOverview.IsPitcher ? 0 : 1;
+    public int BatterGridRow => PlayerOverview.IsPitcher ? 1 : 0;
 
     public PlayerOverview PlayerOverview { get; set; }
 

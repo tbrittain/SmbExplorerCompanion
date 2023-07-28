@@ -39,6 +39,8 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Traits)
                 .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.SecondaryPosition)
+                .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x!.TeamNameHistory)
@@ -176,6 +178,7 @@ public class PlayerRepository : IPlayerRepository
                     TeamNames = string.Join(", ",
                         x.PlayerTeamHistory
                             .OrderBy(y => y.Order)
+                            .Where(y => y.SeasonTeamHistory is not null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     Salary = x.PlayerTeamHistory
                         .SingleOrDefault(y => y.Order == 1) is null
@@ -195,12 +198,14 @@ public class PlayerRepository : IPlayerRepository
                     TeamNames = string.Join(", ",
                         x.PlayerTeamHistory
                             .OrderBy(y => y.Order)
+                            .Where(y => y.SeasonTeamHistory is not null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     Salary = x.PlayerTeamHistory
                         .SingleOrDefault(y => y.Order == 1) is null
                         ? 0
                         : x.Salary,
                     Traits = x.Traits.Any() ? string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
+                    PitchTypes = x.PitchTypes.Any() ? string.Join(", ", x.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
                     x.Age,
                     x.PitchingStats
                 })
@@ -325,6 +330,7 @@ public class PlayerRepository : IPlayerRepository
                         Whip = pitchingStat.Whip ?? 0,
                         Era = pitchingStat.EarnedRunAverage ?? 0,
                         EraMinus = pitchingStat.EraMinus ?? 0,
+                        PitchTypes = x.PitchTypes
                     };
                 })
                 .Where(x => x is not null)
@@ -360,6 +366,7 @@ public class PlayerRepository : IPlayerRepository
                         Whip = pitchingStat.Whip ?? 0,
                         Era = pitchingStat.EarnedRunAverage ?? 0,
                         EraMinus = pitchingStat.EraMinus ?? 0,
+                        PitchTypes = x.PitchTypes
                     };
                 })
                 .Where(x => x is not null)
@@ -375,6 +382,7 @@ public class PlayerRepository : IPlayerRepository
                     TeamNames = string.Join(", ",
                         x.PlayerTeamHistory
                             .OrderBy(y => y.Order)
+                            .Where(y => y.SeasonTeamHistory is not null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     Salary = x.PlayerTeamHistory
                         .SingleOrDefault(y => y.Order == 1) is null

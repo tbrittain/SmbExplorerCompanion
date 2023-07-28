@@ -36,5 +36,4 @@ public class PlayerPitchingOverview
     public int Salary { get; set; }
     public string Traits { get; set; } = string.Empty;
     public string PitchTypes { get; set; } = string.Empty;
-
 }
