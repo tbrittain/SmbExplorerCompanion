@@ -2,6 +2,8 @@
 using System.Windows;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
+using SmbExplorerCompanion.WPF.Mappings.Players;
+using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -32,14 +34,16 @@ public class PlayerOverviewViewModel : ViewModelBase
         if (playerOverviewResponse.TryPickT1(out var exception, out var playerOverview))
         {
             MessageBox.Show(exception.Message);
-            // PlayerOverview = new PlayerOverview();
+            PlayerOverview = new PlayerOverview();
         }
-        // else
-        // {
-        //     var mapper = new PlayerOverviewMapping();
-        //     PlayerOverview = mapper.FromDto(playerOverview);
-        // }
+        else
+        {
+            var mapper = new PlayerOverviewMapping();
+            PlayerOverview = mapper.FromDto(playerOverview);
+        }
     }
+
+    public PlayerOverview PlayerOverview { get; set; }
 
     private int PlayerId { get; set; }
 }
