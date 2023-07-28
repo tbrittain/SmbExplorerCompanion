@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerOverview
+public class PlayerOverviewDto
 {
     public int PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
@@ -32,9 +32,9 @@ public class PlayerOverview
     public double Whip { get; set; }
     public double EraMinus { get; set; }
 
-    public List<PlayerBattingOverview> PlayerSeasonBatting { get; set; } = new();
-    public List<PlayerBattingOverview> PlayerPlayoffBatting { get; set; } = new();
-    public List<PlayerPitchingOverview> PlayerSeasonPitching { get; set; } = new();
-    public List<PlayerPitchingOverview> PlayerPlayoffPitching { get; set; } = new();
-    public List<PlayerGameStatOverview> GameStats { get; set; } = new();
+    public List<PlayerBattingOverviewDto> PlayerSeasonBatting { get; set; } = new();
+    public List<PlayerBattingOverviewDto> PlayerPlayoffBatting { get; set; } = new();
+    public List<PlayerPitchingOverviewDto> PlayerSeasonPitching { get; set; } = new();
+    public List<PlayerPitchingOverviewDto> PlayerPlayoffPitching { get; set; } = new();
+    public List<PlayerGameStatOverviewDto> GameStats { get; set; } = new();
 }

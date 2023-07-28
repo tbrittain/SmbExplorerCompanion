@@ -5,5 +5,5 @@ namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface IPlayerRepository
 {
-    public Task<OneOf<PlayerOverview, Exception>> GetHistoricalPlayer(int playerId, CancellationToken cancellationToken);
+    public Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId, CancellationToken cancellationToken);
 }

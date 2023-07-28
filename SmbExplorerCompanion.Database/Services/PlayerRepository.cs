@@ -14,11 +14,11 @@ public class PlayerRepository : IPlayerRepository
         _dbContext = dbContext;
     }
 
-    public async Task<OneOf<PlayerOverview, Exception>> GetHistoricalPlayer(int playerId, CancellationToken cancellationToken)
+    public async Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId, CancellationToken cancellationToken)
     {
         try
         {
-            var playerOverviewDto = new PlayerOverview();
+            var playerOverviewDto = new PlayerOverviewDto();
 
             var playerWithSeasons = await _dbContext.Players
                 .Include(x => x.Chemistry)
@@ -195,7 +195,7 @@ public class PlayerRepository : IPlayerRepository
                     var battingStat = x.BattingStats.SingleOrDefault(y => y.IsRegularSeason);
                     if (battingStat is null) return null;
 
-                    return new PlayerBattingOverview
+                    return new PlayerBattingOverviewDto
                     {
                         SeasonNumber = x.SeasonNumber,
                         Age = x.Age,
@@ -241,7 +241,7 @@ public class PlayerRepository : IPlayerRepository
                     var battingStat = x.BattingStats.SingleOrDefault(y => !y.IsRegularSeason);
                     if (battingStat is null) return null;
 
-                    return new PlayerBattingOverview
+                    return new PlayerBattingOverviewDto
                     {
                         SeasonNumber = x.SeasonNumber,
                         Age = x.Age,
@@ -287,7 +287,7 @@ public class PlayerRepository : IPlayerRepository
                     var pitchingStat = x.PitchingStats.SingleOrDefault(y => y.IsRegularSeason);
                     if (pitchingStat is null) return null;
 
-                    return new PlayerPitchingOverview
+                    return new PlayerPitchingOverviewDto
                     {
                         SeasonNumber = x.SeasonNumber,
                         Age = x.Age,
@@ -322,7 +322,7 @@ public class PlayerRepository : IPlayerRepository
                     var pitchingStat = x.PitchingStats.SingleOrDefault(y => !y.IsRegularSeason);
                     if (pitchingStat is null) return null;
 
-                    return new PlayerPitchingOverview
+                    return new PlayerPitchingOverviewDto
                     {
                         SeasonNumber = x.SeasonNumber,
                         Age = x.Age,
@@ -369,7 +369,7 @@ public class PlayerRepository : IPlayerRepository
                 .ToList();
 
             playerOverviewDto.GameStats = gameStats
-                .Select(x => new PlayerGameStatOverview
+                .Select(x => new PlayerGameStatOverviewDto
                 {
                     SeasonNumber = x.SeasonNumber,
                     Age = x.Age,

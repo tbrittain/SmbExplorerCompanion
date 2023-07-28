@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerPitchingOverview
+public class PlayerPitchingOverviewDto
 {
     public int SeasonNumber { get; set; }
     public int Age { get; set; }
