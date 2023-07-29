@@ -9,10 +9,12 @@ namespace SmbExplorerCompanion.Database.Services;
 public class PlayerRepository : IPlayerRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
+    private readonly IApplicationContext _applicationContext;
 
-    public PlayerRepository(SmbExplorerCompanionDbContext dbContext)
+    public PlayerRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
         _dbContext = dbContext;
+        _applicationContext = applicationContext;
     }
 
     public async Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId,
@@ -469,6 +471,8 @@ public class PlayerRepository : IPlayerRepository
     public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
         string? orderBy, bool descending = true, CancellationToken cancellationToken = default)
     {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
@@ -486,6 +490,7 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.Season)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.BattingStats)
+                .Where(x => x.FranchiseId == franchiseId)
                 .Select(x => new PlayerCareerDto
                 {
                     PlayerId = x.Id,

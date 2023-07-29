@@ -7,7 +7,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>, Exception>>
 {
-    public GetTopBattingCareersRequest(int? pageNumber, string? orderBy, bool descending)
+    public GetTopBattingCareersRequest(int? pageNumber = null, string? orderBy = null, bool descending = true)
     {
         PageNumber = pageNumber;
         OrderBy = orderBy;
