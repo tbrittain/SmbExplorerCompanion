@@ -3,6 +3,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using System.Linq.Dynamic.Core;
+using SmbExplorerCompanion.Database.Entities;
 
 namespace SmbExplorerCompanion.Database.Services;
 
@@ -469,17 +470,31 @@ public class PlayerRepository : IPlayerRepository
     }
 
     public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
-        string? orderBy, bool descending = true, CancellationToken cancellationToken = default)
+        string? orderBy,
+        bool descending = true,
+        CancellationToken cancellationToken = default)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-        
+
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
         }
+        else
+        {
+            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            orderBy = $"{defaultOrderByProperty} desc";
+        }
 
         try
         {
+            var mostRecentSeason = await _dbContext.Seasons
+                .Include(x => x.SeasonTeamHistory)
+                .ThenInclude(x => x.Team)
+                .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+                .OrderByDescending(x => x.Id)
+                .FirstAsync(cancellationToken);
+
             var playerCareerDtos = await _dbContext.Players
                 .Include(x => x.Chemistry)
                 .Include(x => x.BatHandedness)
@@ -515,6 +530,10 @@ public class PlayerRepository : IPlayerRepository
                     Runs = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)),
                     RunsBattedIn = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)),
                     StolenBases = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)),
+                    WeightedOpsPlusOrEraMinus = x.PlayerSeasons
+                        .SelectMany(y => y.BattingStats)
+                        .Where(y => y.OpsPlus != null)
+                        .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000),
                     // Simply average the OPS+ values
                     OpsPlus = x.PlayerSeasons
                         .SelectMany(y => y.BattingStats)
@@ -530,7 +549,7 @@ public class PlayerRepository : IPlayerRepository
                     SacrificeFlies = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
                     Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                 })
-                .OrderBy(orderBy ?? "AtBats desc")
+                .OrderBy(orderBy)
                 .Skip((pageNumber ?? 1 - 1) * 20)
                 .Take(20)
                 .ToListAsync(cancellationToken: cancellationToken);
@@ -538,6 +557,7 @@ public class PlayerRepository : IPlayerRepository
             // Calculate the rate stats that we omitted above
             foreach (var playerCareerDto in playerCareerDtos)
             {
+                playerCareerDto.IsRetired = playerCareerDto.EndSeasonNumber < mostRecentSeason.Number;
                 playerCareerDto.BattingAverage = playerCareerDto.AtBats == 0
                     ? 0
                     : playerCareerDto.Hits / (double) playerCareerDto.AtBats;

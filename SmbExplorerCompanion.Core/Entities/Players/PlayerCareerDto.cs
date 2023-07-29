@@ -5,6 +5,7 @@ public class PlayerCareerDto
     public int PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
     public bool IsPitcher { get; set; }
+
     public int TotalSalary { get; set; }
     public string BatHandedness { get; set; } = string.Empty;
     public string ThrowHandedness { get; set; } = string.Empty;
@@ -15,7 +16,9 @@ public class PlayerCareerDto
     public int StartSeasonNumber { get; set; }
 
     public int EndSeasonNumber { get; set; }
-    
+
+    public bool IsRetired { get; set; }
+
     public int NumSeasons { get; set; }
 
     // Batting stats, applicable to both pitchers and batters
@@ -50,4 +53,9 @@ public class PlayerCareerDto
     public int Strikeouts { get; set; }
     public double Whip { get; set; }
     public double EraMinus { get; set; }
+
+    /// <summary>
+    ///  We can kind of think of this as a proxy for WAR, but it's not quite the same
+    /// </summary>
+    public double WeightedOpsPlusOrEraMinus { get; set; }
 }
