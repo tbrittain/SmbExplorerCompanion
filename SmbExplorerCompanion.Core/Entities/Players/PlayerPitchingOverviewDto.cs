@@ -17,7 +17,6 @@ public class PlayerPitchingOverviewDto
     public int Saves { get; set; }
     public double InningsPitched { get; set; }
     public int Hits { get; set; }
-    public int Runs { get; set; }
     public int EarnedRuns { get; set; }
     public int HomeRuns { get; set; }
     public int Walks { get; set; }

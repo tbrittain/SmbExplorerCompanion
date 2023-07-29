@@ -347,7 +347,19 @@ public class PlayerRepository : IPlayerRepository
                         Whip = pitchingStat.Whip ?? 0,
                         Era = pitchingStat.EarnedRunAverage ?? 0,
                         EraMinus = pitchingStat.EraMinus ?? 0,
-                        PitchTypes = x.PitchTypes
+                        PitchTypes = x.PitchTypes,
+                        Fip = pitchingStat.Fip ?? 0,
+                        FipMinus = pitchingStat.FipMinus ?? 0,
+                        HitsPerNine = pitchingStat.HitsPerNine ?? 0,
+                        HomeRunsPerNine = pitchingStat.HomeRunsPerNine ?? 0,
+                        WalksPerNine = pitchingStat.WalksPerNine ?? 0,
+                        StrikeoutsPerNine = pitchingStat.StrikeoutsPerNine ?? 0,
+                        StrikeoutToWalkRatio = pitchingStat.StrikeoutsPerWalk ?? 0,
+                        GamesFinished = pitchingStat.GamesFinished,
+                        CompleteGames = pitchingStat.CompleteGames,
+                        Shutouts = pitchingStat.Shutouts,
+                        HitByPitch = pitchingStat.HitByPitch,
+                        BattersFaced = pitchingStat.BattersFaced
                     };
                 })
                 .Where(x => x is not null)
@@ -383,7 +395,19 @@ public class PlayerRepository : IPlayerRepository
                         Whip = pitchingStat.Whip ?? 0,
                         Era = pitchingStat.EarnedRunAverage ?? 0,
                         EraMinus = pitchingStat.EraMinus ?? 0,
-                        PitchTypes = x.PitchTypes
+                        PitchTypes = x.PitchTypes,
+                        Fip = pitchingStat.Fip ?? 0,
+                        FipMinus = pitchingStat.FipMinus ?? 0,
+                        HitsPerNine = pitchingStat.HitsPerNine ?? 0,
+                        HomeRunsPerNine = pitchingStat.HomeRunsPerNine ?? 0,
+                        WalksPerNine = pitchingStat.WalksPerNine ?? 0,
+                        StrikeoutsPerNine = pitchingStat.StrikeoutsPerNine ?? 0,
+                        StrikeoutToWalkRatio = pitchingStat.StrikeoutsPerWalk ?? 0,
+                        GamesFinished = pitchingStat.GamesFinished,
+                        CompleteGames = pitchingStat.CompleteGames,
+                        Shutouts = pitchingStat.Shutouts,
+                        HitByPitch = pitchingStat.HitByPitch,
+                        BattersFaced = pitchingStat.BattersFaced
                     };
                 })
                 .Where(x => x is not null)
