@@ -10,8 +10,14 @@ public partial class HistoricalTeamsView : IDisposable
     {
         InitializeComponent();
         ScrollViewer.PreviewMouseWheel += ListViewScrollViewer_PreviewMouseWheel;
+        TeamsDataGrid.Sorting += DataGridOnSorting;
     }
-    
+
+    private void DataGridOnSorting(object sender, DataGridSortingEventArgs e)
+    {
+        TeamsDataGrid.SelectedItem = null;
+    }
+
     private void ListViewScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
     {
         var scv = (ScrollViewer)sender;
@@ -44,6 +50,7 @@ public partial class HistoricalTeamsView : IDisposable
     public void Dispose()
     {
         ScrollViewer.PreviewMouseWheel -= ListViewScrollViewer_PreviewMouseWheel;
+        TeamsDataGrid.Sorting -= DataGridOnSorting;
         GC.SuppressFinalize(this);
     }
 }
