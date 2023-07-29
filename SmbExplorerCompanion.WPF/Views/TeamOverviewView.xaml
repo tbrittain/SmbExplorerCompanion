@@ -63,6 +63,8 @@
 
                 <ScrollViewer>
                     <DataGrid
+                        Name="TeamSeasonsDataGrid"
+                        IsReadOnly="True"
                         ItemsSource="{Binding TeamOverview.TeamHistory}"
                         AutoGenerateColumns="True"
                         CanUserAddRows="False"
@@ -81,6 +83,7 @@
 
                 <ScrollViewer>
                     <DataGrid
+                        Name="TopPlayersDataGrid"
                         ItemsSource="{Binding TeamOverview.TopPlayers}"
                         SelectedItem="{Binding SelectedPlayer}"
                         AutoGenerateColumns="True"
@@ -89,7 +92,8 @@
                         CanUserReorderColumns="False"
                         CanUserSortColumns="True"
                         CanUserResizeColumns="True"
-                        SelectionMode="Single" />
+                        SelectionMode="Single"
+                        IsReadOnly="True" />
                 </ScrollViewer>
             </Grid>
         </StackPanel>

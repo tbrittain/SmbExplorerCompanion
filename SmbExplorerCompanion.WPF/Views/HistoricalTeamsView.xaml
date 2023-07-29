@@ -8,6 +8,8 @@
              d:DataContext="{d:DesignInstance viewModels:HistoricalTeamsViewModel}">
     <ScrollViewer Name="ScrollViewer">
         <DataGrid
+            Name="TeamsDataGrid"
+            IsReadOnly="True"
             ItemsSource="{Binding HistoricalTeams}"
             SelectedItem="{Binding SelectedHistoricalTeam}"
             AutoGenerateColumns="True"
