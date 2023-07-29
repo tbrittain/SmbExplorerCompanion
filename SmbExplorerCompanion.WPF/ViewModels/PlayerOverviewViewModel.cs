@@ -12,8 +12,8 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public class PlayerOverviewViewModel : ViewModelBase
 {
     public const string PlayerIdProp = "PlayerId";
-    private readonly INavigationService _navigationService;
     private readonly IMediator _mediator;
+    private readonly INavigationService _navigationService;
 
     public PlayerOverviewViewModel(INavigationService navigationService, IMediator mediator)
     {

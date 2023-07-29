@@ -34,7 +34,7 @@ public class TopBattingCareersViewModel : ViewModelBase
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
             return Task.CompletedTask;
         }
-        
+
         return Task.CompletedTask;
     }
 }

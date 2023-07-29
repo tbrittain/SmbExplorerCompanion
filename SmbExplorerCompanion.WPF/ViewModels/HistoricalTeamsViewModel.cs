@@ -14,8 +14,8 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public class HistoricalTeamsViewModel : ViewModelBase
 {
-    private HistoricalTeam? _selectedHistoricalTeam;
     private readonly INavigationService _navigationService;
+    private HistoricalTeam? _selectedHistoricalTeam;
 
     public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService)
     {
@@ -37,6 +37,14 @@ public class HistoricalTeamsViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
     }
 
+    public ObservableCollection<HistoricalTeam> HistoricalTeams { get; }
+
+    public HistoricalTeam? SelectedHistoricalTeam
+    {
+        get => _selectedHistoricalTeam;
+        set => SetField(ref _selectedHistoricalTeam, value);
+    }
+
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -50,14 +58,6 @@ public class HistoricalTeamsViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollection<HistoricalTeam> HistoricalTeams { get; }
-
-    public HistoricalTeam? SelectedHistoricalTeam
-    {
-        get => _selectedHistoricalTeam;
-        set => SetField(ref _selectedHistoricalTeam, value);
-    }
-
     private void NavigateToTeamOverview(HistoricalTeam team)
     {
         var parameters = new Tuple<string, object>[]
@@ -69,10 +69,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            PropertyChanged -= OnPropertyChanged;
-        }
+        if (disposing) PropertyChanged -= OnPropertyChanged;
 
         base.Dispose(disposing);
     }

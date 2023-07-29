@@ -1,5 +1,4 @@
 ﻿using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 

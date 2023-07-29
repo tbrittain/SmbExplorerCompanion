@@ -4,21 +4,20 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using Microsoft.Win32;
 using SmbExplorerCompanion.Core.Commands.Actions.Csv;
-using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class ImportCsvViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
-    private string _teamsCsvPath = string.Empty;
     private string _overallPlayersCsvPath = string.Empty;
+    private string _playoffBattingCsvPath = string.Empty;
+    private string _playoffPitchingCsvPath = string.Empty;
+    private string _playoffScheduleCsvPath = string.Empty;
     private string _seasonBattingCsvPath = string.Empty;
     private string _seasonPitchingCsvPath = string.Empty;
     private string _seasonScheduleCsvPath = string.Empty;
-    private string _playoffPitchingCsvPath = string.Empty;
-    private string _playoffBattingCsvPath = string.Empty;
-    private string _playoffScheduleCsvPath = string.Empty;
+    private string _teamsCsvPath = string.Empty;
 
     public ImportCsvViewModel(IMediator mediator)
     {
@@ -125,14 +124,8 @@ public partial class ImportCsvViewModel : ViewModelBase
             SeasonBattingCsvPath,
             SeasonScheduleCsvPath));
 
-        if (response.TryPickT1(out var exception, out _))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        else
-        {
-            MessageBox.Show("Successfully imported season data!");
-        }
+        if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        else MessageBox.Show("Successfully imported season data!");
     }
 
     [RelayCommand(CanExecute = nameof(CanImportPlayoffCsvs))]
@@ -143,14 +136,8 @@ public partial class ImportCsvViewModel : ViewModelBase
             PlayoffBattingCsvPath,
             PlayoffScheduleCsvPath));
 
-        if (response.TryPickT1(out var exception, out _))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-        else
-        {
-            MessageBox.Show("Successfully imported playoff data!");
-        }
+        if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        else MessageBox.Show("Successfully imported playoff data!");
     }
 
     [RelayCommand]
@@ -158,7 +145,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     {
         var filePath = GetUserProvidedCsv("Teams");
         if (filePath is null) return;
-        
+
         TeamsCsvPath = filePath;
     }
 
@@ -167,52 +154,52 @@ public partial class ImportCsvViewModel : ViewModelBase
     {
         var filePath = GetUserProvidedCsv("Overall Players");
         if (filePath is null) return;
-        
+
         OverallPlayersCsvPath = filePath;
     }
-    
+
     [RelayCommand]
     private void SelectSeasonBattingCsv()
     {
         var filePath = GetUserProvidedCsv("Batting");
         if (filePath is null) return;
-        
+
         SeasonBattingCsvPath = filePath;
     }
-    
+
     [RelayCommand]
     private void SelectSeasonPitchingCsv()
     {
         var filePath = GetUserProvidedCsv("Pitching");
         if (filePath is null) return;
-        
+
         SeasonPitchingCsvPath = filePath;
     }
-    
+
     [RelayCommand]
     private void SelectSeasonScheduleCsv()
     {
         var filePath = GetUserProvidedCsv("Schedule");
         if (filePath is null) return;
-        
+
         SeasonScheduleCsvPath = filePath;
     }
-    
+
     [RelayCommand]
     private void SelectPlayoffPitchingCsv()
     {
         var filePath = GetUserProvidedCsv("Playoff Pitching");
         if (filePath is null) return;
-        
+
         PlayoffPitchingCsvPath = filePath;
     }
-    
+
     [RelayCommand]
     private void SelectPlayoffBattingCsv()
     {
         var filePath = GetUserProvidedCsv("Playoff Batting");
         if (filePath is null) return;
-        
+
         PlayoffBattingCsvPath = filePath;
     }
 
@@ -221,7 +208,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     {
         var filePath = GetUserProvidedCsv("Playoff Schedule");
         if (filePath is null) return;
-        
+
         PlayoffScheduleCsvPath = filePath;
     }
 
