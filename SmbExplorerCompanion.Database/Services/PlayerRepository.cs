@@ -466,14 +466,12 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetPositionPlayerCareers(int pageNumber,
-        string? orderBy,
-        bool ascending = true,
-        CancellationToken cancellationToken = default)
+    public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
+        string? orderBy, bool descending = true, CancellationToken cancellationToken = default)
     {
         if (orderBy is not null)
         {
-            orderBy += ascending ? " asc" : " desc";
+            orderBy += descending ? " desc" : " asc";
         }
 
         try
@@ -528,7 +526,7 @@ public class PlayerRepository : IPlayerRepository
                     Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                 })
                 .OrderBy(orderBy ?? "AtBats desc")
-                .Skip((pageNumber - 1) * 20)
+                .Skip((pageNumber ?? 1 - 1) * 20)
                 .Take(20)
                 .ToListAsync(cancellationToken: cancellationToken);
 
