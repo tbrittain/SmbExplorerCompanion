@@ -280,7 +280,7 @@ public class TeamRepository : ITeamRepository
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.PitchingStats)
                             .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched * 2.25) ?? 0);
+                            .Sum(y => (y.EraMinus ?? 0) * y.InningsPitched * 2.25 / 10000 ?? 0);
                     }
                     else
                     {
@@ -291,7 +291,7 @@ public class TeamRepository : ITeamRepository
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.BattingStats)
                             .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats);
+                            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000);
                     }
 
                     return dto;

@@ -29,6 +29,10 @@
             <DataTemplate DataType="{x:Type viewModels:TeamOverviewViewModel}">
                 <views:TeamOverviewView />
             </DataTemplate>
+            
+            <DataTemplate DataType="{x:Type viewModels:PlayerOverviewViewModel}">
+                <views:PlayerOverviewView />
+            </DataTemplate>
 
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
