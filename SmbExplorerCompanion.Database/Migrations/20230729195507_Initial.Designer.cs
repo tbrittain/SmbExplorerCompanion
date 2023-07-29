@@ -11,7 +11,7 @@ using SmbExplorerCompanion.Database;
 namespace SmbExplorerCompanion.Database.Migrations
 {
     [DbContext(typeof(SmbExplorerCompanionDbContext))]
-    [Migration("20230723195826_Initial")]
+    [Migration("20230729195507_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -319,6 +319,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("FranchiseId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsHallOfFamer")
                         .HasColumnType("INTEGER");
 
@@ -340,6 +343,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.HasIndex("BatHandednessId");
 
                     b.HasIndex("ChemistryId");
+
+                    b.HasIndex("FranchiseId");
 
                     b.HasIndex("PitcherRoleId");
 
@@ -850,7 +855,12 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("FranchiseId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("FranchiseId");
 
                     b.ToTable("Teams");
                 });
@@ -1109,6 +1119,12 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .WithMany()
                         .HasForeignKey("ChemistryId");
 
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.Franchise", "Franchise")
+                        .WithMany("Players")
+                        .HasForeignKey("FranchiseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SmbExplorerCompanion.Database.Entities.Lookups.PitcherRole", "PitcherRole")
                         .WithMany()
                         .HasForeignKey("PitcherRoleId");
@@ -1128,6 +1144,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Navigation("BatHandedness");
 
                     b.Navigation("Chemistry");
+
+                    b.Navigation("Franchise");
 
                     b.Navigation("PitcherRole");
 
@@ -1263,6 +1281,17 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Navigation("TeamNameHistory");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Team", b =>
+                {
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.Franchise", "Franchise")
+                        .WithMany("Teams")
+                        .HasForeignKey("FranchiseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Franchise");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.TeamGameIdHistory", b =>
                 {
                     b.HasOne("SmbExplorerCompanion.Database.Entities.Team", "Team")
@@ -1363,6 +1392,10 @@ namespace SmbExplorerCompanion.Database.Migrations
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Franchise", b =>
                 {
                     b.Navigation("Conferences");
+
+                    b.Navigation("Players");
+
+                    b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Lookups.BatHandedness", b =>
