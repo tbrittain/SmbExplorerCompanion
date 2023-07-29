@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
+using SmbExplorerCompanion.WPF.Mappings.Players;
+using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -34,7 +37,17 @@ public class TopBattingCareersViewModel : ViewModelBase
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
             return Task.CompletedTask;
         }
+        
+        TopBattingCareers.Clear();
+
+        var mapper = new PlayerCareerMapping();
+        foreach (var player in topPlayers)
+        {
+            TopBattingCareers.Add(mapper.FromDto(player));
+        }
 
         return Task.CompletedTask;
     }
+
+    public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
 }
