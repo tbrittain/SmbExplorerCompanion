@@ -104,7 +104,7 @@ public class PlayerRepository : IPlayerRepository
                    playerWithSeasons.PlayerSeasons
                        .Sum(x => x.BattingStats.Sum(y => y.HitByPitch))) /
                   (double) (playerWithSeasons.PlayerSeasons
-                                .Sum(x => x.BattingStats.Sum(y => y.PlateAppearances)) +
+                                .Sum(x => x.BattingStats.Sum(y => y.AtBats)) +
                             playerWithSeasons.PlayerSeasons
                                 .Sum(x => x.BattingStats.Sum(y => y.Walks)) +
                             playerWithSeasons.PlayerSeasons
@@ -116,12 +116,12 @@ public class PlayerRepository : IPlayerRepository
                 ? 0
                 : (playerWithSeasons.PlayerSeasons
                        .Sum(x => x.BattingStats.Sum(y => y.Singles)) +
-                   (playerWithSeasons.PlayerSeasons
-                       .Sum(x => x.BattingStats.Sum(y => y.Doubles)) * 2) +
-                   (playerWithSeasons.PlayerSeasons
-                       .Sum(x => x.BattingStats.Sum(y => y.Triples)) * 3) +
-                   (playerWithSeasons.PlayerSeasons
-                       .Sum(x => x.BattingStats.Sum(y => y.HomeRuns)) * 4)) /
+                   playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.Doubles)) * 2 +
+                   playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.Triples)) * 3 +
+                   playerWithSeasons.PlayerSeasons
+                       .Sum(x => x.BattingStats.Sum(y => y.HomeRuns)) * 4) /
                   (double) playerWithSeasons.PlayerSeasons
                       .Sum(x => x.BattingStats.Sum(y => y.AtBats));
             playerOverviewDto.Ops = playerOverviewDto.Obp + playerOverviewDto.Slg;
