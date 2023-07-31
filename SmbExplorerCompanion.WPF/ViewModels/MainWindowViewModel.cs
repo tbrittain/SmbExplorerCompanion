@@ -92,6 +92,13 @@ public partial class MainWindowViewModel : ViewModelBase
         NavigationService.NavigateTo<TopBattingCareersViewModel>();
         return Task.CompletedTask;
     }
+    
+    [RelayCommand]
+    private Task NavigateToCareerPitching()
+    {
+        NavigationService.NavigateTo<TopPitchingCareersViewModel>();
+        return Task.CompletedTask;
+    }
 
     override public void Dispose()
     {

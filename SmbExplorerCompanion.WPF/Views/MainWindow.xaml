@@ -62,7 +62,7 @@
                     HorizontalAlignment="Left" />
             </Button>
 
-            <Button>
+            <Button Command="{Binding NavigateToCareerPitchingCommand}">
                 <TextBlock
                     Text="Career Pitching"
                     FontSize="15"

@@ -20,6 +20,8 @@ public class TopPitchingCareersViewModel : ViewModelBase
     {
         _mediator = mediator;
         _navigationService = navigationService;
+        
+        GetTopPitchingCareers();
     }
 
     public int PageNumber
