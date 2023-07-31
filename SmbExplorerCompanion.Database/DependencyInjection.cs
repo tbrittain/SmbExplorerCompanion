@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SmbExplorerCompanion.Core.Entities;
 using SmbExplorerCompanion.Core.Entities.Franchises;
+using SmbExplorerCompanion.Core.Entities.Seasons;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Csv.Services;
 using SmbExplorerCompanion.Database.Services;
@@ -18,6 +18,7 @@ public static class DependencyInjection
                 builder.UseLoggerFactory(loggerFactory);
             })
             .AddScoped<IRepository<FranchiseDto>, FranchiseRepository>()
+            .AddScoped<IRepository<SeasonDto>, SeasonRepository>()
             .AddScoped<ITeamRepository, TeamRepository>()
             .AddScoped<IPlayerRepository, PlayerRepository>()
             .AddTransient<CsvReaderService>()
