@@ -699,8 +699,6 @@ public class PlayerRepository : IPlayerRepository
         bool descending = true,
         CancellationToken cancellationToken = default)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
@@ -713,65 +711,58 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
-            var playerBattingDtos = await _dbContext.Players
-                .Include(x => x.Chemistry)
-                .Include(x => x.BatHandedness)
-                .Include(x => x.ThrowHandedness)
-                .Include(x => x.PrimaryPosition)
-                .Include(x => x.PitcherRole)
-                .Include(x => x.PlayerSeasons)
+            var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.Chemistry)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.BatHandedness)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.ThrowHandedness)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.PrimaryPosition)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.PitcherRole)
+                .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Season)
-                .Include(x => x.PlayerSeasons)
-                .ThenInclude(x => x.BattingStats)
-                .Where(x => x.FranchiseId == franchiseId)
-                .Where(x => x.PlayerSeasons.Any(y => y.SeasonId == seasonId &&
-                                                     y.BattingStats.Any(z => z.IsRegularSeason == !isPlayoffs)))
+                .Where(x => x.PlayerSeason.SeasonId == seasonId &&
+                            x.IsRegularSeason == !isPlayoffs)
                 .Select(x => new PlayerBattingSeasonDto
                 {
-                    PlayerId = x.Id,
-                    PlayerName = $"{x.FirstName} {x.LastName}",
-                    IsPitcher = x.PitcherRole != null,
-                    TotalSalary = x.PlayerSeasons
-                        .Sum(y => y.PlayerTeamHistory
-                            .SingleOrDefault(z => z.Order == 1) == null
-                            ? 0
-                            : y.Salary),
-                    BatHandedness = x.BatHandedness.Name,
-                    ThrowHandedness = x.ThrowHandedness.Name,
-                    PrimaryPosition = x.PrimaryPosition.Name,
-                    Chemistry = x.Chemistry!.Name,
-                    SeasonNumber = x.PlayerSeasons
-                        .Single(y => y.SeasonId == seasonId)
-                        .Season
-                        .Number,
-                    AtBats = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)),
-                    Hits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)),
-                    HomeRuns = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)),
-                    Runs = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)),
-                    RunsBattedIn = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)),
-                    StolenBases = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)),
-                    WeightedOpsPlusOrEraMinus = x.PlayerSeasons
-                        .SelectMany(y => y.BattingStats)
-                        .Where(y => y.OpsPlus != null)
-                        .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000),
-                    OpsPlus = x.PlayerSeasons
-                        .SelectMany(y => y.BattingStats)
-                        .Where(y => y.OpsPlus != null && y.IsRegularSeason)
-                        .Average(y => y.OpsPlus ?? 0),
-                    Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
-                    Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
-                    Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
-                    Walks = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Walks)),
-                    Strikeouts = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Strikeouts)),
-                    HitByPitch = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HitByPitch)),
-                    SacrificeHits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeHits)),
-                    SacrificeFlies = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
-                    Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
-                    // Average the rate stats, since the PlayerSeasons collection should only contain one season
-                    BattingAverage = x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.BattingAverage ?? 0)),
-                    Obp = x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Obp ?? 0)),
-                    Slg = x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Slg ?? 0)),
-                    Ops = x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Ops ?? 0)),
+                    PlayerId = x.PlayerSeason.PlayerId,
+                    PlayerName = $"{x.PlayerSeason.Player.FirstName} {x.PlayerSeason.Player.LastName}",
+                    IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
+                    TotalSalary = x.PlayerSeason.Salary,
+                    BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
+                    ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
+                    PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
+                    Chemistry = x.PlayerSeason.Player.Chemistry!.Name,
+                    SeasonNumber = x.PlayerSeason.Season.Number,
+                    AtBats = x.AtBats,
+                    Hits = x.Hits,
+                    Singles = x.Singles,
+                    Doubles = x.Doubles,
+                    Triples = x.Triples,
+                    HomeRuns = x.HomeRuns,
+                    Walks = x.Walks,
+                    BattingAverage = x.BattingAverage ?? 0,
+                    Runs = x.Runs,
+                    RunsBattedIn = x.RunsBattedIn,
+                    StolenBases = x.StolenBases,
+                    HitByPitch = x.HitByPitch,
+                    SacrificeHits = x.SacrificeHits,
+                    SacrificeFlies = x.SacrificeFlies,
+                    Obp = x.Obp ?? 0,
+                    Slg = x.Slg ?? 0,
+                    Ops = x.Ops ?? 0,
+                    OpsPlus = x.OpsPlus ?? 0,
+                    Errors = x.Errors,
+                    Strikeouts = x.Strikeouts,
+                    WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.AtBats / 10000,
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * 20)

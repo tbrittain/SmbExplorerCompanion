@@ -40,6 +40,8 @@ public class TopBattingSeasonsViewModel : ViewModelBase
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
 
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+
+        GetTopBattingSeason();
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();

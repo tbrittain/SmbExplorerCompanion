@@ -21,4 +21,5 @@ public class PlayerBattingCareer : PlayerCareerBase
     public double Ops { get; set; }
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
+    public int Strikeouts { get; set; }
 }

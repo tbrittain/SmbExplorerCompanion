@@ -144,6 +144,10 @@
                     Header="E"
                     Binding="{Binding Errors}"
                     CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="K"
+                    Binding="{Binding Strikeouts}"
+                    CanUserSort="True" />
                 <DataGridTemplateColumn
                     CanUserSort="True"
                     Header="Cumulative OPS+"
