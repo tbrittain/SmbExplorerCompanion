@@ -8,7 +8,9 @@ using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
+using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -36,10 +38,10 @@ public class TopBattingSeasonsViewModel : ViewModelBase
 
         var seasonMapper = new SeasonMapping();
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
-        
+
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
     }
-    
+
     public ObservableCollection<Season> Seasons { get; } = new();
 
     public Season? SelectedSeason
@@ -56,6 +58,8 @@ public class TopBattingSeasonsViewModel : ViewModelBase
 
     public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
 
+    public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
+
     public Task GetTopBattingSeason()
     {
         var topBattersResult = _mediator.Send(new GetTopBattingSeasonRequest(
@@ -70,7 +74,12 @@ public class TopBattingSeasonsViewModel : ViewModelBase
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
             return Task.CompletedTask;
         }
-        
-        
+
+        TopSeasonBatters.Clear();
+
+        var mapper = new PlayerSeasonMapping();
+        TopSeasonBatters.AddRange(topBatters.Select(b => mapper.FromBattingDto(b)));
+
+        return Task.CompletedTask;
     }
 }
