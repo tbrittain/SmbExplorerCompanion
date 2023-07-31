@@ -84,7 +84,7 @@ public class TopBattingCareersViewModel : ViewModelBase
         var mapper = new PlayerCareerMapping();
         foreach (var player in topPlayers)
         {
-            TopBattingCareers.Add(mapper.FromDto(player));
+            TopBattingCareers.Add(mapper.FromBattingDto(player));
         }
 
         return Task.CompletedTask;

@@ -38,6 +38,10 @@
                 <views:TopBattingCareersView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type viewModels:TopPitchingCareersViewModel}">
+                <views:TopPitchingCareersView />
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
                 <ResourceDictionary
