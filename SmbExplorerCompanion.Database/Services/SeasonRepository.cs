@@ -21,6 +21,7 @@ public class SeasonRepository : IRepository<SeasonDto>
         try
         {
             var seasons = await _dbContext.Seasons
+                .Include(x => x.Franchise)
                 .ToListAsync(cancellationToken);
 
             var championshipWinners = await _dbContext.ChampionshipWinners
@@ -28,6 +29,12 @@ public class SeasonRepository : IRepository<SeasonDto>
 
             var mapper = new SeasonMapping();
             var seasonDtos = seasons.Select(season => mapper.SeasonToSeasonDto(season)).ToList();
+
+            foreach (var seasonDto in seasonDtos)
+            {
+                var season = seasons.Single(s => s.Id == seasonDto.Id);
+                seasonDto.FranchiseId = season.Franchise.Id;
+            }
 
             // In theory, we should be able to do this with a single LINQ query, but the association between
             // Season and ChampionshipWinner is not working properly. I'm not sure why, but this will need to be

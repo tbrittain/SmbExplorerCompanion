@@ -9,4 +9,5 @@ public class Franchise
     public virtual ICollection<Conference> Conferences { get; set; } = new HashSet<Conference>();
     public virtual ICollection<Team> Teams { get; set; } = new HashSet<Team>();
     public virtual ICollection<Player> Players { get; set; } = new HashSet<Player>();
+    public virtual ICollection<Season> Seasons { get; set; } = new HashSet<Season>();
 }
