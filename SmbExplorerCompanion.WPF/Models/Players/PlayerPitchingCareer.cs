@@ -9,6 +9,8 @@ public class PlayerPitchingCareer : PlayerCareerBase
     public int Saves { get; set; }
     public double InningsPitched { get; set; }
     public int Strikeouts { get; set; }
+    public int CompleteGames { get; set; }
+    public int Shutouts { get; set; }
     public int Walks { get; set; }
     public int Hits { get; set; }
     public int HomeRuns { get; set; }

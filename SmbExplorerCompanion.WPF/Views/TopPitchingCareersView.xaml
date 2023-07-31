@@ -101,6 +101,14 @@
                     Binding="{Binding Strikeouts}"
                     CanUserSort="True" />
                 <DataGridTextColumn
+                    Header="CG"
+                    Binding="{Binding CompleteGames}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="CGSO"
+                    Binding="{Binding Shutouts}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
                     Header="BB"
                     Binding="{Binding Walks}"
                     CanUserSort="True" />

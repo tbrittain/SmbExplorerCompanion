@@ -29,6 +29,8 @@ public class GetTopPitchingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>
         nameof(PlayerCareerDto.Saves),
         nameof(PlayerCareerDto.InningsPitched),
         nameof(PlayerCareerDto.Hits),
+        nameof(PlayerCareerDto.CompleteGames),
+        nameof(PlayerCareerDto.Shutouts),
         nameof(PlayerCareerDto.HomeRuns),
         nameof(PlayerCareerDto.Walks),
         nameof(PlayerCareerDto.Strikeouts),

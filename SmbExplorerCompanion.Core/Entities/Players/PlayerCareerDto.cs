@@ -53,6 +53,8 @@ public class PlayerCareerDto
     public double Whip { get; set; }
     public double EraMinus { get; set; }
     public double FipMinus { get; set; }
+    public int CompleteGames { get; set; }
+    public int Shutouts { get; set; }
 
     /// <summary>
     ///  We can kind of think of this as a proxy for WAR, but it's not quite the same
