@@ -732,7 +732,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
-                .ThenInclude(x => x.TeamNameHistory)
+                .ThenInclude(x => x!.TeamNameHistory)
                 .Where(x => seasonId == default || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Select(x => new PlayerBattingSeasonDto
@@ -826,7 +826,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
-                .ThenInclude(x => x.TeamNameHistory)
+                .ThenInclude(x => x!.TeamNameHistory)
                 .Where(x => seasonId == default || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Select(x => new PlayerPitchingSeasonDto
