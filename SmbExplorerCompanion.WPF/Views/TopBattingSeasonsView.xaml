@@ -20,7 +20,7 @@
                 Width="200"
                 ItemsSource="{Binding Seasons}"
                 SelectedItem="{Binding SelectedSeason}"
-                DisplayMemberPath="Number"/>
+                DisplayMemberPath="DisplaySeasonNumber"/>
         </StackPanel>
         <DataGrid
             Name="TopSeasonBattingDataGrid"
@@ -44,6 +44,14 @@
                     CanUserSort="False"
                     Header="Position"
                     Binding="{Binding PrimaryPosition}" />
+                <DataGridTextColumn
+                    CanUserSort="False"
+                    Header="Season #"
+                    Binding="{Binding SeasonNumber}" />
+                <DataGridTextColumn
+                    CanUserSort="False"
+                    Header="Teams"
+                    Binding="{Binding TeamNames}" />
                 <DataGridTemplateColumn
                     CanUserSort="True"
                     Header="Salary"

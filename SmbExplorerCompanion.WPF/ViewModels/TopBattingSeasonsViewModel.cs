@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,6 +22,7 @@ public class TopBattingSeasonsViewModel : ViewModelBase
     private readonly IApplicationContext _applicationContext;
     private Season? _selectedSeason;
     private int _pageNumber = 1;
+    private Visibility _seasonNumberColumnVisibility = Visibility.Collapsed;
 
     public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext)
     {
@@ -37,11 +39,29 @@ public class TopBattingSeasonsViewModel : ViewModelBase
         }
 
         var seasonMapper = new SeasonMapping();
+        Seasons.Add(new Season
+        {
+            Id = default,
+        });
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
 
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         GetTopBattingSeason();
+        
+        PropertyChanged += OnPropertyChanged;
+    }
+
+    private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SelectedSeason):
+            {
+                await GetTopBattingSeason();
+                break;
+            }
+        }
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();
@@ -83,5 +103,11 @@ public class TopBattingSeasonsViewModel : ViewModelBase
         TopSeasonBatters.AddRange(topBatters.Select(b => mapper.FromBattingDto(b)));
 
         return Task.CompletedTask;
+    }
+    
+    protected override void Dispose(bool disposing)
+    {
+        PropertyChanged -= OnPropertyChanged;
+        base.Dispose(disposing);
     }
 }

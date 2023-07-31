@@ -8,5 +8,8 @@ public class Season
     public int NumGamesRegularSeason { get; set; }
     public int? ChampionshipWinnerId { get; set; }
 
-    public bool HasPlayoffsCompleted => ChampionshipWinnerId is not null;
+    // ReSharper disable once UnusedMember.Global
+    public string DisplaySeasonNumber => Number == 0 ? "All Seasons" : $"Season {Number}";
+
+    public bool CanSelectPlayoffs => Id == default || ChampionshipWinnerId is not null;
 }
