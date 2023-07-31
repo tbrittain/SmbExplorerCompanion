@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
@@ -18,23 +19,21 @@ using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
-public class TopBattingSeasonsViewModel : ViewModelBase
+public partial class TopBattingSeasonsViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
-    private readonly IApplicationContext _applicationContext;
     private Season? _selectedSeason;
     private int _pageNumber = 1;
-    private PlayerBase _selectedPlayer;
+    private PlayerBase? _selectedPlayer;
 
     public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
         _mediator = mediator;
-        _applicationContext = applicationContext;
         _navigationService = navigationService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            _applicationContext.SelectedFranchiseId!.Value)).Result;
+            applicationContext.SelectedFranchiseId!.Value)).Result;
 
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
@@ -61,6 +60,23 @@ public class TopBattingSeasonsViewModel : ViewModelBase
         get => _selectedPlayer;
         set => SetField(ref _selectedPlayer, value);
     }
+    
+    public bool ShortCircuitPageNumberRefresh { get; set; }
+
+    private bool CanSelectPreviousPage => PageNumber > 1;
+    private bool CanSelectNextPage => TopSeasonBatters.Count == 20;
+
+    [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
+    private void IncrementPage()
+    {
+        PageNumber++;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSelectPreviousPage))]
+    private void DecrementPage()
+    {
+        PageNumber--;
+    }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -68,6 +84,9 @@ public class TopBattingSeasonsViewModel : ViewModelBase
         {
             case nameof(SelectedSeason):
             {
+                ShortCircuitPageNumberRefresh = true;
+                PageNumber = 1;
+                ShortCircuitPageNumberRefresh = false;
                 await GetTopBattingSeason();
                 break;
             }
@@ -75,6 +94,14 @@ public class TopBattingSeasonsViewModel : ViewModelBase
             {
                 if (SelectedPlayer is not null)
                     NavigateToPlayerOverview(SelectedPlayer);
+                break;
+            }
+            case nameof(PageNumber):
+            {
+                if (!ShortCircuitPageNumberRefresh)
+                {
+                    await GetTopBattingSeason();
+                }
                 break;
             }
         }
@@ -91,7 +118,14 @@ public class TopBattingSeasonsViewModel : ViewModelBase
     public int PageNumber
     {
         get => _pageNumber;
-        set => SetField(ref _pageNumber, value);
+        set
+        {
+            if (value < 1) return;
+            SetField(ref _pageNumber, value);
+            
+            IncrementPageCommand.NotifyCanExecuteChanged();
+            DecrementPageCommand.NotifyCanExecuteChanged();
+        }
     }
 
     public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);

@@ -20,6 +20,9 @@ public partial class TopBattingSeasonsView
         var viewModel = (TopBattingSeasonsViewModel) DataContext;
         viewModel.SortColumn = columnPropertyName;
 
+        viewModel.ShortCircuitPageNumberRefresh = true;
+        viewModel.PageNumber = 1;
+        viewModel.ShortCircuitPageNumberRefresh = false;
         await viewModel.GetTopBattingSeason();
 
         TopSeasonBattingDataGrid.Items.SortDescriptions.Clear();
