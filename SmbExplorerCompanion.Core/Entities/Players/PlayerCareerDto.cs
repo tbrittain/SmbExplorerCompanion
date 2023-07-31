@@ -1,17 +1,8 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerCareerDto
+// TODO: May want to break this up into separate DTOs for pitchers and batters?
+public class PlayerCareerDto : PlayerBaseDto
 {
-    public int PlayerId { get; set; }
-    public string PlayerName { get; set; } = string.Empty;
-    public bool IsPitcher { get; set; }
-
-    public int TotalSalary { get; set; }
-    public string BatHandedness { get; set; } = string.Empty;
-    public string ThrowHandedness { get; set; } = string.Empty;
-    public string PrimaryPosition { get; set; } = string.Empty;
-    public string? PitcherRole { get; set; }
-    public string Chemistry { get; set; } = string.Empty;
     public int StartSeasonNumber { get; set; }
     public int EndSeasonNumber { get; set; }
     public bool IsRetired { get; set; }
@@ -55,9 +46,4 @@ public class PlayerCareerDto
     public double FipMinus { get; set; }
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
-
-    /// <summary>
-    ///  We can kind of think of this as a proxy for WAR, but it's not quite the same
-    /// </summary>
-    public double WeightedOpsPlusOrEraMinus { get; set; }
 }
