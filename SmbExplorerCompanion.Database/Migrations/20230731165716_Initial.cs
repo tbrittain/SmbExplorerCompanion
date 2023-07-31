@@ -119,20 +119,6 @@ namespace SmbExplorerCompanion.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Seasons",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    Number = table.Column<int>(type: "INTEGER", nullable: false),
-                    NumGamesRegularSeason = table.Column<int>(type: "INTEGER", nullable: false),
-                    ChampionshipWinnerId = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Seasons", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TeamLogoHistory",
                 columns: table => new
                 {
@@ -196,6 +182,27 @@ namespace SmbExplorerCompanion.Database.Migrations
                     table.PrimaryKey("PK_Conferences", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Conferences_Franchises_FranchiseId",
+                        column: x => x.FranchiseId,
+                        principalTable: "Franchises",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Seasons",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Number = table.Column<int>(type: "INTEGER", nullable: false),
+                    NumGamesRegularSeason = table.Column<int>(type: "INTEGER", nullable: false),
+                    FranchiseId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ChampionshipWinnerId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Seasons", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Seasons_Franchises_FranchiseId",
                         column: x => x.FranchiseId,
                         principalTable: "Franchises",
                         principalColumn: "Id",
@@ -921,6 +928,11 @@ namespace SmbExplorerCompanion.Database.Migrations
                 name: "IX_PlayerTeamHistory_SeasonTeamHistoryId",
                 table: "PlayerTeamHistory",
                 column: "SeasonTeamHistoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Seasons_FranchiseId",
+                table: "Seasons",
+                column: "FranchiseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SeasonTeamHistory_DivisionId",
