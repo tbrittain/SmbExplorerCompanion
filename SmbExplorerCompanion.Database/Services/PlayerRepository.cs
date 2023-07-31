@@ -538,7 +538,7 @@ public class PlayerRepository : IPlayerRepository
                     OpsPlus = x.PlayerSeasons
                         .SelectMany(y => y.BattingStats)
                         .Where(y => y.OpsPlus != null && y.IsRegularSeason)
-                        .Average(y => y.OpsPlus!.Value),
+                        .Average(y => y.OpsPlus ?? 0),
                     Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
                     Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
                     Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
@@ -550,7 +550,7 @@ public class PlayerRepository : IPlayerRepository
                     Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                 })
                 .OrderBy(orderBy)
-                .Skip((pageNumber ?? 1 - 1) * 20)
+                .Skip(((pageNumber ?? 1) - 1) * 20)
                 .Take(20)
                 .ToListAsync(cancellationToken: cancellationToken);
 

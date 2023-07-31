@@ -17,7 +17,8 @@
             CanUserReorderColumns="False"
             CanUserSortColumns="True"
             CanUserResizeColumns="True"
-            SelectionMode="Single">
+            SelectionMode="Single"
+            Sorting="TopBattingCareersDataGrid_OnSorting">
             <DataGrid.Columns>
                 <DataGridTextColumn
                     CanUserSort="False"
@@ -143,8 +144,9 @@
                     Binding="{Binding Errors}"
                     CanUserSort="True" />
                 <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="Cumulative OPS+">
+                    CanUserSort="True"
+                    Header="Cumulative OPS+"
+                    SortMemberPath="WeightedOpsPlusOrEraMinus">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />

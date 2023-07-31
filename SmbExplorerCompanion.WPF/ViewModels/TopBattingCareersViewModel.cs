@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
@@ -29,9 +30,15 @@ public class TopBattingCareersViewModel : ViewModelBase
         set => SetField(ref _pageNumber, value);
     }
 
-    private Task GetTopBattingCareers()
+    public string SortColumn { get; set; } = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+
+    public Task GetTopBattingCareers()
     {
-        var topBattersResult = _mediator.Send(new GetTopBattingCareersRequest(pageNumber: PageNumber)).Result;
+        var topBattersResult = _mediator.Send(new GetTopBattingCareersRequest(
+            pageNumber: PageNumber,
+            orderBy: SortColumn,
+            descending: true
+            )).Result;
         if (topBattersResult.TryPickT1(out var exception, out var topPlayers))
         {
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));

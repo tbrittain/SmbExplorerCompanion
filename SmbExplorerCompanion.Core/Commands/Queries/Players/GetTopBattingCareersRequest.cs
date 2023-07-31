@@ -33,6 +33,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>,
         nameof(PlayerCareerDto.StolenBases),
         nameof(PlayerCareerDto.SacrificeHits),
         nameof(PlayerCareerDto.SacrificeFlies),
+        nameof(PlayerCareerDto.HitByPitch),
         nameof(PlayerCareerDto.Errors),
         nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus)
     );
