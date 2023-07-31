@@ -19,7 +19,8 @@
             <ComboBox
                 Width="200"
                 ItemsSource="{Binding Seasons}"
-                SelectedItem="{Binding SelectedSeason}"/>
+                SelectedItem="{Binding SelectedSeason}"
+                DisplayMemberPath="Number"/>
         </StackPanel>
     
     </Grid>
