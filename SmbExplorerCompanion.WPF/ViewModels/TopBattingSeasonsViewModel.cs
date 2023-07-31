@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,21 +14,24 @@ using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public class TopBattingSeasonsViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
+    private readonly INavigationService _navigationService;
     private readonly IApplicationContext _applicationContext;
     private Season? _selectedSeason;
     private int _pageNumber = 1;
-    private Visibility _seasonNumberColumnVisibility = Visibility.Collapsed;
+    private PlayerBase _selectedPlayer;
 
-    public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext)
+    public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
         _mediator = mediator;
         _applicationContext = applicationContext;
+        _navigationService = navigationService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
             _applicationContext.SelectedFranchiseId!.Value)).Result;
@@ -48,8 +52,14 @@ public class TopBattingSeasonsViewModel : ViewModelBase
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         GetTopBattingSeason();
-        
+
         PropertyChanged += OnPropertyChanged;
+    }
+
+    public PlayerBase? SelectedPlayer
+    {
+        get => _selectedPlayer;
+        set => SetField(ref _selectedPlayer, value);
     }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -59,6 +69,12 @@ public class TopBattingSeasonsViewModel : ViewModelBase
             case nameof(SelectedSeason):
             {
                 await GetTopBattingSeason();
+                break;
+            }
+            case nameof(SelectedPlayer):
+            {
+                if (SelectedPlayer is not null)
+                    NavigateToPlayerOverview(SelectedPlayer);
                 break;
             }
         }
@@ -104,7 +120,16 @@ public class TopBattingSeasonsViewModel : ViewModelBase
 
         return Task.CompletedTask;
     }
-    
+
+    private void NavigateToPlayerOverview(PlayerBase player)
+    {
+        var parameters = new Tuple<string, object>[]
+        {
+            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
+        };
+        _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
+    }
+
     protected override void Dispose(bool disposing)
     {
         PropertyChanged -= OnPropertyChanged;
