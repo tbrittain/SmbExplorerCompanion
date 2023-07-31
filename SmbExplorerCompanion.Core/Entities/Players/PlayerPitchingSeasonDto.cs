@@ -1,12 +1,12 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerPitchingSeasonDto
+public class PlayerPitchingSeasonDto : PlayerSeasonDto
 {
     public int Wins { get; set; }
     public int Losses { get; set; }
     public int EarnedRuns { get; set; }
     public int TotalPitches { get; set; }
-    public double Era { get; set; }
+    public double EarnedRunAverage { get; set; }
     public double Fip { get; set; }
     public int GamesStarted { get; set; }
     public int Saves { get; set; }
