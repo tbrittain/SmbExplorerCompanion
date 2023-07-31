@@ -2,19 +2,23 @@
 using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using System.Linq.Dynamic.Core;
 
 namespace SmbExplorerCompanion.Database.Services;
 
 public class PlayerRepository : IPlayerRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
+    private readonly IApplicationContext _applicationContext;
 
-    public PlayerRepository(SmbExplorerCompanionDbContext dbContext)
+    public PlayerRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
         _dbContext = dbContext;
+        _applicationContext = applicationContext;
     }
 
-    public async Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId, CancellationToken cancellationToken)
+    public async Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -153,7 +157,7 @@ public class PlayerRepository : IPlayerRepository
                     .Sum(x => x.PitchingStats.Sum(y => y.EarnedRuns)) /
                 playerWithSeasons.PlayerSeasons
                     .Sum(x => x.PitchingStats.Sum(y => y.InningsPitched.GetValueOrDefault())) * 9;
-            playerOverviewDto.Games = playerWithSeasons.PlayerSeasons
+            playerOverviewDto.GamesPlayed = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.PitchingStats.Sum(y => y.GamesPlayed));
             playerOverviewDto.GamesStarted = playerWithSeasons.PlayerSeasons
                 .Sum(x => x.PitchingStats.Sum(y => y.GamesStarted));
@@ -457,6 +461,230 @@ public class PlayerRepository : IPlayerRepository
                 .ToList();
 
             return playerOverviewDto;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
+        string? orderBy,
+        bool descending = true,
+        CancellationToken cancellationToken = default)
+    {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+        if (orderBy is not null)
+        {
+            orderBy += descending ? " desc" : " asc";
+        }
+        else
+        {
+            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            orderBy = $"{defaultOrderByProperty} desc";
+        }
+
+        try
+        {
+            var mostRecentSeason = await _dbContext.Seasons
+                .Include(x => x.SeasonTeamHistory)
+                .ThenInclude(x => x.Team)
+                .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+                .OrderByDescending(x => x.Id)
+                .FirstAsync(cancellationToken);
+
+            var playerCareerDtos = await _dbContext.Players
+                .Include(x => x.Chemistry)
+                .Include(x => x.BatHandedness)
+                .Include(x => x.ThrowHandedness)
+                .Include(x => x.PrimaryPosition)
+                .Include(x => x.PitcherRole)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.Season)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.BattingStats)
+                .Where(x => x.FranchiseId == franchiseId)
+                .Select(x => new PlayerCareerDto
+                {
+                    PlayerId = x.Id,
+                    PlayerName = $"{x.FirstName} {x.LastName}",
+                    IsPitcher = x.PitcherRole != null,
+                    TotalSalary = x.PlayerSeasons
+                        .Sum(y => y.PlayerTeamHistory
+                            .SingleOrDefault(z => z.Order == 1) == null
+                            ? 0
+                            : y.Salary),
+                    BatHandedness = x.BatHandedness.Name,
+                    ThrowHandedness = x.ThrowHandedness.Name,
+                    PrimaryPosition = x.PrimaryPosition.Name,
+                    Chemistry = x.Chemistry!.Name,
+                    StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
+                    EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
+                    NumSeasons = x.PlayerSeasons.Count,
+                    AtBats = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)),
+                    Hits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)),
+                    HomeRuns = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)),
+                    // Calculate rate stats in the application layer, as we will not be sorting by them
+                    Runs = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)),
+                    RunsBattedIn = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)),
+                    StolenBases = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)),
+                    WeightedOpsPlusOrEraMinus = x.PlayerSeasons
+                        .SelectMany(y => y.BattingStats)
+                        .Where(y => y.OpsPlus != null)
+                        .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000),
+                    // Simply average the OPS+ values
+                    OpsPlus = x.PlayerSeasons
+                        .SelectMany(y => y.BattingStats)
+                        .Where(y => y.OpsPlus != null && y.IsRegularSeason)
+                        .Average(y => y.OpsPlus ?? 0),
+                    Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
+                    Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
+                    Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
+                    Walks = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Walks)),
+                    Strikeouts = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Strikeouts)),
+                    HitByPitch = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HitByPitch)),
+                    SacrificeHits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeHits)),
+                    SacrificeFlies = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
+                    Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
+                })
+                .OrderBy(orderBy)
+                .Skip(((pageNumber ?? 1) - 1) * 20)
+                .Take(20)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            // Calculate the rate stats that we omitted above
+            foreach (var playerCareerDto in playerCareerDtos)
+            {
+                playerCareerDto.IsRetired = playerCareerDto.EndSeasonNumber < mostRecentSeason.Number;
+                playerCareerDto.BattingAverage = playerCareerDto.AtBats == 0
+                    ? 0
+                    : playerCareerDto.Hits / (double) playerCareerDto.AtBats;
+                playerCareerDto.Obp = playerCareerDto.AtBats == 0
+                    ? 0
+                    : (playerCareerDto.Hits + playerCareerDto.Walks + playerCareerDto.HitByPitch) /
+                      (double) (playerCareerDto.AtBats + playerCareerDto.Walks + playerCareerDto.HitByPitch +
+                                playerCareerDto.SacrificeFlies);
+                playerCareerDto.Slg = playerCareerDto.AtBats == 0
+                    ? 0
+                    : (playerCareerDto.Singles + playerCareerDto.Doubles * 2 + playerCareerDto.Triples * 3 +
+                       playerCareerDto.HomeRuns * 4) / (double) playerCareerDto.AtBats;
+                playerCareerDto.Ops = playerCareerDto.Obp + playerCareerDto.Slg;
+            }
+
+            return playerCareerDtos;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopPitchingCareers(int? pageNumber,
+        string? orderBy,
+        bool descending = true,
+        CancellationToken cancellationToken = default)
+    {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+        if (orderBy is not null)
+        {
+            orderBy += descending ? " desc" : " asc";
+        }
+        else
+        {
+            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            orderBy = $"{defaultOrderByProperty} desc";
+        }
+
+        try
+        {
+            var mostRecentSeason = await _dbContext.Seasons
+                .Include(x => x.SeasonTeamHistory)
+                .ThenInclude(x => x.Team)
+                .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+                .OrderByDescending(x => x.Id)
+                .FirstAsync(cancellationToken);
+
+            var playerCareerDtos = await _dbContext.Players
+                .Include(x => x.Chemistry)
+                .Include(x => x.BatHandedness)
+                .Include(x => x.ThrowHandedness)
+                .Include(x => x.PrimaryPosition)
+                .Include(x => x.PitcherRole)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.Season)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.PitchingStats)
+                .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => x.PitcherRole != null)
+                .Select(x => new PlayerCareerDto
+                {
+                    PlayerId = x.Id,
+                    PlayerName = $"{x.FirstName} {x.LastName}",
+                    IsPitcher = x.PitcherRole != null,
+                    TotalSalary = x.PlayerSeasons
+                        .Sum(y => y.PlayerTeamHistory
+                            .SingleOrDefault(z => z.Order == 1) == null
+                            ? 0
+                            : y.Salary),
+                    PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
+                    BatHandedness = x.BatHandedness.Name,
+                    ThrowHandedness = x.ThrowHandedness.Name,
+                    PrimaryPosition = x.PrimaryPosition.Name,
+                    Chemistry = x.Chemistry!.Name,
+                    StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
+                    EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
+                    NumSeasons = x.PlayerSeasons.Count,
+                    Wins = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)),
+                    Losses = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)),
+                    GamesStarted = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)),
+                    Saves = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)),
+                    InningsPitched = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)),
+                    Strikeouts = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)),
+                    CompleteGames = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)),
+                    Shutouts = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)),
+                    Walks = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Walks)),
+                    Hits = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Hits)),
+                    HomeRuns = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.HomeRuns)),
+                    EarnedRuns = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.EarnedRuns)),
+                    TotalPitches = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.TotalPitches)),
+                    HitByPitch = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.HitByPitch)),
+                    WeightedOpsPlusOrEraMinus = x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Where(y => y.EraMinus != null && y.InningsPitched != null)
+                        .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * 2.25 / 10000),
+                    // Simply average the ERA- values, only taking into account regular season games for this calculation
+                    EraMinus = x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Where(y => y.EraMinus != null && y.IsRegularSeason)
+                        .Average(y => y.EraMinus ?? 0),
+                    FipMinus = x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Where(y => y.FipMinus != null && y.IsRegularSeason)
+                        .Average(y => y.FipMinus ?? 0),
+                })
+                .OrderBy(orderBy)
+                .Skip(((pageNumber ?? 1) - 1) * 20)
+                .Take(20)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            foreach (var playerCareerDto in playerCareerDtos)
+            {
+                playerCareerDto.IsRetired = playerCareerDto.EndSeasonNumber < mostRecentSeason.Number;
+                playerCareerDto.Era = playerCareerDto.InningsPitched == 0
+                    ? 0
+                    : playerCareerDto.EarnedRuns / playerCareerDto.InningsPitched * 9;
+                playerCareerDto.Whip = playerCareerDto.InningsPitched == 0
+                    ? 0
+                    : (playerCareerDto.Walks + playerCareerDto.Hits) / playerCareerDto.InningsPitched;
+                playerCareerDto.Fip = playerCareerDto.InningsPitched == 0
+                    ? 0
+                    : (13 * playerCareerDto.HomeRuns + 3 * (playerCareerDto.Walks + playerCareerDto.HitByPitch) -
+                       2 * playerCareerDto.Strikeouts) / playerCareerDto.InningsPitched + 3.10;
+            }
+
+            return playerCareerDtos;
         }
         catch (Exception e)
         {

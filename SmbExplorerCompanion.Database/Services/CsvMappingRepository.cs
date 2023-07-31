@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
 
 namespace SmbExplorerCompanion.Database.Services;
@@ -6,15 +7,18 @@ namespace SmbExplorerCompanion.Database.Services;
 public class CsvMappingRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
+    private readonly IApplicationContext _applicationContext;
 
-    public CsvMappingRepository(SmbExplorerCompanionDbContext dbContext)
+    public CsvMappingRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
         _dbContext = dbContext;
+        _applicationContext = applicationContext;
     }
 
     // Import step #1
-    public async Task AddTeamsAsync(List<CsvTeam> teams, int franchiseId, CancellationToken cancellationToken)
+    public async Task AddTeamsAsync(List<CsvTeam> teams, CancellationToken cancellationToken)
     {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
         foreach (var csvTeam in teams)
         {
             var season = await _dbContext.Seasons
@@ -62,20 +66,25 @@ public class CsvMappingRepository
                 .Include(x => x.Team)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.TeamNameHistory)
-                .SingleOrDefaultAsync(x => x.GameId == csvTeam.TeamId, cancellationToken);
+                .SingleOrDefaultAsync(x => x.GameId == csvTeam.TeamId &&
+                                           x.Team.FranchiseId == franchiseId,
+                    cancellationToken);
             if (teamGameIdHistory is null)
             {
                 // attempt to locate team based on the team name
                 var teamNameHistory = await _dbContext.TeamNameHistory
                     .Include(x => x.SeasonTeamHistory)
                     .ThenInclude(x => x.Team)
-                    .SingleOrDefaultAsync(x => x.Name == csvTeam.TeamName, cancellationToken);
+                    .SingleOrDefaultAsync(x => x.Name == csvTeam.TeamName &&
+                                               x.SeasonTeamHistory.Any(y => y.Team.FranchiseId == franchiseId),
+                        cancellationToken);
 
                 // assume the team is new and does not exist if there is no equivalent team matching the name
                 if (teamNameHistory is null)
                 {
                     team = new Team
                     {
+                        FranchiseId = franchiseId,
                         TeamGameIdHistory = new List<TeamGameIdHistory>
                         {
                             new()
@@ -174,6 +183,8 @@ public class CsvMappingRepository
     // Import step #2
     public async Task AddOverallPlayersAsync(List<CsvOverallPlayer> players, CancellationToken cancellationToken)
     {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
         var batHandedness = await _dbContext.BatHandedness.ToListAsync(cancellationToken: cancellationToken);
         var throwHandedness = await _dbContext.ThrowHandedness.ToListAsync(cancellationToken: cancellationToken);
         var positions = await _dbContext.Positions.ToListAsync(cancellationToken: cancellationToken);
@@ -195,7 +206,9 @@ public class CsvMappingRepository
                 .Include(x => x.Player)
                 .ThenInclude(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Traits)
-                .SingleOrDefaultAsync(x => x.GameId == csvOverallPlayer.PlayerId, cancellationToken);
+                .SingleOrDefaultAsync(x => x.GameId == csvOverallPlayer.PlayerId &&
+                                           x.Player.FranchiseId == franchiseId,
+                    cancellationToken);
 
             if (playerGameIdHistory is null)
             {
@@ -213,7 +226,8 @@ public class CsvMappingRepository
                                 && x.PrimaryPosition.Name == csvOverallPlayer.Position
                                 && (x.PitcherRole == null || x.PitcherRole.Name == csvOverallPlayer.PitcherRole)
                                 && x.FirstName == csvOverallPlayer.FirstName
-                                && x.LastName == csvOverallPlayer.LastName)
+                                && x.LastName == csvOverallPlayer.LastName
+                                && x.FranchiseId == franchiseId)
                     .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
                 if (player is null)
@@ -221,6 +235,7 @@ public class CsvMappingRepository
                     // assume it is a new player if we cannot find a match
                     player = new Player
                     {
+                        FranchiseId = franchiseId,
                         FirstName = csvOverallPlayer.FirstName,
                         LastName = csvOverallPlayer.LastName,
                         Chemistry = chemistry.SingleOrDefault(x => x.Name == csvOverallPlayer.Chemistry) ??
@@ -808,7 +823,7 @@ public class CsvMappingRepository
             {
                 _dbContext.TeamPlayoffSchedules.Remove(teamPlayoffSchedule);
             }
-            
+
             var potentialTeamIds = seasonTeamHistory.Team.TeamGameIdHistory
                 .Select(x => x.GameId)
                 .ToList();

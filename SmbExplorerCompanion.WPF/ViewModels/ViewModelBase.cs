@@ -7,13 +7,6 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public abstract class ViewModelBase : IDisposable, INotifyPropertyChanged
 {
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-        }
-    }
-    
     public virtual void Dispose()
     {
         Dispose(true);
@@ -21,6 +14,13 @@ public abstract class ViewModelBase : IDisposable, INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+        }
+    }
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

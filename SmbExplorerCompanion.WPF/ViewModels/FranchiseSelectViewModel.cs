@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
+using MaterialDesignThemes.Wpf;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Franchises;
 using SmbExplorerCompanion.Core.Commands.Queries.Franchises;
@@ -17,8 +18,8 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public partial class FranchiseSelectViewModel : ViewModelBase
 {
     private const string LandingViewModelDialogIdentifier = nameof(FranchiseSelectViewModel);
-    private readonly IMediator _mediator;
     private readonly IApplicationContext _applicationContext;
+    private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
     private Franchise? _selectedFranchise;
 
@@ -44,15 +45,6 @@ public partial class FranchiseSelectViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand(CanExecute = nameof(IsFranchiseSelected))]
-    private void LoadFranchise()
-    {
-        if (SelectedFranchise is null) return;
-        _applicationContext.SelectedFranchiseId = SelectedFranchise.Id;
-        
-        _navigationService.NavigateTo<HomeViewModel>();
-    }
-
     public ObservableCollection<Franchise> Franchises { get; }
 
     public Franchise? SelectedFranchise
@@ -67,12 +59,21 @@ public partial class FranchiseSelectViewModel : ViewModelBase
 
     public bool IsFranchiseSelected => SelectedFranchise is not null;
 
+    [RelayCommand(CanExecute = nameof(IsFranchiseSelected))]
+    private void LoadFranchise()
+    {
+        if (SelectedFranchise is null) return;
+        _applicationContext.SelectedFranchiseId = SelectedFranchise.Id;
+
+        _navigationService.NavigateTo<HomeViewModel>();
+    }
+
     [RelayCommand]
     private async Task AddFranchise()
     {
         var addFranchiseViewModel = new DialogViewModel();
         var result =
-            await MaterialDesignThemes.Wpf.DialogHost.Show(addFranchiseViewModel, LandingViewModelDialogIdentifier);
+            await DialogHost.Show(addFranchiseViewModel, LandingViewModelDialogIdentifier);
 
         if (result is not true) return;
 

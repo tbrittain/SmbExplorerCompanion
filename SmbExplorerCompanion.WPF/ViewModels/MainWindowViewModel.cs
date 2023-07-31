@@ -19,6 +19,10 @@ public partial class MainWindowViewModel : ViewModelBase
         NavigationService.PropertyChanged += NavigationServiceOnPropertyChanged;
     }
 
+    public INavigationService NavigationService { get; }
+
+    public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
+
     private void NavigationServiceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         // TODO: Was going to use this to conditionally change the background color of the selected sidebar item
@@ -32,7 +36,10 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private bool CanNavigateBack() => NavigationService.CanNavigateBack;
+    private bool CanNavigateBack()
+    {
+        return NavigationService.CanNavigateBack;
+    }
 
     [RelayCommand(CanExecute = nameof(CanNavigateBack))]
     private void NavigateBack()
@@ -52,16 +59,12 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public INavigationService NavigationService { get; }
-
     public Task Initialize()
     {
         NavigationService.NavigateTo<FranchiseSelectViewModel>();
         return Task.CompletedTask;
     }
-    
-    public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
-    
+
     [RelayCommand]
     private Task NavigateToHome()
     {
@@ -81,7 +84,21 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         NavigationService.NavigateTo<HistoricalTeamsViewModel>();
         return Task.CompletedTask;
-    } 
+    }
+
+    [RelayCommand]
+    private Task NavigateToCareerBatting()
+    {
+        NavigationService.NavigateTo<TopBattingCareersViewModel>();
+        return Task.CompletedTask;
+    }
+    
+    [RelayCommand]
+    private Task NavigateToCareerPitching()
+    {
+        NavigationService.NavigateTo<TopPitchingCareersViewModel>();
+        return Task.CompletedTask;
+    }
 
     override public void Dispose()
     {

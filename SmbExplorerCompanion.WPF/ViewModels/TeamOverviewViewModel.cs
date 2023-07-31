@@ -12,9 +12,9 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public class TeamOverviewViewModel : ViewModelBase
 {
     public const string TeamIdProp = "TeamId";
+    private readonly IMediator _mediator;
 
     private readonly INavigationService _navigationService;
-    private readonly IMediator _mediator;
     private TeamTopPlayerHistory? _selectedPlayer;
 
     public TeamOverviewViewModel(INavigationService navigationService, IMediator mediator)
@@ -48,6 +48,18 @@ public class TeamOverviewViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
     }
 
+    private int TeamId { get; }
+
+    public string TeamRecord => $"{TeamOverview.NumWins}-{TeamOverview.NumLosses}, {TeamOverview.WinPercentage:F3} W-L%";
+
+    public TeamOverview TeamOverview { get; set; }
+
+    public TeamTopPlayerHistory? SelectedPlayer
+    {
+        get => _selectedPlayer;
+        set => SetField(ref _selectedPlayer, value);
+    }
+
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -59,18 +71,6 @@ public class TeamOverviewViewModel : ViewModelBase
                 break;
             }
         }
-    }
-
-    private int TeamId { get; set; }
-
-    public string TeamRecord => $"{TeamOverview.NumWins}-{TeamOverview.NumLosses}, {TeamOverview.WinPercentage:F3} W-L%";
-
-    public TeamOverview TeamOverview { get; set; }
-
-    public TeamTopPlayerHistory? SelectedPlayer
-    {
-        get => _selectedPlayer;
-        set => SetField(ref _selectedPlayer, value);
     }
 
     private void NavigateToPlayerOverview(TeamTopPlayerHistory player)

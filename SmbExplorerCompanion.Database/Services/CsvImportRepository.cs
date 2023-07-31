@@ -11,17 +11,14 @@ public class CsvImportRepository : ICsvImportRepository
     private readonly CsvMappingRepository _csvMappingRepository;
     private readonly CsvReaderService _csvReaderService;
     private readonly SmbExplorerCompanionDbContext _dbContext;
-    private readonly IApplicationContext _applicationContext;
 
     public CsvImportRepository(CsvMappingRepository csvMappingRepository,
         CsvReaderService csvReaderService,
-        SmbExplorerCompanionDbContext dbContext,
-        IApplicationContext applicationContext)
+        SmbExplorerCompanionDbContext dbContext)
     {
         _csvMappingRepository = csvMappingRepository;
         _csvReaderService = csvReaderService;
         _dbContext = dbContext;
-        _applicationContext = applicationContext;
     }
 
     public async Task ImportSeason(ImportSeasonFilePaths filePaths, CancellationToken cancellationToken)
@@ -83,9 +80,8 @@ public class CsvImportRepository : ICsvImportRepository
 
     private async Task ImportTeams(string filePath, CancellationToken cancellationToken)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
         var teams = await _csvReaderService.ReadTeamsAsync(filePath);
-        await _csvMappingRepository.AddTeamsAsync(teams, franchiseId, cancellationToken);
+        await _csvMappingRepository.AddTeamsAsync(teams, cancellationToken);
     }
 
     private async Task ImportOverallPlayers(string filePath, CancellationToken cancellationToken)

@@ -60,6 +60,8 @@ public partial class App
             .AddTransient<HistoricalTeamsViewModel>()
             .AddTransient<TeamOverviewViewModel>()
             .AddTransient<PlayerOverviewViewModel>()
+            .AddTransient<TopBattingCareersViewModel>()
+            .AddTransient<TopPitchingCareersViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
             // NavigationService calls this Func to get the ViewModel instance

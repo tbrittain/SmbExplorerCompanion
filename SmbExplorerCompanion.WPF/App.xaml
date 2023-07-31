@@ -25,13 +25,21 @@
             <DataTemplate DataType="{x:Type viewModels:HistoricalTeamsViewModel}">
                 <views:HistoricalTeamsView />
             </DataTemplate>
-            
+
             <DataTemplate DataType="{x:Type viewModels:TeamOverviewViewModel}">
                 <views:TeamOverviewView />
             </DataTemplate>
-            
+
             <DataTemplate DataType="{x:Type viewModels:PlayerOverviewViewModel}">
                 <views:PlayerOverviewView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type viewModels:TopBattingCareersViewModel}">
+                <views:TopBattingCareersView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type viewModels:TopPitchingCareersViewModel}">
+                <views:TopPitchingCareersView />
             </DataTemplate>
 
             <ResourceDictionary.MergedDictionaries>

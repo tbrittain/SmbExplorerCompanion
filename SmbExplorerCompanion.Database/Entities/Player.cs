@@ -23,6 +23,9 @@ public class Player
 
     public int? ChemistryId { get; set; }
     public virtual Chemistry? Chemistry { get; set; }
+    
+    public int FranchiseId { get; set; }
+    public virtual Franchise Franchise { get; set; } = default!;
 
     public virtual ICollection<PlayerSeason> PlayerSeasons { get; set; } = new HashSet<PlayerSeason>();
     public virtual ICollection<PlayerGameIdHistory> PlayerGameIdHistory { get; set; } = new HashSet<PlayerGameIdHistory>();
