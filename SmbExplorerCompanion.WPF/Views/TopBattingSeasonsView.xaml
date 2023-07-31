@@ -22,6 +22,22 @@
                 SelectedItem="{Binding SelectedSeason}"
                 DisplayMemberPath="Number"/>
         </StackPanel>
-    
+        <DataGrid
+            Name="TopSeasonBattingDataGrid"
+            Grid.Row="1"
+            IsReadOnly="True"
+            ItemsSource="{Binding TopSeasonBatters}"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            CanUserReorderColumns="False"
+            CanUserSortColumns="True"
+            CanUserResizeColumns="True"
+            SelectionMode="Single"
+            Sorting="TopSeasonBattingDataGrid_OnSorting">
+            <DataGrid.Columns>
+                <!-- TODO: columns here -->
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>
