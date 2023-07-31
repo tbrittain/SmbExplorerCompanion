@@ -617,6 +617,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PitchingStats)
                 .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => x.PitcherRole != null)
                 .Select(x => new PlayerCareerDto
                 {
                     PlayerId = x.Id,
@@ -649,9 +650,9 @@ public class PlayerRepository : IPlayerRepository
                     HitByPitch = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.HitByPitch)),
                     WeightedOpsPlusOrEraMinus = x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Where(y => y.EraMinus != null)
-                        .Sum(y => (y.EraMinus ?? 0) * y.InningsPitched * 2.25 / 10000 ?? 0),
-                    // Simply average the ERA- values
+                        .Where(y => y.EraMinus != null && y.InningsPitched != null)
+                        .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * 2.25 / 10000),
+                    // Simply average the ERA- values, only taking into account regular season games for this calculation
                     EraMinus = x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
                         .Where(y => y.EraMinus != null && y.IsRegularSeason)

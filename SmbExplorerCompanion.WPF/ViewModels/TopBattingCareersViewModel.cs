@@ -58,7 +58,7 @@ public class TopBattingCareersViewModel : ViewModelBase
         }
     }
 
-    private void NavigateToPlayerOverview(PlayerBattingCareer player)
+    private void NavigateToPlayerOverview(PlayerCareerBase player)
     {
         var parameters = new Tuple<string, object>[]
         {

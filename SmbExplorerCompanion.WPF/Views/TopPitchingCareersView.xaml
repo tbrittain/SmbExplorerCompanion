@@ -11,6 +11,7 @@
             Name="TopPitchingCareersDataGrid"
             IsReadOnly="True"
             ItemsSource="{Binding TopPitchingCareers}"
+            SelectedItem="{Binding SelectedPlayer}"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
