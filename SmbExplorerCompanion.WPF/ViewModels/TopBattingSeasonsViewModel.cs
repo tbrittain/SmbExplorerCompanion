@@ -1,8 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
@@ -15,6 +18,7 @@ public class TopBattingSeasonsViewModel : ViewModelBase
     private readonly IMediator _mediator;
     private readonly IApplicationContext _applicationContext;
     private Season? _selectedSeason;
+    private int _pageNumber = 1;
 
     public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext)
     {
@@ -42,5 +46,31 @@ public class TopBattingSeasonsViewModel : ViewModelBase
     {
         get => _selectedSeason;
         set => SetField(ref _selectedSeason, value);
+    }
+
+    public int PageNumber
+    {
+        get => _pageNumber;
+        set => SetField(ref _pageNumber, value);
+    }
+
+    public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
+
+    public Task GetTopBattingSeason()
+    {
+        var topBattersResult = _mediator.Send(new GetTopBattingSeasonRequest(
+            SelectedSeason!.Id,
+            false,
+            PageNumber,
+            SortColumn,
+            true)).Result;
+
+        if (topBattersResult.TryPickT1(out var exception, out var topBatters))
+        {
+            Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
+            return Task.CompletedTask;
+        }
+        
+        
     }
 }
