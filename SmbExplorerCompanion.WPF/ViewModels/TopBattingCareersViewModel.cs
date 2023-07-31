@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using MediatR;
@@ -15,11 +17,14 @@ public class TopBattingCareersViewModel : ViewModelBase
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
     private int _pageNumber = 1;
+    private PlayerBattingCareer? _selectedPlayer;
 
     public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator)
     {
         _navigationService = navigationService;
         _mediator = mediator;
+
+        PropertyChanged += OnPropertyChanged;
 
         GetTopBattingCareers();
     }
@@ -32,19 +37,48 @@ public class TopBattingCareersViewModel : ViewModelBase
 
     public string SortColumn { get; set; } = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
 
+    public PlayerBattingCareer? SelectedPlayer
+    {
+        get => _selectedPlayer;
+        set => SetField(ref _selectedPlayer, value);
+    }
+
+    public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SelectedPlayer):
+            {
+                if (SelectedPlayer is not null)
+                    NavigateToPlayerOverview(SelectedPlayer);
+                break;
+            }
+        }
+    }
+
+    private void NavigateToPlayerOverview(PlayerBattingCareer player)
+    {
+        var parameters = new Tuple<string, object>[]
+        {
+            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
+        };
+        _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
+    }
+
     public Task GetTopBattingCareers()
     {
         var topBattersResult = _mediator.Send(new GetTopBattingCareersRequest(
-            pageNumber: PageNumber,
-            orderBy: SortColumn,
-            descending: true
-            )).Result;
+            PageNumber,
+            SortColumn
+        )).Result;
         if (topBattersResult.TryPickT1(out var exception, out var topPlayers))
         {
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
             return Task.CompletedTask;
         }
-        
+
         TopBattingCareers.Clear();
 
         var mapper = new PlayerCareerMapping();
@@ -56,5 +90,9 @@ public class TopBattingCareersViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
-    public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
+    protected override void Dispose(bool disposing)
+    {
+        PropertyChanged -= OnPropertyChanged;
+        base.Dispose(disposing);
+    }
 }
