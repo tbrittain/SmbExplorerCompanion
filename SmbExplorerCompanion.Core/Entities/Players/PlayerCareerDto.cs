@@ -41,14 +41,18 @@ public class PlayerCareerDto
     // Pitching stats, may apply to position players who have pitched
     public int Wins { get; set; }
     public int Losses { get; set; }
+    public int EarnedRuns { get; set; }
+    public int TotalPitches { get; set; }
     public double Era { get; set; }
-    public int Games { get; set; }
+    public double Fip { get; set; }
+    public int GamesPlayed { get; set; }
     public int GamesStarted { get; set; }
     public int Saves { get; set; }
     public double InningsPitched { get; set; }
     public int Strikeouts { get; set; }
     public double Whip { get; set; }
     public double EraMinus { get; set; }
+    public double FipMinus { get; set; }
 
     /// <summary>
     ///  We can kind of think of this as a proxy for WAR, but it's not quite the same

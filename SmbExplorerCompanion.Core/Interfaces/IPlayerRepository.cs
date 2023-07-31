@@ -7,6 +7,10 @@ public interface IPlayerRepository
 {
     public Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId,
         CancellationToken cancellationToken = default);
+
     public Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
+        string? orderBy, bool descending = true, CancellationToken cancellationToken = default);
+
+    public Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopPitchingCareers(int? pageNumber,
         string? orderBy, bool descending = true, CancellationToken cancellationToken = default);
 }
