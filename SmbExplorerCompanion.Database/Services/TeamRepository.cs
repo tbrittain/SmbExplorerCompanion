@@ -307,4 +307,9 @@ public class TeamRepository : ITeamRepository
             return e;
         }
     }
+
+    public async Task<OneOf<TeamSeasonDetailDto, Exception>> GetTeamSeasonDetail(int seasonId, int teamId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }
