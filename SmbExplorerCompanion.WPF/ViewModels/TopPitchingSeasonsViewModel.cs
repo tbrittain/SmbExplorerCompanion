@@ -23,10 +23,10 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
-    private Season? _selectedSeason;
+    private bool _isPlayoffs;
     private int _pageNumber = 1;
     private PlayerBase? _selectedPlayer;
-    private bool _isPlayoffs;
+    private Season? _selectedSeason;
 
     public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
     {
@@ -45,7 +45,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         var seasonMapper = new SeasonMapping();
         Seasons.Add(new Season
         {
-            Id = default,
+            Id = default
         });
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
@@ -53,37 +53,6 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         GetTopPitchingSeason();
 
         PropertyChanged += OnPropertyChanged;
-    }
-
-    private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        switch (e.PropertyName)
-        {
-            case nameof(IsPlayoffs):
-            case nameof(SelectedSeason):
-            {
-                ShortCircuitPageNumberRefresh = true;
-                PageNumber = 1;
-                ShortCircuitPageNumberRefresh = false;
-                await GetTopPitchingSeason();
-                break;
-            }
-            case nameof(SelectedPlayer):
-            {
-                if (SelectedPlayer is not null)
-                    NavigateToPlayerOverview(SelectedPlayer);
-                break;
-            }
-            case nameof(PageNumber):
-            {
-                if (!ShortCircuitPageNumberRefresh)
-                {
-                    await GetTopPitchingSeason();
-                }
-
-                break;
-            }
-        }
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();
@@ -127,6 +96,34 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     private bool CanSelectPreviousPage => PageNumber > 1;
     private bool CanSelectNextPage => TopSeasonPitchers.Count == 20;
+
+    private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(IsPlayoffs):
+            case nameof(SelectedSeason):
+            {
+                ShortCircuitPageNumberRefresh = true;
+                PageNumber = 1;
+                ShortCircuitPageNumberRefresh = false;
+                await GetTopPitchingSeason();
+                break;
+            }
+            case nameof(SelectedPlayer):
+            {
+                if (SelectedPlayer is not null)
+                    NavigateToPlayerOverview(SelectedPlayer);
+                break;
+            }
+            case nameof(PageNumber):
+            {
+                if (!ShortCircuitPageNumberRefresh) await GetTopPitchingSeason();
+
+                break;
+            }
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
     private void IncrementPage()
