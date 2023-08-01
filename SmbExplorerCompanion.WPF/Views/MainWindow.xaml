@@ -77,8 +77,8 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Left" />
             </Button>
-            
-            <Button>
+
+            <Button Command="{Binding NavigateToSeasonPitchingCommand}">
                 <TextBlock
                     Text="Season Pitching"
                     FontSize="15"

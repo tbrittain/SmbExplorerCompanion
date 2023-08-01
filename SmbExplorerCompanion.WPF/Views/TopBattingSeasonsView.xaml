@@ -29,7 +29,7 @@
                 <Button Command="{Binding DecrementPageCommand}">
                     <TextBlock>Prev Page</TextBlock>
                 </Button>
-                <Label Content="{Binding PageNumber, StringFormat='{}Page {1}'}"></Label>
+                <Label Content="{Binding PageNumber}" />
                 <Button Command="{Binding IncrementPageCommand}">
                     <TextBlock>Next Page</TextBlock>
                 </Button>
@@ -58,7 +58,7 @@
                 <DataGridTextColumn
                     CanUserSort="False"
                     Header="Position"
-                    Binding="{Binding PrimaryPosition}" />
+                    Binding="{Binding DisplayPrimaryPosition}" />
                 <DataGridTextColumn
                     CanUserSort="False"
                     Header="Season #"
@@ -116,28 +116,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn
-                    Header="R"
-                    Binding="{Binding Runs}"
-                    CanUserSort="True" />
-                <DataGridTextColumn
                     Header="RBI"
                     Binding="{Binding RunsBattedIn}"
                     CanUserSort="True" />
                 <DataGridTextColumn
                     Header="SB"
                     Binding="{Binding StolenBases}"
-                    CanUserSort="True" />
-                <DataGridTextColumn
-                    Header="HBP"
-                    Binding="{Binding HitByPitch}"
-                    CanUserSort="True" />
-                <DataGridTextColumn
-                    Header="SH"
-                    Binding="{Binding SacrificeHits}"
-                    CanUserSort="True" />
-                <DataGridTextColumn
-                    Header="SF"
-                    Binding="{Binding SacrificeFlies}"
                     CanUserSort="True" />
                 <DataGridTemplateColumn
                     CanUserSort="True"
@@ -179,14 +163,6 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn
-                    Header="E"
-                    Binding="{Binding Errors}"
-                    CanUserSort="True" />
-                <DataGridTextColumn
-                    Header="K"
-                    Binding="{Binding Strikeouts}"
-                    CanUserSort="True" />
                 <DataGridTemplateColumn
                     CanUserSort="True"
                     Header="Cumulative OPS+"
@@ -197,6 +173,30 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Header="R"
+                    Binding="{Binding Runs}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="K"
+                    Binding="{Binding Strikeouts}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="HBP"
+                    Binding="{Binding HitByPitch}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="SH"
+                    Binding="{Binding SacrificeHits}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="SF"
+                    Binding="{Binding SacrificeFlies}"
+                    CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="E"
+                    Binding="{Binding Errors}"
+                    CanUserSort="True" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -47,7 +47,6 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             Id = default,
         });
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
-
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         GetTopBattingSeason();
@@ -60,7 +59,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         get => _selectedPlayer;
         set => SetField(ref _selectedPlayer, value);
     }
-    
+
     public bool ShortCircuitPageNumberRefresh { get; set; }
 
     private bool CanSelectPreviousPage => PageNumber > 1;
@@ -102,6 +101,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
                 {
                     await GetTopBattingSeason();
                 }
+
                 break;
             }
         }
@@ -122,7 +122,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         {
             if (value < 1) return;
             SetField(ref _pageNumber, value);
-            
+
             IncrementPageCommand.NotifyCanExecuteChanged();
             DecrementPageCommand.NotifyCanExecuteChanged();
         }
@@ -136,6 +136,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     {
         var topBattersResult = _mediator.Send(new GetTopBattingSeasonRequest(
             SelectedSeason!.Id,
+            // TODO: toggle for playoffs
             false,
             PageNumber,
             SortColumn,

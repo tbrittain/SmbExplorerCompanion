@@ -8,4 +8,5 @@ namespace SmbExplorerCompanion.WPF.Mappings.Players;
 public partial class PlayerSeasonMapping
 {
     public partial PlayerSeasonBatting FromBattingDto(PlayerBattingSeasonDto battingSeasonDto);
+    public partial PlayerSeasonPitching FromPitchingDto(PlayerPitchingSeasonDto pitchingSeasonDto);
 }
