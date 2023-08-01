@@ -1,9 +1,7 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Teams;
 
-public class HistoricalTeamDto
+public class HistoricalTeamDto : TeamBaseDto
 {
-    public int TeamId { get; set; }
-    public string CurrentName { get; set; } = default!;
     public int NumGames { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }

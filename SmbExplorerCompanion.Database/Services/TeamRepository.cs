@@ -56,7 +56,7 @@ public class TeamRepository : ITeamRepository
                 .Select(x => new
                 {
                     x.Id,
-                    CurrentName = x.SeasonTeamHistory
+                    CurrentTeamName = x.SeasonTeamHistory
                         .OrderByDescending(y => y.SeasonId)
                         .First().TeamNameHistory.Name,
                     NumGames = x.SeasonTeamHistory.Sum(y => y.Wins + y.Losses),
@@ -106,7 +106,7 @@ public class TeamRepository : ITeamRepository
                     var team = new HistoricalTeamDto
                     {
                         TeamId = x.Id,
-                        CurrentName = x.CurrentName,
+                        CurrentTeamName = x.CurrentTeamName,
                         NumGames = x.NumGames,
                         NumWins = x.NumWins,
                         NumLosses = x.NumLosses,
@@ -160,7 +160,7 @@ public class TeamRepository : ITeamRepository
 
                     return team;
                 })
-                .OrderBy(x => x.CurrentName)
+                .OrderBy(x => x.CurrentTeamName)
                 .ToList();
 
             if (cancellationToken.IsCancellationRequested)

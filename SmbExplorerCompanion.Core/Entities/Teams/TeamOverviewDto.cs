@@ -1,9 +1,7 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Teams;
 
-public class TeamOverviewDto
+public class TeamOverviewDto : TeamBaseDto
 {
-    public int TeamId { get; set; }
-    public string CurrentTeamName { get; set; } = string.Empty;
     public List<TeamOverviewSeasonHistoryDto> TeamHistory { get; set; } = new();
     public List<TeamTopPlayerHistoryDto> TopPlayers { get; set; } = new();
     public int NumSeasons { get; set; }
