@@ -7,9 +7,7 @@ public class Team
     public Guid TeamId { get; set; }
     public string TeamName { get; set; } = default!;
     public string DivisionName { get; set; } = default!;
-
     public string ConferenceName { get; set; } = default!;
-    
     public int SeasonId { get; set; }
     public int SeasonNum { get; set; }
     public int Budget { get; set; }
