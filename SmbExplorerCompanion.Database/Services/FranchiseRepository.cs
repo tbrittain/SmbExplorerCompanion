@@ -36,13 +36,13 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         }
     }
 
-    public async Task<OneOf<FranchiseDto, None, Exception>> GetByIdAsync(int Id,
+    public async Task<OneOf<FranchiseDto, None, Exception>> GetByIdAsync(int id,
         CancellationToken cancellationToken = default)
     {
         try
         {
             var franchise =
-                await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == Id, cancellationToken);
+                await _dbContext.Franchises.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
             if (franchise is null) return new None();
 
             var mapper = new FranchiseMapping();
@@ -100,7 +100,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         return franchiseDto;
     }
 
-    public Task<OneOf<FranchiseDto, None, Exception>> DeleteAsync(int Id,
+    public Task<OneOf<FranchiseDto, None, Exception>> DeleteAsync(int id,
         CancellationToken cancellationToken = default)
     {
         // TODO: This is a tricky one since we will need to delete all the related entities as well
