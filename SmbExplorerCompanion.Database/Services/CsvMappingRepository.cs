@@ -28,7 +28,8 @@ public class CsvMappingRepository
                 season = new Season
                 {
                     Id = csvTeam.SeasonId,
-                    Number = csvTeam.SeasonNum
+                    Number = csvTeam.SeasonNum,
+                    FranchiseId = franchiseId
                 };
                 _dbContext.Seasons.Add(season);
                 await _dbContext.SaveChangesAsync(cancellationToken);

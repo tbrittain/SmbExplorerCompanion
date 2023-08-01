@@ -42,6 +42,14 @@
                 <views:TopPitchingCareersView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type viewModels:TopBattingSeasonsViewModel}">
+                <views:TopBattingSeasonsView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type viewModels:TopPitchingSeasonsViewModel}">
+                <views:TopPitchingSeasonsView />
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
                 <ResourceDictionary

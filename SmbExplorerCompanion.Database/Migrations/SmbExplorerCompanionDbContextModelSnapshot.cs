@@ -726,6 +726,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int?>("ChampionshipWinnerId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("FranchiseId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("NumGamesRegularSeason")
                         .HasColumnType("INTEGER");
 
@@ -733,6 +736,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FranchiseId");
 
                     b.ToTable("Seasons");
                 });
@@ -1243,6 +1248,17 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Navigation("SeasonTeamHistory");
                 });
 
+            modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.Season", b =>
+                {
+                    b.HasOne("SmbExplorerCompanion.Database.Entities.Franchise", "Franchise")
+                        .WithMany("Seasons")
+                        .HasForeignKey("FranchiseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Franchise");
+                });
+
             modelBuilder.Entity("SmbExplorerCompanion.Database.Entities.SeasonTeamHistory", b =>
                 {
                     b.HasOne("SmbExplorerCompanion.Database.Entities.Division", "Division")
@@ -1391,6 +1407,8 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Navigation("Conferences");
 
                     b.Navigation("Players");
+
+                    b.Navigation("Seasons");
 
                     b.Navigation("Teams");
                 });

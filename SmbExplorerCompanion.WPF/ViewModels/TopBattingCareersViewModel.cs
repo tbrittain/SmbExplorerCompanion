@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
@@ -82,10 +84,7 @@ public class TopBattingCareersViewModel : ViewModelBase
         TopBattingCareers.Clear();
 
         var mapper = new PlayerCareerMapping();
-        foreach (var player in topPlayers)
-        {
-            TopBattingCareers.Add(mapper.FromBattingDto(player));
-        }
+        TopBattingCareers.AddRange(topPlayers.Select(b => mapper.FromBattingDto(b)));
 
         return Task.CompletedTask;
     }

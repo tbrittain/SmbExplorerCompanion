@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.WPF.Models.Players;
 
-public class PlayerBattingCareer : PlayerCareerBase
+public class PlayerSeasonBatting : PlayerSeasonBase
 {
     public int AtBats { get; set; }
     public int Hits { get; set; }

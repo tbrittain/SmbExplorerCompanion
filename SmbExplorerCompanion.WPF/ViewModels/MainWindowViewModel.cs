@@ -100,6 +100,20 @@ public partial class MainWindowViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    [RelayCommand]
+    private Task NavigateToSeasonBatting()
+    {
+        NavigationService.NavigateTo<TopBattingSeasonsViewModel>();
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private Task NavigateToSeasonPitching()
+    {
+        NavigationService.NavigateTo<TopPitchingSeasonsViewModel>();
+        return Task.CompletedTask;
+    }
+
     override public void Dispose()
     {
         _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
