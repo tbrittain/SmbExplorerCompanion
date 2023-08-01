@@ -26,6 +26,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private Season? _selectedSeason;
     private int _pageNumber = 1;
     private PlayerBase? _selectedPlayer;
+    private bool _isPlayoffs;
 
     public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
     {
@@ -58,6 +59,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     {
         switch (e.PropertyName)
         {
+            case nameof(IsPlayoffs):
             case nameof(SelectedSeason):
             {
                 ShortCircuitPageNumberRefresh = true;
@@ -105,6 +107,12 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         }
     }
 
+    public bool IsPlayoffs
+    {
+        get => _isPlayoffs;
+        set => SetField(ref _isPlayoffs, value);
+    }
+
     public string SortColumn { get; set; } = nameof(PlayerPitchingSeasonDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
@@ -136,7 +144,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     {
         var topPitchersResult = _mediator.Send(new GetTopPitchingSeasonRequest(
             SelectedSeason!.Id,
-            false,
+            IsPlayoffs,
             PageNumber,
             SortColumn,
             true)).Result;

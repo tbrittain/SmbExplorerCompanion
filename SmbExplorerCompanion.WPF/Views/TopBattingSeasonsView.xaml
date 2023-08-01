@@ -23,6 +23,7 @@
                     SelectedItem="{Binding SelectedSeason}"
                     DisplayMemberPath="DisplaySeasonNumber" />
             </StackPanel>
+
             <StackPanel
                 DockPanel.Dock="Right"
                 Orientation="Horizontal">
@@ -33,6 +34,14 @@
                 <Button Command="{Binding IncrementPageCommand}">
                     <TextBlock>Next Page</TextBlock>
                 </Button>
+            </StackPanel>
+
+            <StackPanel
+                DockPanel.Dock="Right"
+                Orientation="Horizontal">
+                <Label Content="Playoffs" />
+                <CheckBox
+                    IsChecked="{Binding IsPlayoffs}" />
             </StackPanel>
         </DockPanel>
 
