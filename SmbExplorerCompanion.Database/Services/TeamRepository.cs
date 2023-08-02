@@ -460,12 +460,12 @@ public class TeamRepository : ITeamRepository
         gameResults.AddRange(homeGameResults);
 
         var awayGameResults = awayPlayoffSchedule.Select(awayPlayoffGame => new TeamPlayoffGameResult(
-                awayPlayoffGame.AwayTeamHistoryId,
+                awayPlayoffGame.HomeTeamHistoryId,
                 awayPlayoffGame.SeriesNumber,
                 awayPlayoffGame.GlobalGameNumber,
                 false,
-                awayPlayoffGame.AwayScore!.Value,
-                awayPlayoffGame.HomeScore!.Value))
+                awayPlayoffGame.HomeScore!.Value,
+                awayPlayoffGame.AwayScore!.Value))
             .ToList();
         gameResults.AddRange(awayGameResults);
 
@@ -484,7 +484,7 @@ public class TeamRepository : ITeamRepository
             var seriesNumber = series.Key;
             var seriesType = applicableSeriesTypes
                 .Where(x => x.MaxSeriesNumber >= seriesNumber)
-                .OrderByDescending(x => x.MaxSeriesNumber)
+                .OrderBy(x => x.MaxSeriesNumber)
                 .First()
                 .Round;
 
@@ -502,14 +502,14 @@ public class TeamRepository : ITeamRepository
                 .Where(x => x.Id == opponentTeamSeasonId)
                 .SingleAsync();
 
-            var opponentTeamId = opponentSeasonTeamHistory.TeamId;
+            var opponentSeasonTeamId = opponentSeasonTeamHistory.Id;
             var opponentTeamName = opponentSeasonTeamHistory.TeamNameHistory.Name;
 
             var playoffRoundResult = new TeamPlayoffRoundResult
             {
                 SeriesNumber = seriesNumber,
                 Round = seriesType,
-                OpponentTeamId = opponentTeamId,
+                OpponentSeasonTeamId = opponentSeasonTeamId,
                 OpponentTeamName = opponentTeamName,
                 WonSeries = teamWonSeries,
                 NumWins = numWins,
@@ -521,7 +521,7 @@ public class TeamRepository : ITeamRepository
         return playoffResults;
     }
 
-    private record TeamPlayoffGameResult(
+    private record struct TeamPlayoffGameResult(
         int OpponentTeamSeasonId,
         int SeriesNumber,
         int GameNumber,

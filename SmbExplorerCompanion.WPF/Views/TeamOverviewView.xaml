@@ -66,6 +66,7 @@
                         Name="TeamSeasonsDataGrid"
                         IsReadOnly="True"
                         ItemsSource="{Binding TeamOverview.TeamHistory}"
+                        SelectedItem="{Binding SelectedTeamSeason}"
                         AutoGenerateColumns="True"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"

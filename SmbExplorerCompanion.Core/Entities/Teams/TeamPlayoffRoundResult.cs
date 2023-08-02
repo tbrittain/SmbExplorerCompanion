@@ -6,7 +6,7 @@ public class TeamPlayoffRoundResult
     public bool WonSeries { get; set; }
     public int SeriesNumber { get; set; }
     public string OpponentTeamName { get; set; } = default!;
-    public int OpponentTeamId { get; set; }
+    public int OpponentSeasonTeamId { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }
 }

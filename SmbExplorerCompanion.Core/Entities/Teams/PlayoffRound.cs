@@ -19,24 +19,24 @@ public static class PlayoffSeries
             15, new List<PlayoffRoundMaxGame>
             {
                 new(PlayoffRound.WildCard, 8),
-                new(PlayoffRound.DivisionSeries, 4),
-                new(PlayoffRound.ConferenceSeries, 2),
-                new(PlayoffRound.ChampionshipSeries, 1),
+                new(PlayoffRound.DivisionSeries, 12),
+                new(PlayoffRound.ConferenceSeries, 14),
+                new(PlayoffRound.ChampionshipSeries, 15),
             }
         },
         {
             7, new List<PlayoffRoundMaxGame>
             {
                 new(PlayoffRound.DivisionSeries, 4),
-                new(PlayoffRound.ConferenceSeries, 2),
-                new(PlayoffRound.ChampionshipSeries, 1),
+                new(PlayoffRound.ConferenceSeries, 6),
+                new(PlayoffRound.ChampionshipSeries, 7),
             }
         },
         {
             3, new List<PlayoffRoundMaxGame>
             {
                 new(PlayoffRound.ConferenceSeries, 2),
-                new(PlayoffRound.ChampionshipSeries, 1),
+                new(PlayoffRound.ChampionshipSeries, 3),
             }
         }
     };
