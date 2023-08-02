@@ -7,6 +7,6 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TeamSeasonDetailViewModel}">
     <Grid>
-        
+        <Label Content="Team Detail will go here"/>
     </Grid>
 </UserControl>
