@@ -310,6 +310,123 @@ public class TeamRepository : ITeamRepository
 
     public async Task<OneOf<TeamSeasonDetailDto, Exception>> GetTeamSeasonDetail(int seasonId, int teamId, CancellationToken cancellationToken)
     {
+        try
+        {
+            var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
+                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+
+            var seasonPlayoffsCompleted = await _dbContext.ChampionshipWinners
+                .AnyAsync(x => x.SeasonId == seasonId, cancellationToken: cancellationToken);
+
+            var teamSeason = await _dbContext.SeasonTeamHistory
+                .Include(x => x.TeamNameHistory)
+                .Include(x => x.Division)
+                .ThenInclude(x => x.Conference)
+                .Include(x => x.Season)
+                .Include(x => x.ChampionshipWinner)
+                .Include(x => x.HomePlayoffSchedule)
+                .Include(x => x.AwayPlayoffSchedule)
+                .Where(x => x.TeamId == teamId && x.SeasonId == seasonId)
+                .SingleAsync(cancellationToken: cancellationToken);
+
+            var teamSeasonDetailDto = new TeamSeasonDetailDto
+            {
+                TeamId = teamSeason.TeamId,
+                CurrentTeamName = teamSeason.TeamNameHistory.Name,
+                DivisionName = teamSeason.Division.Name,
+                ConferenceName = teamSeason.Division.Conference.Name,
+                SeasonNum = teamSeason.Season.Number,
+                Budget = teamSeason.Budget,
+                Payroll = teamSeason.Payroll,
+                Surplus = teamSeason.Surplus,
+                SurplusPerGame = teamSeason.SurplusPerGame,
+                Wins = teamSeason.Wins,
+                Losses = teamSeason.Losses,
+                RunsScored = teamSeason.RunsScored,
+                RunsAllowed = teamSeason.RunsAllowed,
+                RunDifferential = teamSeason.RunsScored - teamSeason.RunsAllowed,
+                GamesBehind = teamSeason.GamesBehind,
+                WinPercentage = teamSeason.WinPercentage,
+                PythagoreanWinPercentage = teamSeason.PythagoreanWinPercentage,
+                ExpectedWins = teamSeason.ExpectedWins,
+                ExpectedLosses = teamSeason.ExpectedLosses,
+                TotalPower = teamSeason.TotalPower,
+                TotalContact = teamSeason.TotalContact,
+                TotalSpeed = teamSeason.TotalSpeed,
+                TotalFielding = teamSeason.TotalFielding,
+                TotalArm = teamSeason.TotalArm,
+                TotalVelocity = teamSeason.TotalVelocity,
+                TotalJunk = teamSeason.TotalJunk,
+                TotalAccuracy = teamSeason.TotalAccuracy,
+                MadePlayoffs = teamSeason.PlayoffWins > 0 || teamSeason.PlayoffLosses > 0,
+                PlayoffSeed = teamSeason.PlayoffSeed,
+                WonConference = teamSeason.HomePlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries) ||
+                                teamSeason.AwayPlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries),
+                WonChampionship = teamSeason.ChampionshipWinner is not null,
+            };
+
+            if (teamSeasonDetailDto.MadePlayoffs && seasonPlayoffsCompleted)
+            {
+                // Will populate the PlayoffResults property
+            }
+
+            throw new NotImplementedException();
+
+            return teamSeasonDetailDto;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    // We will only call this method if the playoffs completed so that we do not need to return partial playoff completion results
+    private async Task<List<TeamPlayoffRoundResult>> GetTeamPlayoffResults(int maxPlayoffSeries,
+        IEnumerable<TeamPlayoffSchedule> homePlayoffSchedule,
+        IEnumerable<TeamPlayoffSchedule> awayPlayoffSchedule)
+    {
+        // for each of the home and playoff schedule, construct a list of TeamPlayoffGameResults
+        // we only care about the games that the team played in (can identify with the TeamSeasonId)
+        // then, group by series number
+
+        List<TeamPlayoffGameResult> gameResults = new();
+        var homeGameResults = homePlayoffSchedule.Select(homePlayoffGame => new TeamPlayoffGameResult(homePlayoffGame.HomeTeamHistoryId,
+                homePlayoffGame.AwayTeamHistoryId,
+                homePlayoffGame.SeriesNumber,
+                homePlayoffGame.GlobalGameNumber,
+                true,
+                homePlayoffGame.HomeScore!.Value,
+                homePlayoffGame.AwayScore!.Value))
+            .ToList();
+        gameResults.AddRange(homeGameResults);
+
+        var awayGameResults = awayPlayoffSchedule.Select(awayPlayoffGame => new TeamPlayoffGameResult(awayPlayoffGame.AwayTeamHistoryId,
+                awayPlayoffGame.HomeTeamHistoryId,
+                awayPlayoffGame.SeriesNumber,
+                awayPlayoffGame.GlobalGameNumber,
+                false,
+                awayPlayoffGame.AwayScore!.Value,
+                awayPlayoffGame.HomeScore!.Value))
+            .ToList();
+        gameResults.AddRange(awayGameResults);
+
+        var gameResultsBySeries = gameResults
+            .OrderBy(x => x.GameNumber)
+            .GroupBy(x => x.SeriesNumber)
+            .ToList();
+
+        // This should never throw. If it does, we will need to revisit the retrieval of the max playoff series.
+        // That may mean that incomplete playoff results are exported from SMBExplorer
+        var seriesLength = PlayoffSeries.SeriesLengths[maxPlayoffSeries];
+
         throw new NotImplementedException();
     }
+
+    private record TeamPlayoffGameResult(int TeamId,
+        int OpponentTeamId,
+        int SeriesNumber,
+        int GameNumber,
+        bool IsHomeTeam,
+        int HomeScore,
+        int AwayScore);
 }
