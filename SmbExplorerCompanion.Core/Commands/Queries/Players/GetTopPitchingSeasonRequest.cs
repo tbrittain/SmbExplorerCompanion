@@ -40,6 +40,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
                 request.PageNumber,
                 request.OrderBy,
                 request.Descending,
+                null,
                 cancellationToken);
         }
     }

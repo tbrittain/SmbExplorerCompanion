@@ -40,6 +40,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
                 request.PageNumber,
                 request.OrderBy,
                 request.Descending,
+                null,
                 cancellationToken);
         }
     }
