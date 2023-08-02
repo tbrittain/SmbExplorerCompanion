@@ -98,6 +98,7 @@ public class TeamOverviewViewModel : ViewModelBase
         {
             new(TeamSeasonDetailViewModel.SeasonTeamIdProp, teamSeason.SeasonTeamId)
         };
+        _navigationService.NavigateTo<TeamSeasonDetailViewModel>(parameters);
     }
 
     protected override void Dispose(bool disposing)

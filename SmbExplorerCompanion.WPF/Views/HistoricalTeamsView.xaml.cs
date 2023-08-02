@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 using System.Windows.Input;
+using SmbExplorerCompanion.WPF.EventHandlers;
 
 namespace SmbExplorerCompanion.WPF.Views;
 
@@ -10,15 +11,10 @@ public partial class HistoricalTeamsView : IDisposable
     {
         InitializeComponent();
         ScrollViewer.PreviewMouseWheel += ListViewScrollViewer_PreviewMouseWheel;
-        TeamsDataGrid.Sorting += DataGridOnSorting;
+        TeamsDataGrid.Sorting += DataGridDefaultSortBehavior.DataGridOnSorting;
     }
 
-    private void DataGridOnSorting(object sender, DataGridSortingEventArgs e)
-    {
-        TeamsDataGrid.SelectedItem = null;
-    }
-
-    private void ListViewScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    private void ListViewScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
         var scv = (ScrollViewer)sender;
 
@@ -50,7 +46,7 @@ public partial class HistoricalTeamsView : IDisposable
     public void Dispose()
     {
         ScrollViewer.PreviewMouseWheel -= ListViewScrollViewer_PreviewMouseWheel;
-        TeamsDataGrid.Sorting -= DataGridOnSorting;
+        TeamsDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
         GC.SuppressFinalize(this);
     }
 }
