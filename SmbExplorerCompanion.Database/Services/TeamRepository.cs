@@ -10,11 +10,13 @@ public class TeamRepository : ITeamRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
+    private readonly IPlayerRepository _playerRepository;
 
-    public TeamRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
+    public TeamRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext, IPlayerRepository playerRepository)
     {
         _dbContext = dbContext;
         _applicationContext = applicationContext;
+        _playerRepository = playerRepository;
     }
 
     public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
@@ -367,12 +369,66 @@ public class TeamRepository : ITeamRepository
 
             if (teamSeasonDetailDto.MadePlayoffs && seasonPlayoffsCompleted)
             {
-                teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(maxPlayoffSeries, 
+                teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(maxPlayoffSeries,
                     teamSeason.HomePlayoffSchedule,
                     teamSeason.AwayPlayoffSchedule);
             }
 
-            throw new NotImplementedException();
+            var regularSeasonPitchingResult = await _playerRepository.GetTopPitchingSeasons(
+                seasonId,
+                false,
+                null,
+                null,
+                true,
+                teamId,
+                cancellationToken);
+
+            if (regularSeasonPitchingResult.TryPickT1(out var e1, out var regularPitchingSeasonDtos))
+                return e1;
+
+            teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
+            
+            var regularSeasonBattingResult = await _playerRepository.GetTopBattingSeasons(
+                seasonId,
+                false,
+                null,
+                null,
+                true,
+                teamId,
+                cancellationToken);
+
+            if (regularSeasonBattingResult.TryPickT1(out var e2, out var regularBattingSeasonDtos))
+                return e2;
+            
+            teamSeasonDetailDto.RegularSeasonBatting = regularBattingSeasonDtos;
+            
+            var playoffPitchingResult = await _playerRepository.GetTopPitchingSeasons(
+                seasonId,
+                true,
+                null,
+                null,
+                true,
+                teamId,
+                cancellationToken);
+            
+            if (playoffPitchingResult.TryPickT1(out var e3, out var playoffPitchingSeasonDtos))
+                return e3;
+            
+            teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
+            
+            var playoffBattingResult = await _playerRepository.GetTopBattingSeasons(
+                seasonId,
+                true,
+                null,
+                null,
+                true,
+                teamId,
+                cancellationToken);
+            
+            if (playoffBattingResult.TryPickT1(out var e4, out var playoffBattingSeasonDtos))
+                return e4;
+            
+            teamSeasonDetailDto.PlayoffBatting = playoffBattingSeasonDtos;
 
             return teamSeasonDetailDto;
         }
@@ -428,10 +484,10 @@ public class TeamRepository : ITeamRepository
                 .Round;
 
             var numWins = series
-                .Count(x => x.IsHomeTeam && x.HomeScore > x.AwayScore || 
+                .Count(x => x.IsHomeTeam && x.HomeScore > x.AwayScore ||
                             !x.IsHomeTeam && x.AwayScore > x.HomeScore);
             var numLosses = series
-                .Count(x => x.IsHomeTeam && x.HomeScore < x.AwayScore || 
+                .Count(x => x.IsHomeTeam && x.HomeScore < x.AwayScore ||
                             !x.IsHomeTeam && x.AwayScore < x.HomeScore);
             var teamWonSeries = numWins > numLosses;
             var opponentTeamSeasonId = series.First().OpponentTeamSeasonId;
@@ -456,7 +512,7 @@ public class TeamRepository : ITeamRepository
             };
             playoffResults.Add(playoffRoundResult);
         }
-        
+
         return playoffResults;
     }
 

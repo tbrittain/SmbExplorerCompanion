@@ -549,8 +549,8 @@ public class PlayerRepository : IPlayerRepository
                     Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                 })
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 20)
-                .Take(20)
+                .Skip(((pageNumber ?? 1) - 1) * 30)
+                .Take(30)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             // Calculate the rate stats that we omitted above
@@ -665,8 +665,8 @@ public class PlayerRepository : IPlayerRepository
                         .Average(y => y.FipMinus ?? 0),
                 })
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 20)
-                .Take(20)
+                .Skip(((pageNumber ?? 1) - 1) * 30)
+                .Take(30)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             foreach (var playerCareerDto in playerCareerDtos)
@@ -697,8 +697,10 @@ public class PlayerRepository : IPlayerRepository
         int? pageNumber,
         string? orderBy,
         bool descending = true,
+        int? teamId = null,
         CancellationToken cancellationToken = default)
     {
+        var limitToTeam = teamId is not null;
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
@@ -735,6 +737,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x!.TeamNameHistory)
                 .Where(x => seasonId == default || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
+                .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
+                                                                      (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
                 .Select(x => new PlayerBattingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
@@ -774,8 +778,8 @@ public class PlayerRepository : IPlayerRepository
                     WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.AtBats / 10000,
                 })
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 20)
-                .Take(20)
+                .Skip(((pageNumber ?? 1) - 1) * 30)
+                .Take(30)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             return playerBattingDtos;
@@ -791,8 +795,10 @@ public class PlayerRepository : IPlayerRepository
         int? pageNumber,
         string? orderBy,
         bool descending = true,
+        int? teamId = null,
         CancellationToken cancellationToken = default)
     {
+        var limitToTeam = teamId is not null;
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
@@ -829,6 +835,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x!.TeamNameHistory)
                 .Where(x => seasonId == default || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
+                .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
+                                                                      (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
                 .Select(x => new PlayerPitchingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
@@ -868,8 +876,8 @@ public class PlayerRepository : IPlayerRepository
                     WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * 2.25 / 10000,
                 })
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 20)
-                .Take(20)
+                .Skip(((pageNumber ?? 1) - 1) * 30)
+                .Take(30)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             return playerPitchingDtos;

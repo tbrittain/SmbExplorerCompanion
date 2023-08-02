@@ -23,6 +23,7 @@ public interface IPlayerRepository
         int? pageNumber,
         string? orderBy,
         bool descending = true,
+        int? teamId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(int seasonId,
@@ -30,5 +31,6 @@ public interface IPlayerRepository
         int? pageNumber,
         string? orderBy,
         bool descending = true,
+        int? teamId = null,
         CancellationToken cancellationToken = default);
 }
