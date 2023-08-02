@@ -367,7 +367,9 @@ public class TeamRepository : ITeamRepository
 
             if (teamSeasonDetailDto.MadePlayoffs && seasonPlayoffsCompleted)
             {
-                // Will populate the PlayoffResults property
+                teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(maxPlayoffSeries, 
+                    teamSeason.HomePlayoffSchedule,
+                    teamSeason.AwayPlayoffSchedule);
             }
 
             throw new NotImplementedException();
@@ -385,12 +387,8 @@ public class TeamRepository : ITeamRepository
         IEnumerable<TeamPlayoffSchedule> homePlayoffSchedule,
         IEnumerable<TeamPlayoffSchedule> awayPlayoffSchedule)
     {
-        // for each of the home and playoff schedule, construct a list of TeamPlayoffGameResults
-        // we only care about the games that the team played in (can identify with the TeamSeasonId)
-        // then, group by series number
-
         List<TeamPlayoffGameResult> gameResults = new();
-        var homeGameResults = homePlayoffSchedule.Select(homePlayoffGame => new TeamPlayoffGameResult(homePlayoffGame.HomeTeamHistoryId,
+        var homeGameResults = homePlayoffSchedule.Select(homePlayoffGame => new TeamPlayoffGameResult(
                 homePlayoffGame.AwayTeamHistoryId,
                 homePlayoffGame.SeriesNumber,
                 homePlayoffGame.GlobalGameNumber,
@@ -400,8 +398,8 @@ public class TeamRepository : ITeamRepository
             .ToList();
         gameResults.AddRange(homeGameResults);
 
-        var awayGameResults = awayPlayoffSchedule.Select(awayPlayoffGame => new TeamPlayoffGameResult(awayPlayoffGame.AwayTeamHistoryId,
-                awayPlayoffGame.HomeTeamHistoryId,
+        var awayGameResults = awayPlayoffSchedule.Select(awayPlayoffGame => new TeamPlayoffGameResult(
+                awayPlayoffGame.AwayTeamHistoryId,
                 awayPlayoffGame.SeriesNumber,
                 awayPlayoffGame.GlobalGameNumber,
                 false,
@@ -417,13 +415,53 @@ public class TeamRepository : ITeamRepository
 
         // This should never throw. If it does, we will need to revisit the retrieval of the max playoff series.
         // That may mean that incomplete playoff results are exported from SMBExplorer
-        var seriesLength = PlayoffSeries.SeriesLengths[maxPlayoffSeries];
+        var applicableSeriesTypes = PlayoffSeries.SeriesLengths[maxPlayoffSeries];
 
-        throw new NotImplementedException();
+        List<TeamPlayoffRoundResult> playoffResults = new();
+        foreach (var series in gameResultsBySeries)
+        {
+            var seriesNumber = series.Key;
+            var seriesType = applicableSeriesTypes
+                .Where(x => x.MaxSeriesNumber >= seriesNumber)
+                .OrderByDescending(x => x.MaxSeriesNumber)
+                .First()
+                .Round;
+
+            var numWins = series
+                .Count(x => x.IsHomeTeam && x.HomeScore > x.AwayScore || 
+                            !x.IsHomeTeam && x.AwayScore > x.HomeScore);
+            var numLosses = series
+                .Count(x => x.IsHomeTeam && x.HomeScore < x.AwayScore || 
+                            !x.IsHomeTeam && x.AwayScore < x.HomeScore);
+            var teamWonSeries = numWins > numLosses;
+            var opponentTeamSeasonId = series.First().OpponentTeamSeasonId;
+
+            var opponentSeasonTeamHistory = await _dbContext.SeasonTeamHistory
+                .Include(x => x.TeamNameHistory)
+                .Where(x => x.Id == opponentTeamSeasonId)
+                .SingleAsync();
+
+            var opponentTeamId = opponentSeasonTeamHistory.TeamId;
+            var opponentTeamName = opponentSeasonTeamHistory.TeamNameHistory.Name;
+
+            var playoffRoundResult = new TeamPlayoffRoundResult
+            {
+                SeriesNumber = seriesNumber,
+                Round = seriesType,
+                OpponentTeamId = opponentTeamId,
+                OpponentTeamName = opponentTeamName,
+                WonSeries = teamWonSeries,
+                NumWins = numWins,
+                NumLosses = numLosses,
+            };
+            playoffResults.Add(playoffRoundResult);
+        }
+        
+        return playoffResults;
     }
 
-    private record TeamPlayoffGameResult(int TeamId,
-        int OpponentTeamId,
+    private record TeamPlayoffGameResult(
+        int OpponentTeamSeasonId,
         int SeriesNumber,
         int GameNumber,
         bool IsHomeTeam,
