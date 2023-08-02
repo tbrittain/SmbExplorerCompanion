@@ -34,6 +34,7 @@ public class TeamSeasonDetailDto : TeamBaseDto
     public bool WonDivision => GamesBehind == 0;
     public bool WonConference { get; set; }
     public bool WonChampionship { get; set; }
+    public bool IncludesPlayoffData { get; set; }
 
     public List<TeamPlayoffRoundResult> PlayoffResults { get; set; } = new();
 

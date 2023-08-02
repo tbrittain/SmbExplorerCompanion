@@ -9,8 +9,7 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public class TeamSeasonDetailViewModel : ViewModelBase
 {
-    public const string TeamIdProp = "TeamId";
-    public const string SeasonIdProp = "SeasonId";
+    public const string SeasonTeamIdProp = "SeasonTeamId";
     private readonly INavigationService _navigationService;
     private readonly IMediator _mediator;
 
@@ -19,29 +18,20 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         _navigationService = navigationService;
         _mediator = mediator;
 
-        var ok = _navigationService.TryGetParameter<int>(TeamIdProp, out var teamId);
+        var ok = _navigationService.TryGetParameter<int>(SeasonTeamIdProp, out var teamSeasonId);
         if (!ok)
         {
-            const string message = "Could not get team id from navigation parameters.";
+            const string message = "Could not get team season id from navigation parameters.";
             MessageBox.Show(message);
             throw new Exception(message);
         }
 
-        TeamId = teamId;
+        TeamSeasonId = teamSeasonId;
 
-        ok = _navigationService.TryGetParameter<int>(SeasonIdProp, out var seasonId);
-        if (!ok)
-        {
-            const string message = "Could not get season id from navigation parameters.";
-            MessageBox.Show(message);
-            throw new Exception(message);
-        }
-
-        SeasonId = seasonId;
         _navigationService.ClearParameters();
         
         var teamSeasonDetailResponse = _mediator.Send(
-            new GetTeamSeasonDetailRequest(SeasonId, TeamId)).Result;
+            new GetTeamSeasonDetailRequest(TeamSeasonId)).Result;
 
         if (teamSeasonDetailResponse.TryPickT1(out var exception, out var teamSeasonDetail))
         {
@@ -50,7 +40,6 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
     }
 
-    private int SeasonId { get; }
-    private int TeamId { get; }
+    private int TeamSeasonId { get; }
     public TeamSeasonDetail TeamSeasonDetail { get; set; }
 }

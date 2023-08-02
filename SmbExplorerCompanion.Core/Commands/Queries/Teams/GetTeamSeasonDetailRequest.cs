@@ -7,14 +7,12 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Teams;
 
 public class GetTeamSeasonDetailRequest : IRequest<OneOf<TeamSeasonDetailDto, Exception>>
 {
-    public GetTeamSeasonDetailRequest(int seasonId, int teamId)
+    public GetTeamSeasonDetailRequest(int teamSeasonId)
     {
-        SeasonId = seasonId;
-        TeamId = teamId;
+        TeamSeasonId = teamSeasonId;
     }
 
-    private int SeasonId { get; }
-    private int TeamId { get; }
+    private int TeamSeasonId { get; }
 
     // ReSharper disable once UnusedType.Global
     public class GetTeamSeasonDetailHandler : IRequestHandler<GetTeamSeasonDetailRequest, OneOf<TeamSeasonDetailDto, Exception>>
@@ -28,7 +26,7 @@ public class GetTeamSeasonDetailRequest : IRequest<OneOf<TeamSeasonDetailDto, Ex
 
         public async Task<OneOf<TeamSeasonDetailDto, Exception>> Handle(GetTeamSeasonDetailRequest request, CancellationToken cancellationToken)
         {
-            return await _teamRepository.GetTeamSeasonDetail(request.SeasonId, request.TeamId, cancellationToken);
+            return await _teamRepository.GetTeamSeasonDetail(request.TeamSeasonId, cancellationToken);
         }
     }
 }
