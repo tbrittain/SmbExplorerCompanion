@@ -48,8 +48,6 @@ public class TeamOverviewViewModel : ViewModelBase
 
     private int TeamId { get; }
 
-    public string TeamRecord => $"{TeamOverview.NumWins}-{TeamOverview.NumLosses}, {TeamOverview.WinPercentage:F3} W-L%";
-
     public TeamOverview TeamOverview { get; set; }
 
     public TeamTopPlayerHistory? SelectedPlayer

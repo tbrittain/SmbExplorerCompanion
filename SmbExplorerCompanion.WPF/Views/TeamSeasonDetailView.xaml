@@ -6,7 +6,738 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TeamSeasonDetailViewModel}">
-    <Grid>
-        <Label Content="Team Detail will go here"/>
-    </Grid>
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <!-- TODO This will be a team logo -->
+                <Rectangle Grid.Column="0" Stroke="Red" Margin="5" Height="130" Width="130" />
+
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="16" Text="Team name:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding TeamSeasonDetail.CurrentTeamName}" FontSize="16" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Season:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding TeamSeasonDetail.SeasonNum}" FontSize="14" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Record:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding TeamSeasonDetail.TeamRecord}" FontSize="14" />
+                    </StackPanel>
+
+                    <StackPanel
+                        Orientation="Vertical"
+                        Visibility="{Binding TeamSeasonDetail.PlayoffVisibility}">
+                        <ItemsControl
+                            ItemsSource="{Binding TeamSeasonDetail.PlayoffResults}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Label
+                                        Content="{Binding DisplayPlayoffRoundResult}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel>
+                <ScrollViewer>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="600" />
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="300" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock FontSize="14" Text="Season Batting" FontWeight="Bold" />
+                        <DataGrid
+                            Grid.Row="1"
+                            Name="SeasonBattersDataGrid"
+                            ItemsSource="{Binding TeamSeasonDetail.RegularSeasonBatting}"
+                            SelectedItem="{Binding SelectedPlayer}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Player Name"
+                                    Binding="{Binding PlayerName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Position"
+                                    Binding="{Binding DisplayPrimaryPosition}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Season #"
+                                    Binding="{Binding SeasonNumber}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Teams"
+                                    Binding="{Binding TeamNames}" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Salary"
+                                    SortMemberPath="TotalSalary">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="AB"
+                                    Binding="{Binding AtBats}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="H"
+                                    Binding="{Binding Hits}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="1B"
+                                    Binding="{Binding Singles}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="2B"
+                                    Binding="{Binding Doubles}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="3B"
+                                    Binding="{Binding Triples}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HR"
+                                    Binding="{Binding HomeRuns}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="BB"
+                                    Binding="{Binding Walks}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="BA"
+                                    SortMemberPath="BattingAverage">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding BattingAverage, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="RBI"
+                                    Binding="{Binding RunsBattedIn}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="SB"
+                                    Binding="{Binding StolenBases}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="OBP"
+                                    SortMemberPath="Obp">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Obp, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="SLG"
+                                    SortMemberPath="Slg">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Slg, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="OPS"
+                                    SortMemberPath="Ops">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Ops, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="OPS+"
+                                    SortMemberPath="OpsPlus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding OpsPlus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Cumulative OPS+"
+                                    SortMemberPath="WeightedOpsPlusOrEraMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="R"
+                                    Binding="{Binding Runs}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="K"
+                                    Binding="{Binding Strikeouts}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HBP"
+                                    Binding="{Binding HitByPitch}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="SH"
+                                    Binding="{Binding SacrificeHits}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="SF"
+                                    Binding="{Binding SacrificeFlies}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="E"
+                                    Binding="{Binding Errors}"
+                                    CanUserSort="True" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <TextBlock Grid.Row="2" FontSize="14" Text="Season Pitching" FontWeight="Bold" />
+                        <DataGrid
+                            Grid.Row="3"
+                            Name="SeasonPitchersDataGrid"
+                            ItemsSource="{Binding TeamSeasonDetail.RegularSeasonPitching}"
+                            SelectedItem="{Binding SelectedPlayer}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Player Name"
+                                    Binding="{Binding PlayerName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Position"
+                                    Binding="{Binding DisplayPrimaryPosition}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Season #"
+                                    Binding="{Binding SeasonNumber}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Teams"
+                                    Binding="{Binding TeamNames}" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Salary"
+                                    SortMemberPath="TotalSalary">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="W"
+                                    Binding="{Binding Wins}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="L"
+                                    Binding="{Binding Losses}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="ERA"
+                                    SortMemberPath="EarnedRunAverage">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="FIP"
+                                    SortMemberPath="Fip">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Fip, StringFormat={}{0:F2}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="SV"
+                                    Binding="{Binding Saves}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="IP"
+                                    SortMemberPath="InningsPitched">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding InningsPitched, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="K"
+                                    Binding="{Binding Strikeouts}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="BB"
+                                    Binding="{Binding Walks}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="WHIP"
+                                    SortMemberPath="Whip">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Whip, StringFormat={}{0:F2}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="ERA-"
+                                    SortMemberPath="EraMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding EraMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="FIP-"
+                                    SortMemberPath="FipMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FipMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="CG"
+                                    Binding="{Binding CompleteGames}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="CGSO"
+                                    Binding="{Binding Shutouts}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Cumulative ERA-"
+                                    SortMemberPath="WeightedOpsPlusOrEraMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="ER"
+                                    Binding="{Binding EarnedRuns}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="TP"
+                                    Binding="{Binding TotalPitches}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="GS"
+                                    Binding="{Binding GamesStarted}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="H"
+                                    Binding="{Binding Hits}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HR"
+                                    Binding="{Binding HomeRuns}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HBP"
+                                    Binding="{Binding HitByPitch}"
+                                    CanUserSort="True" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                    </Grid>
+                </ScrollViewer>
+            </StackPanel>
+            <StackPanel Visibility="{Binding TeamSeasonDetail.PlayoffVisibility}">
+                <ScrollViewer>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="600" />
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="300" />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
+                        <DataGrid
+                            Grid.Row="1"
+                            Name="PlayoffBattersDataGrid"
+                            ItemsSource="{Binding TeamSeasonDetail.PlayoffBatting}"
+                            SelectedItem="{Binding SelectedPlayer}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Player Name"
+                                    Binding="{Binding PlayerName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Position"
+                                    Binding="{Binding DisplayPrimaryPosition}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Season #"
+                                    Binding="{Binding SeasonNumber}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Teams"
+                                    Binding="{Binding TeamNames}" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Salary"
+                                    SortMemberPath="TotalSalary">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="AB"
+                                    Binding="{Binding AtBats}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="H"
+                                    Binding="{Binding Hits}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="1B"
+                                    Binding="{Binding Singles}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="2B"
+                                    Binding="{Binding Doubles}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="3B"
+                                    Binding="{Binding Triples}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HR"
+                                    Binding="{Binding HomeRuns}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="BB"
+                                    Binding="{Binding Walks}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="BA"
+                                    SortMemberPath="BattingAverage">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding BattingAverage, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="RBI"
+                                    Binding="{Binding RunsBattedIn}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="SB"
+                                    Binding="{Binding StolenBases}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="OBP"
+                                    SortMemberPath="Obp">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Obp, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="SLG"
+                                    SortMemberPath="Slg">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Slg, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="OPS"
+                                    SortMemberPath="Ops">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Ops, StringFormat={}{0:F3}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="OPS+"
+                                    SortMemberPath="OpsPlus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding OpsPlus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Cumulative OPS+"
+                                    SortMemberPath="WeightedOpsPlusOrEraMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="R"
+                                    Binding="{Binding Runs}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="K"
+                                    Binding="{Binding Strikeouts}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HBP"
+                                    Binding="{Binding HitByPitch}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="SH"
+                                    Binding="{Binding SacrificeHits}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="SF"
+                                    Binding="{Binding SacrificeFlies}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="E"
+                                    Binding="{Binding Errors}"
+                                    CanUserSort="True" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <TextBlock Grid.Row="2" FontSize="14" Text="Playoff Pitching" FontWeight="Bold" />
+                        <DataGrid
+                            Grid.Row="3"
+                            Name="PlayoffPitchersDataGrid"
+                            ItemsSource="{Binding TeamSeasonDetail.PlayoffPitching}"
+                            SelectedItem="{Binding SelectedPlayer}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Player Name"
+                                    Binding="{Binding PlayerName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Position"
+                                    Binding="{Binding DisplayPrimaryPosition}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Season #"
+                                    Binding="{Binding SeasonNumber}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Teams"
+                                    Binding="{Binding TeamNames}" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Salary"
+                                    SortMemberPath="TotalSalary">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="W"
+                                    Binding="{Binding Wins}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="L"
+                                    Binding="{Binding Losses}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="ERA"
+                                    SortMemberPath="EarnedRunAverage">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="FIP"
+                                    SortMemberPath="Fip">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Fip, StringFormat={}{0:F2}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="SV"
+                                    Binding="{Binding Saves}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="IP"
+                                    SortMemberPath="InningsPitched">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding InningsPitched, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="K"
+                                    Binding="{Binding Strikeouts}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="BB"
+                                    Binding="{Binding Walks}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="WHIP"
+                                    SortMemberPath="Whip">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Whip, StringFormat={}{0:F2}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="ERA-"
+                                    SortMemberPath="EraMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding EraMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="FIP-"
+                                    SortMemberPath="FipMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FipMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="CG"
+                                    Binding="{Binding CompleteGames}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="CGSO"
+                                    Binding="{Binding Shutouts}"
+                                    CanUserSort="True" />
+                                <DataGridTemplateColumn
+                                    CanUserSort="True"
+                                    Header="Cumulative ERA-"
+                                    SortMemberPath="WeightedOpsPlusOrEraMinus">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Header="ER"
+                                    Binding="{Binding EarnedRuns}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="TP"
+                                    Binding="{Binding TotalPitches}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="GS"
+                                    Binding="{Binding GamesStarted}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="H"
+                                    Binding="{Binding Hits}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HR"
+                                    Binding="{Binding HomeRuns}"
+                                    CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="HBP"
+                                    Binding="{Binding HitByPitch}"
+                                    CanUserSort="True" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </ScrollViewer>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

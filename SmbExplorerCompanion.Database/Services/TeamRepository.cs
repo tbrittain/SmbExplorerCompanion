@@ -444,7 +444,7 @@ public class TeamRepository : ITeamRepository
     }
 
     // We will only call this method if the playoffs completed so that we do not need to return partial playoff completion results
-    private async Task<List<TeamPlayoffRoundResult>> GetTeamPlayoffResults(int maxPlayoffSeries,
+    private async Task<List<TeamPlayoffRoundResultDto>> GetTeamPlayoffResults(int maxPlayoffSeries,
         IEnumerable<TeamPlayoffSchedule> homePlayoffSchedule,
         IEnumerable<TeamPlayoffSchedule> awayPlayoffSchedule)
     {
@@ -478,7 +478,7 @@ public class TeamRepository : ITeamRepository
         // That may mean that incomplete playoff results are exported from SMBExplorer
         var applicableSeriesTypes = PlayoffSeries.SeriesLengths[maxPlayoffSeries];
 
-        List<TeamPlayoffRoundResult> playoffResults = new();
+        List<TeamPlayoffRoundResultDto> playoffResults = new();
         foreach (var series in gameResultsBySeries)
         {
             var seriesNumber = series.Key;
@@ -505,7 +505,7 @@ public class TeamRepository : ITeamRepository
             var opponentSeasonTeamId = opponentSeasonTeamHistory.Id;
             var opponentTeamName = opponentSeasonTeamHistory.TeamNameHistory.Name;
 
-            var playoffRoundResult = new TeamPlayoffRoundResult
+            var playoffRoundResult = new TeamPlayoffRoundResultDto
             {
                 SeriesNumber = seriesNumber,
                 Round = seriesType,

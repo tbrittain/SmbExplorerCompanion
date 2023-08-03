@@ -3,10 +3,8 @@ using System.Collections.ObjectModel;
 
 namespace SmbExplorerCompanion.WPF.Models.Teams;
 
-public class TeamOverview
+public class TeamOverview : TeamBase
 {
-    public int TeamId { get; set; }
-    public string CurrentTeamName { get; set; } = string.Empty;
     public ObservableCollection<TeamOverviewSeasonHistory> TeamHistory { get; set; } = new();
     public ObservableCollection<TeamTopPlayerHistory> TopPlayers { get; set; } = new();
     public int NumSeasons { get; set; }
@@ -17,4 +15,6 @@ public class TeamOverview
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }
     public int NumChampionships { get; set; }
+
+    public string TeamRecord => $"{NumWins}-{NumLosses}, {WinPercentage:F3} W-L%";
 }

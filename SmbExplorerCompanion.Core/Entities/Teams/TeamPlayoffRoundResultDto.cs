@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Teams;
 
-public class TeamPlayoffRoundResult
+public class TeamPlayoffRoundResultDto
 {
     public PlayoffRound Round { get; set; }
     public bool WonSeries { get; set; }

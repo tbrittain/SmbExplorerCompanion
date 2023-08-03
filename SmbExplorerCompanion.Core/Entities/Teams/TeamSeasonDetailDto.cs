@@ -36,7 +36,7 @@ public class TeamSeasonDetailDto : TeamBaseDto
     public bool WonChampionship { get; set; }
     public bool IncludesPlayoffData { get; set; }
 
-    public List<TeamPlayoffRoundResult> PlayoffResults { get; set; } = new();
+    public List<TeamPlayoffRoundResultDto> PlayoffResults { get; set; } = new();
 
     public List<PlayerPitchingSeasonDto> RegularSeasonPitching { get; set; } = new();
     public List<PlayerPitchingSeasonDto> PlayoffPitching { get; set; } = new();

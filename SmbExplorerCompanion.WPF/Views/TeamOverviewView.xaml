@@ -30,7 +30,7 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock FontSize="14" Text="Record:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                        <TextBlock Text="{Binding TeamRecord}" FontSize="14" />
+                        <TextBlock Text="{Binding TeamOverview.TeamRecord}" FontSize="14" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
