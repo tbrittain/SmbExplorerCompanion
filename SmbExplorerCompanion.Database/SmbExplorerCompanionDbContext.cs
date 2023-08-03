@@ -293,84 +293,96 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Name = "MVP-2",
                 OriginalName = "MVP-2",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "MVP-3",
                 OriginalName = "MVP-3",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "MVP-4",
                 OriginalName = "MVP-4",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "MVP-5",
                 OriginalName = "MVP-5",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "Cy Young-2",
                 OriginalName = "Cy Young-2",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "Cy Young-3",
                 OriginalName = "Cy Young-3",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "Cy Young-4",
                 OriginalName = "Cy Young-4",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "Cy Young-5",
                 OriginalName = "Cy Young-5",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "ROY-2",
                 OriginalName = "ROY-2",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "ROY-3",
                 OriginalName = "ROY-3",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "ROY-4",
                 OriginalName = "ROY-4",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             },
             new()
             {
                 Name = "ROY-5",
                 OriginalName = "ROY-5",
                 Importance = 5,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                OmitFromGroupings = true
             }
         };
 
