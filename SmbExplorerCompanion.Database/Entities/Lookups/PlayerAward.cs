@@ -15,4 +15,5 @@ public class PlayerAward
     public int Importance { get; set; }
 
     public virtual ICollection<PlayerSeason> PlayerSeasons { get; set; } = new HashSet<PlayerSeason>();
+    public bool OmitFromGroupings { get; set; }
 }
