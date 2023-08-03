@@ -50,6 +50,10 @@
                 <views:TopPitchingSeasonsView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type viewModels:TeamSeasonDetailViewModel}">
+                <views:TeamSeasonDetailView />
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
                 <ResourceDictionary

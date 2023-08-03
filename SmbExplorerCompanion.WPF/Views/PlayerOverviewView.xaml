@@ -58,8 +58,8 @@
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserReorderColumns="False"
-                        CanUserSortColumns="True"
-                        CanUserResizeColumns="True"
+                        CanUserSortColumns="False"
+                        CanUserResizeColumns="False"
                         SelectionMode="Single" />
                 </StackPanel>
 
@@ -74,8 +74,8 @@
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserReorderColumns="False"
-                        CanUserSortColumns="True"
-                        CanUserResizeColumns="True"
+                        CanUserSortColumns="False"
+                        CanUserResizeColumns="False"
                         SelectionMode="Single" />
                 </StackPanel>
 
@@ -99,6 +99,7 @@
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Season Batting" FontWeight="Bold" />
                             <DataGrid
+                                Name="PlayerSeasonBattingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerSeasonBatting}"
                                 AutoGenerateColumns="True"
                                 CanUserAddRows="False"
@@ -114,6 +115,7 @@
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
                             <DataGrid
+                                Name="PlayerPlayoffBattingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerPlayoffBatting}"
                                 AutoGenerateColumns="True"
                                 CanUserAddRows="False"
@@ -138,6 +140,7 @@
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Season Pitching" FontWeight="Bold" />
                             <DataGrid
+                                Name="PlayerSeasonPitchingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerSeasonPitching}"
                                 AutoGenerateColumns="True"
                                 CanUserAddRows="False"
@@ -153,6 +156,7 @@
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Playoff Pitching" FontWeight="Bold" />
                             <DataGrid
+                                Name="PlayerPlayoffPitchingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerPlayoffPitching}"
                                 AutoGenerateColumns="True"
                                 CanUserAddRows="False"

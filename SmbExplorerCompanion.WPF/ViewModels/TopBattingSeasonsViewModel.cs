@@ -23,10 +23,10 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
-    private Season? _selectedSeason;
+    private bool _isPlayoffs;
     private int _pageNumber = 1;
     private PlayerBase? _selectedPlayer;
-    private bool _isPlayoffs;
+    private Season? _selectedSeason;
 
     public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
@@ -45,7 +45,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         var seasonMapper = new SeasonMapping();
         Seasons.Add(new Season
         {
-            Id = default,
+            Id = default
         });
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
@@ -65,6 +65,37 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
     private bool CanSelectPreviousPage => PageNumber > 1;
     private bool CanSelectNextPage => TopSeasonBatters.Count == 20;
+
+    public ObservableCollection<Season> Seasons { get; } = new();
+
+    public Season? SelectedSeason
+    {
+        get => _selectedSeason;
+        set => SetField(ref _selectedSeason, value);
+    }
+
+    public int PageNumber
+    {
+        get => _pageNumber;
+        set
+        {
+            if (value < 1) return;
+            SetField(ref _pageNumber, value);
+
+            IncrementPageCommand.NotifyCanExecuteChanged();
+            DecrementPageCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
+
+    public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
+
+    public bool IsPlayoffs
+    {
+        get => _isPlayoffs;
+        set => SetField(ref _isPlayoffs, value);
+    }
 
     [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
     private void IncrementPage()
@@ -99,45 +130,11 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             }
             case nameof(PageNumber):
             {
-                if (!ShortCircuitPageNumberRefresh)
-                {
-                    await GetTopBattingSeason();
-                }
+                if (!ShortCircuitPageNumberRefresh) await GetTopBattingSeason();
 
                 break;
             }
         }
-    }
-
-    public ObservableCollection<Season> Seasons { get; } = new();
-
-    public Season? SelectedSeason
-    {
-        get => _selectedSeason;
-        set => SetField(ref _selectedSeason, value);
-    }
-
-    public int PageNumber
-    {
-        get => _pageNumber;
-        set
-        {
-            if (value < 1) return;
-            SetField(ref _pageNumber, value);
-
-            IncrementPageCommand.NotifyCanExecuteChanged();
-            DecrementPageCommand.NotifyCanExecuteChanged();
-        }
-    }
-
-    public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
-
-    public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
-
-    public bool IsPlayoffs
-    {
-        get => _isPlayoffs;
-        set => SetField(ref _isPlayoffs, value);
     }
 
     public Task GetTopBattingSeason()

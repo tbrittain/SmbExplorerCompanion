@@ -56,7 +56,7 @@ public class SeasonRepository : IRepository<SeasonDto>
         }
     }
 
-    public Task<OneOf<SeasonDto, None, Exception>> GetByIdAsync(int Id, CancellationToken cancellationToken = default)
+    public Task<OneOf<SeasonDto, None, Exception>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }
@@ -77,7 +77,7 @@ public class SeasonRepository : IRepository<SeasonDto>
         throw new NotSupportedException();
     }
 
-    public Task<OneOf<SeasonDto, None, Exception>> DeleteAsync(int Id, CancellationToken cancellationToken = default)
+    public Task<OneOf<SeasonDto, None, Exception>> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }

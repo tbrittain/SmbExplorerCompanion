@@ -12,15 +12,13 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public class TeamOverviewViewModel : ViewModelBase
 {
     public const string TeamIdProp = "TeamId";
-    private readonly IMediator _mediator;
-
     private readonly INavigationService _navigationService;
     private TeamTopPlayerHistory? _selectedPlayer;
+    private TeamOverviewSeasonHistory? _selectedTeamSeason;
 
     public TeamOverviewViewModel(INavigationService navigationService, IMediator mediator)
     {
         _navigationService = navigationService;
-        _mediator = mediator;
 
         var ok = _navigationService.TryGetParameter<int>(TeamIdProp, out var teamId);
         if (!ok)
@@ -33,7 +31,7 @@ public class TeamOverviewViewModel : ViewModelBase
         TeamId = teamId;
         _navigationService.ClearParameters();
 
-        var teamOverviewResponse = _mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
+        var teamOverviewResponse = mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
         if (teamOverviewResponse.TryPickT1(out var exception, out var teamOverview))
         {
             MessageBox.Show(exception.Message);
@@ -50,14 +48,18 @@ public class TeamOverviewViewModel : ViewModelBase
 
     private int TeamId { get; }
 
-    public string TeamRecord => $"{TeamOverview.NumWins}-{TeamOverview.NumLosses}, {TeamOverview.WinPercentage:F3} W-L%";
-
     public TeamOverview TeamOverview { get; set; }
 
     public TeamTopPlayerHistory? SelectedPlayer
     {
         get => _selectedPlayer;
         set => SetField(ref _selectedPlayer, value);
+    }
+
+    public TeamOverviewSeasonHistory? SelectedTeamSeason
+    {
+        get => _selectedTeamSeason;
+        set => SetField(ref _selectedTeamSeason, value);
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -70,6 +72,12 @@ public class TeamOverviewViewModel : ViewModelBase
                     NavigateToPlayerOverview(SelectedPlayer);
                 break;
             }
+            case nameof(SelectedTeamSeason):
+            {
+                if (SelectedTeamSeason is not null)
+                    NavigateToTeamSeasonDetail(SelectedTeamSeason);
+                break;
+            }
         }
     }
 
@@ -80,6 +88,15 @@ public class TeamOverviewViewModel : ViewModelBase
             new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
+    }
+
+    private void NavigateToTeamSeasonDetail(TeamOverviewSeasonHistory teamSeason)
+    {
+        var parameters = new Tuple<string, object>[]
+        {
+            new(TeamSeasonDetailViewModel.SeasonTeamIdProp, teamSeason.SeasonTeamId)
+        };
+        _navigationService.NavigateTo<TeamSeasonDetailViewModel>(parameters);
     }
 
     protected override void Dispose(bool disposing)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using MediatR;
@@ -12,13 +13,11 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public class PlayerOverviewViewModel : ViewModelBase
 {
     public const string PlayerIdProp = "PlayerId";
-    private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
 
     public PlayerOverviewViewModel(INavigationService navigationService, IMediator mediator)
     {
         _navigationService = navigationService;
-        _mediator = mediator;
 
         var ok = _navigationService.TryGetParameter<int>(PlayerIdProp, out var playerId);
         if (!ok)
@@ -31,7 +30,7 @@ public class PlayerOverviewViewModel : ViewModelBase
         PlayerId = playerId;
         _navigationService.ClearParameters();
 
-        var playerOverviewResponse = _mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
+        var playerOverviewResponse = mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
         if (playerOverviewResponse.TryPickT1(out var exception, out var playerOverview))
         {
             MessageBox.Show(exception.Message);

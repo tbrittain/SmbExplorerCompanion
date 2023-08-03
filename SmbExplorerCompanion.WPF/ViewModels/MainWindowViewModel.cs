@@ -92,7 +92,7 @@ public partial class MainWindowViewModel : ViewModelBase
         NavigationService.NavigateTo<TopBattingCareersViewModel>();
         return Task.CompletedTask;
     }
-    
+
     [RelayCommand]
     private Task NavigateToCareerPitching()
     {

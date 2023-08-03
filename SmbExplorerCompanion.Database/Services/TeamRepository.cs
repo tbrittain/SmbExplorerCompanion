@@ -10,11 +10,13 @@ public class TeamRepository : ITeamRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
+    private readonly IPlayerRepository _playerRepository;
 
-    public TeamRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
+    public TeamRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext, IPlayerRepository playerRepository)
     {
         _dbContext = dbContext;
         _applicationContext = applicationContext;
+        _playerRepository = playerRepository;
     }
 
     public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
@@ -56,7 +58,7 @@ public class TeamRepository : ITeamRepository
                 .Select(x => new
                 {
                     x.Id,
-                    CurrentName = x.SeasonTeamHistory
+                    CurrentTeamName = x.SeasonTeamHistory
                         .OrderByDescending(y => y.SeasonId)
                         .First().TeamNameHistory.Name,
                     NumGames = x.SeasonTeamHistory.Sum(y => y.Wins + y.Losses),
@@ -106,7 +108,7 @@ public class TeamRepository : ITeamRepository
                     var team = new HistoricalTeamDto
                     {
                         TeamId = x.Id,
-                        CurrentName = x.CurrentName,
+                        CurrentTeamName = x.CurrentTeamName,
                         NumGames = x.NumGames,
                         NumWins = x.NumWins,
                         NumLosses = x.NumLosses,
@@ -160,7 +162,7 @@ public class TeamRepository : ITeamRepository
 
                     return team;
                 })
-                .OrderBy(x => x.CurrentName)
+                .OrderBy(x => x.CurrentTeamName)
                 .ToList();
 
             if (cancellationToken.IsCancellationRequested)
@@ -307,4 +309,223 @@ public class TeamRepository : ITeamRepository
             return e;
         }
     }
+
+    public async Task<OneOf<TeamSeasonDetailDto, Exception>> GetTeamSeasonDetail(int teamSeasonId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
+                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+
+            var teamSeason = await _dbContext.SeasonTeamHistory
+                .Include(x => x.TeamNameHistory)
+                .Include(x => x.Division)
+                .ThenInclude(x => x.Conference)
+                .Include(x => x.Season)
+                .Include(x => x.ChampionshipWinner)
+                .Include(x => x.HomePlayoffSchedule)
+                .Include(x => x.AwayPlayoffSchedule)
+                .Where(x => x.Id == teamSeasonId)
+                .SingleAsync(cancellationToken: cancellationToken);
+            
+            var seasonId = teamSeason.SeasonId;
+            var teamId = teamSeason.TeamId;
+
+            var seasonPlayoffsCompleted = await _dbContext.ChampionshipWinners
+                .AnyAsync(x => x.SeasonId == seasonId, cancellationToken: cancellationToken);
+
+            var teamSeasonDetailDto = new TeamSeasonDetailDto
+            {
+                TeamId = teamSeason.TeamId,
+                CurrentTeamName = teamSeason.TeamNameHistory.Name,
+                DivisionName = teamSeason.Division.Name,
+                ConferenceName = teamSeason.Division.Conference.Name,
+                SeasonNum = teamSeason.Season.Number,
+                Budget = teamSeason.Budget,
+                Payroll = teamSeason.Payroll,
+                Surplus = teamSeason.Surplus,
+                SurplusPerGame = teamSeason.SurplusPerGame,
+                Wins = teamSeason.Wins,
+                Losses = teamSeason.Losses,
+                RunsScored = teamSeason.RunsScored,
+                RunsAllowed = teamSeason.RunsAllowed,
+                RunDifferential = teamSeason.RunsScored - teamSeason.RunsAllowed,
+                GamesBehind = teamSeason.GamesBehind,
+                WinPercentage = teamSeason.WinPercentage,
+                PythagoreanWinPercentage = teamSeason.PythagoreanWinPercentage,
+                ExpectedWins = teamSeason.ExpectedWins,
+                ExpectedLosses = teamSeason.ExpectedLosses,
+                TotalPower = teamSeason.TotalPower,
+                TotalContact = teamSeason.TotalContact,
+                TotalSpeed = teamSeason.TotalSpeed,
+                TotalFielding = teamSeason.TotalFielding,
+                TotalArm = teamSeason.TotalArm,
+                TotalVelocity = teamSeason.TotalVelocity,
+                TotalJunk = teamSeason.TotalJunk,
+                TotalAccuracy = teamSeason.TotalAccuracy,
+                MadePlayoffs = teamSeason.PlayoffWins > 0 || teamSeason.PlayoffLosses > 0,
+                PlayoffSeed = teamSeason.PlayoffSeed,
+                WonConference = teamSeason.HomePlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries) ||
+                                teamSeason.AwayPlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries),
+                WonChampionship = teamSeason.ChampionshipWinner is not null,
+            };
+
+            if (teamSeasonDetailDto.MadePlayoffs && seasonPlayoffsCompleted)
+            {
+                teamSeasonDetailDto.IncludesPlayoffData = true;
+                
+                teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(maxPlayoffSeries,
+                    teamSeason.HomePlayoffSchedule,
+                    teamSeason.AwayPlayoffSchedule);
+                
+                var playoffPitchingResult = await _playerRepository.GetTopPitchingSeasons(
+                    seasonId,
+                    true,
+                    null,
+                    null,
+                    true,
+                    teamId,
+                    cancellationToken);
+            
+                if (playoffPitchingResult.TryPickT1(out var e3, out var playoffPitchingSeasonDtos))
+                    return e3;
+            
+                teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
+            
+                var playoffBattingResult = await _playerRepository.GetTopBattingSeasons(
+                    seasonId,
+                    true,
+                    null,
+                    null,
+                    true,
+                    teamId,
+                    cancellationToken);
+            
+                if (playoffBattingResult.TryPickT1(out var e4, out var playoffBattingSeasonDtos))
+                    return e4;
+            
+                teamSeasonDetailDto.PlayoffBatting = playoffBattingSeasonDtos;
+            }
+
+            var regularSeasonPitchingResult = await _playerRepository.GetTopPitchingSeasons(
+                seasonId,
+                false,
+                null,
+                null,
+                true,
+                teamId,
+                cancellationToken);
+
+            if (regularSeasonPitchingResult.TryPickT1(out var e1, out var regularPitchingSeasonDtos))
+                return e1;
+
+            teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
+            
+            var regularSeasonBattingResult = await _playerRepository.GetTopBattingSeasons(
+                seasonId,
+                false,
+                null,
+                null,
+                true,
+                teamId,
+                cancellationToken);
+
+            if (regularSeasonBattingResult.TryPickT1(out var e2, out var regularBattingSeasonDtos))
+                return e2;
+            
+            teamSeasonDetailDto.RegularSeasonBatting = regularBattingSeasonDtos;
+
+            return teamSeasonDetailDto;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    // We will only call this method if the playoffs completed so that we do not need to return partial playoff completion results
+    private async Task<List<TeamPlayoffRoundResultDto>> GetTeamPlayoffResults(int maxPlayoffSeries,
+        IEnumerable<TeamPlayoffSchedule> homePlayoffSchedule,
+        IEnumerable<TeamPlayoffSchedule> awayPlayoffSchedule)
+    {
+        List<TeamPlayoffGameResult> gameResults = new();
+        var homeGameResults = homePlayoffSchedule.Select(homePlayoffGame => new TeamPlayoffGameResult(
+                homePlayoffGame.AwayTeamHistoryId,
+                homePlayoffGame.SeriesNumber,
+                homePlayoffGame.GlobalGameNumber,
+                true,
+                homePlayoffGame.HomeScore!.Value,
+                homePlayoffGame.AwayScore!.Value))
+            .ToList();
+        gameResults.AddRange(homeGameResults);
+
+        var awayGameResults = awayPlayoffSchedule.Select(awayPlayoffGame => new TeamPlayoffGameResult(
+                awayPlayoffGame.HomeTeamHistoryId,
+                awayPlayoffGame.SeriesNumber,
+                awayPlayoffGame.GlobalGameNumber,
+                false,
+                awayPlayoffGame.HomeScore!.Value,
+                awayPlayoffGame.AwayScore!.Value))
+            .ToList();
+        gameResults.AddRange(awayGameResults);
+
+        var gameResultsBySeries = gameResults
+            .OrderBy(x => x.GameNumber)
+            .GroupBy(x => x.SeriesNumber)
+            .ToList();
+
+        // This should never throw. If it does, we will need to revisit the retrieval of the max playoff series.
+        // That may mean that incomplete playoff results are exported from SMBExplorer
+        var applicableSeriesTypes = PlayoffSeries.SeriesLengths[maxPlayoffSeries];
+
+        List<TeamPlayoffRoundResultDto> playoffResults = new();
+        foreach (var series in gameResultsBySeries)
+        {
+            var seriesNumber = series.Key;
+            var seriesType = applicableSeriesTypes
+                .Where(x => x.MaxSeriesNumber >= seriesNumber)
+                .OrderBy(x => x.MaxSeriesNumber)
+                .First()
+                .Round;
+
+            var numWins = series
+                .Count(x => x.IsHomeTeam && x.HomeScore > x.AwayScore ||
+                            !x.IsHomeTeam && x.AwayScore > x.HomeScore);
+            var numLosses = series
+                .Count(x => x.IsHomeTeam && x.HomeScore < x.AwayScore ||
+                            !x.IsHomeTeam && x.AwayScore < x.HomeScore);
+            var teamWonSeries = numWins > numLosses;
+            var opponentTeamSeasonId = series.First().OpponentTeamSeasonId;
+
+            var opponentSeasonTeamHistory = await _dbContext.SeasonTeamHistory
+                .Include(x => x.TeamNameHistory)
+                .Where(x => x.Id == opponentTeamSeasonId)
+                .SingleAsync();
+
+            var opponentSeasonTeamId = opponentSeasonTeamHistory.Id;
+            var opponentTeamName = opponentSeasonTeamHistory.TeamNameHistory.Name;
+
+            var playoffRoundResult = new TeamPlayoffRoundResultDto
+            {
+                SeriesNumber = seriesNumber,
+                Round = seriesType,
+                OpponentSeasonTeamId = opponentSeasonTeamId,
+                OpponentTeamName = opponentTeamName,
+                WonSeries = teamWonSeries,
+                NumWins = numWins,
+                NumLosses = numLosses,
+            };
+            playoffResults.Add(playoffRoundResult);
+        }
+
+        return playoffResults;
+    }
+
+    private record struct TeamPlayoffGameResult(
+        int OpponentTeamSeasonId,
+        int SeriesNumber,
+        int GameNumber,
+        bool IsHomeTeam,
+        int HomeScore,
+        int AwayScore);
 }
