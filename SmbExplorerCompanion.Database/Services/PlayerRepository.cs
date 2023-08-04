@@ -696,6 +696,7 @@ public class PlayerRepository : IPlayerRepository
         bool isPlayoffs,
         int? pageNumber,
         string? orderBy,
+        int? limit,
         bool descending = true,
         int? teamId = null,
         CancellationToken cancellationToken = default)
@@ -710,6 +711,7 @@ public class PlayerRepository : IPlayerRepository
             const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
+        var limitValue = limit ?? 30;
 
         try
         {
@@ -778,8 +780,8 @@ public class PlayerRepository : IPlayerRepository
                     WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.AtBats / 10000,
                 })
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 30)
-                .Take(30)
+                .Skip(((pageNumber ?? 1) - 1) * limitValue)
+                .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             return playerBattingDtos;
@@ -794,6 +796,7 @@ public class PlayerRepository : IPlayerRepository
         bool isPlayoffs,
         int? pageNumber,
         string? orderBy,
+        int? limit,
         bool descending = true,
         int? teamId = null,
         CancellationToken cancellationToken = default)
@@ -808,6 +811,7 @@ public class PlayerRepository : IPlayerRepository
             const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
+        var limitValue = limit ?? 30;
 
         try
         {
@@ -876,8 +880,8 @@ public class PlayerRepository : IPlayerRepository
                     WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * 2.25 / 10000,
                 })
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 30)
-                .Take(30)
+                .Skip(((pageNumber ?? 1) - 1) * limitValue)
+                .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             return playerPitchingDtos;

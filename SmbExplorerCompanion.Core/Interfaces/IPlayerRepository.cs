@@ -22,6 +22,7 @@ public interface IPlayerRepository
         bool isPlayoffs,
         int? pageNumber,
         string? orderBy,
+        int? limit,
         bool descending = true,
         int? teamId = null,
         CancellationToken cancellationToken = default);
@@ -30,6 +31,7 @@ public interface IPlayerRepository
         bool isPlayoffs,
         int? pageNumber,
         string? orderBy,
+        int? limit,
         bool descending = true,
         int? teamId = null,
         CancellationToken cancellationToken = default);

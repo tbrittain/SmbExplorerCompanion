@@ -39,6 +39,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
                 request.IsPlayoffs,
                 request.PageNumber,
                 request.OrderBy,
+                null,
                 request.Descending,
                 null,
                 cancellationToken);

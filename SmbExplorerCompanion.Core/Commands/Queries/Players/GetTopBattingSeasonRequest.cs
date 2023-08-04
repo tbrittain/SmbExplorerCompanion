@@ -39,6 +39,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
                 request.IsPlayoffs,
                 request.PageNumber,
                 request.OrderBy,
+                null,
                 request.Descending,
                 null,
                 cancellationToken);
