@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
@@ -711,6 +712,7 @@ public class PlayerRepository : IPlayerRepository
             const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
+
         var limitValue = limit ?? 30;
 
         try
@@ -811,6 +813,7 @@ public class PlayerRepository : IPlayerRepository
             const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
+
         var limitValue = limit ?? 30;
 
         try
@@ -885,6 +888,90 @@ public class PlayerRepository : IPlayerRepository
                 .ToListAsync(cancellationToken: cancellationToken);
 
             return playerPitchingDtos;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    private static readonly string[] PositiveFieldingTraitNames = new string[] {"Cannon Arm", "Dive Wizard", "Utility", "Magic Hands"};
+    private static readonly string[] NegativeFieldingTraitNames = new string[] {"Butter Fingers", "Noodle Arm", "Wild Thrower"};
+
+    public async Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
+        int? primaryPositionId,
+        int? pageNumber,
+        int? limit,
+        CancellationToken cancellationToken = default)
+    {
+        var limitValue = limit ?? 10;
+
+        try
+        {
+            var positiveFieldingTraits = await _dbContext.Traits
+                .Where(x => PositiveFieldingTraitNames.Contains(x.Name))
+                .ToListAsync(cancellationToken: cancellationToken);
+            Debug.Assert(positiveFieldingTraits.Count == PositiveFieldingTraitNames.Length, "Not all positive fielding traits were found.");
+
+            var negativeFieldingTraits = await _dbContext.Traits
+                .Where(x => NegativeFieldingTraitNames.Contains(x.Name))
+                .ToListAsync(cancellationToken: cancellationToken);
+            Debug.Assert(negativeFieldingTraits.Count == NegativeFieldingTraitNames.Length, "Not all negative fielding traits were found.");
+
+            var playerGameStatDtos = await _dbContext.PlayerSeasonGameStats
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.PlayerTeamHistory)
+                .ThenInclude(x => x.SeasonTeamHistory)
+                .ThenInclude(x => x.TeamNameHistory)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Traits)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.PrimaryPosition)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .ThenInclude(x => x.PitcherRole)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.BattingStats)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.PitchingStats)
+                .Where(x => x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
+                .Select(x => new PlayerFieldingRankingDto
+                {
+                    PlayerId = x.PlayerSeason.PlayerId,
+                    PlayerName = $"{x.PlayerSeason.Player.FirstName} {x.PlayerSeason.Player.LastName}",
+                    TeamNames = string.Join(", ",
+                        x.PlayerSeason.PlayerTeamHistory
+                            .OrderBy(y => y.Order)
+                            .Where(y => y.SeasonTeamHistory != null)
+                            .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
+                    PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
+                    SeasonId = x.PlayerSeason.SeasonId,
+                    Speed = x.Speed,
+                    Fielding = x.Fielding,
+                    Arm = x.Arm,
+                    PlateAppearances = x.PlayerSeason.BattingStats.Sum(y => y.PlateAppearances),
+                    InningsPitched = x.PlayerSeason.PitchingStats.Sum(y => y.InningsPitched),
+                    Errors = x.PlayerSeason.BattingStats.Sum(y => y.Errors),
+                    PassedBalls = x.PlayerSeason.BattingStats.Sum(y => y.PassedBalls),
+                    PositiveFieldingTraits = x.PlayerSeason.Traits
+                        .Where(y => positiveFieldingTraits.Contains(y))
+                        .Select(y => y.Name)
+                        .ToList(),
+                    NegativeFieldingTraits = x.PlayerSeason.Traits
+                        .Where(y => negativeFieldingTraits.Contains(y))
+                        .Select(y => y.Name)
+                        .ToList(),
+                })
+                .OrderByDescending(x => x.WeightedFieldingRanking)
+                .Skip(((pageNumber ?? 1) - 1) * limitValue)
+                .Take(limitValue)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            return playerGameStatDtos;
         }
         catch (Exception e)
         {

@@ -35,4 +35,7 @@ public interface IPlayerRepository
         bool descending = true,
         int? teamId = null,
         CancellationToken cancellationToken = default);
+
+    public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
+        int? primaryPositionId, int? pageNumber, int? limit, CancellationToken cancellationToken = default);
 }
