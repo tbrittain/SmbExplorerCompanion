@@ -15,4 +15,6 @@
       <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
     </ItemGroup>
 
+
+
 </Project>

@@ -7,6 +7,7 @@ public interface IRepository<T> where T : class
 {
     public Task<OneOf<IEnumerable<T>, Exception>> GetAllAsync(CancellationToken cancellationToken = default);
     public Task<OneOf<T, None, Exception>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    public Task<OneOf<T, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default);
     public Task<OneOf<T, Exception>> AddAsync(T entity, CancellationToken cancellationToken = default);
 
     public Task<OneOf<IEnumerable<T>, Exception>> AddRangeAsync(IEnumerable<T> entities,

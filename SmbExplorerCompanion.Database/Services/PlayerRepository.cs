@@ -924,7 +924,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
-                .ThenInclude(x => x.TeamNameHistory)
+                .ThenInclude(x => x!.TeamNameHistory)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Traits)
                 .Include(x => x.PlayerSeason)
