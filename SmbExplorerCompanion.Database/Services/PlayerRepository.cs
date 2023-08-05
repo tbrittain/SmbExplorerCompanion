@@ -938,7 +938,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.PitchingStats)
                 .Where(x => x.PlayerSeason.SeasonId == seasonId)
-                .Where(x => x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
+                .Where(x => primaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
                 .Select(x => new PlayerFieldingRankingDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
