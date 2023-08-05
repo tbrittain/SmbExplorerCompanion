@@ -7,13 +7,23 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeasonDto>, Exception>>
 {
-    public GetTopBattingSeasonRequest(int seasonId, bool isPlayoffs, int? pageNumber, string? orderBy, bool descending)
+    public GetTopBattingSeasonRequest(int seasonId,
+        bool isPlayoffs = false,
+        int? pageNumber = null,
+        string? orderBy = null,
+        bool descending = true,
+        int? limit = null,
+        int? teamId = null,
+        int? primaryPositionId = null)
     {
         SeasonId = seasonId;
         IsPlayoffs = isPlayoffs;
         PageNumber = pageNumber;
         OrderBy = orderBy;
         Descending = descending;
+        Limit = limit;
+        TeamId = teamId;
+        PrimaryPositionId = primaryPositionId;
     }
 
     private int SeasonId { get; }
@@ -21,6 +31,9 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
     private int? PageNumber { get; }
     private string? OrderBy { get; }
     private bool Descending { get; }
+    private int? Limit { get; }
+    private int? TeamId { get; }
+    private int? PrimaryPositionId { get; }
 
     // ReSharper disable once UnusedType.Global
     public class GetTopBattingSeasonHandler : IRequestHandler<GetTopBattingSeasonRequest, OneOf<List<PlayerBattingSeasonDto>, Exception>>
@@ -39,9 +52,10 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
                 request.IsPlayoffs,
                 request.PageNumber,
                 request.OrderBy,
-                null,
+                request.Limit,
                 request.Descending,
-                null,
+                request.TeamId,
+                request.PrimaryPositionId,
                 cancellationToken);
         }
     }

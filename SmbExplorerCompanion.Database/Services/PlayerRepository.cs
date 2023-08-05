@@ -700,6 +700,7 @@ public class PlayerRepository : IPlayerRepository
         int? limit,
         bool descending = true,
         int? teamId = null,
+        int? primaryPositionId = null,
         CancellationToken cancellationToken = default)
     {
         var limitToTeam = teamId is not null;
@@ -743,6 +744,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
+                .Where(x => primaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
                 .Select(x => new PlayerBattingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,

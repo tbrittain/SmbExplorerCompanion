@@ -25,6 +25,7 @@ public interface IPlayerRepository
         int? limit,
         bool descending = true,
         int? teamId = null,
+        int? primaryPositionId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(int seasonId,
