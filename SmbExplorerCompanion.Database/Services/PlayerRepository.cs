@@ -701,6 +701,7 @@ public class PlayerRepository : IPlayerRepository
         bool descending = true,
         int? teamId = null,
         int? primaryPositionId = null,
+        bool? onlyRookies = null,
         CancellationToken cancellationToken = default)
     {
         var limitToTeam = teamId is not null;
@@ -718,6 +719,16 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
+            List<int> rookiePlayerIds = new();
+            if (onlyRookies is not null)
+            {
+                rookiePlayerIds = await _dbContext.PlayerSeasonBattingStats
+                    .Include(x => x.PlayerSeason)
+                    .Where(x => x.PlayerSeason.SeasonId == seasonId)
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .ToListAsync(cancellationToken: cancellationToken);
+            }
+
             var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
@@ -745,6 +756,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
                 .Where(x => primaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
+                .Where(x => onlyRookies == null || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
                 .Select(x => new PlayerBattingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
@@ -803,6 +815,7 @@ public class PlayerRepository : IPlayerRepository
         int? limit,
         bool descending = true,
         int? teamId = null,
+        bool? onlyRookies = null,
         CancellationToken cancellationToken = default)
     {
         var limitToTeam = teamId is not null;
@@ -820,6 +833,16 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
+            List<int> rookiePlayerIds = new();
+            if (onlyRookies is not null)
+            {
+                rookiePlayerIds = await _dbContext.PlayerSeasonBattingStats
+                    .Include(x => x.PlayerSeason)
+                    .Where(x => x.PlayerSeason.SeasonId == seasonId)
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .ToListAsync(cancellationToken: cancellationToken);
+            }
+            
             var playerPitchingDtos = await _dbContext.PlayerSeasonPitchingStats
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
@@ -846,6 +869,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
+                .Where(x => onlyRookies == null || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
                 .Select(x => new PlayerPitchingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,

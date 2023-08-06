@@ -42,6 +42,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
                 null,
                 request.Descending,
                 null,
+                null,
                 cancellationToken);
         }
     }

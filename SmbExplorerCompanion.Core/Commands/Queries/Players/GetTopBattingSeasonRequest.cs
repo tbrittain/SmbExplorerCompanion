@@ -56,6 +56,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
                 request.Descending,
                 request.TeamId,
                 request.PrimaryPositionId,
+                null,
                 cancellationToken);
         }
     }

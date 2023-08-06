@@ -386,6 +386,7 @@ public class TeamRepository : ITeamRepository
                     null,
                     true,
                     teamId,
+                    null,
                     cancellationToken);
 
                 if (playoffPitchingResult.TryPickT1(out var e3, out var playoffPitchingSeasonDtos))
@@ -401,6 +402,7 @@ public class TeamRepository : ITeamRepository
                     null,
                     true,
                     teamId,
+                    null,
                     null,
                     cancellationToken);
 
@@ -418,6 +420,7 @@ public class TeamRepository : ITeamRepository
                 null,
                 true,
                 teamId,
+                null,
                 cancellationToken);
 
             if (regularSeasonPitchingResult.TryPickT1(out var e1, out var regularPitchingSeasonDtos))
@@ -433,6 +436,7 @@ public class TeamRepository : ITeamRepository
                 null,
                 true,
                 teamId,
+                null,
                 null,
                 cancellationToken);
 
