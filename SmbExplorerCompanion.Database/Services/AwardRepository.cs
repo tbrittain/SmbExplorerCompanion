@@ -44,7 +44,6 @@ public class AwardRepository : IAwardRepository
                 return new Exception($"Invalid award IDs: {string.Join(", ", invalidAwardIds)}");
             }
 
-            // initialize a database transaction
             foreach (var awardsByPlayer in awardsByPlayerId)
             {
                 var playerId = awardsByPlayer.Key;

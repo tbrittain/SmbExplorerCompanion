@@ -54,6 +54,10 @@
                 <views:TeamSeasonDetailView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type viewModels:DelegateAwardsViewModel}">
+                <views:DelegateAwardsView />
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
                 <ResourceDictionary
