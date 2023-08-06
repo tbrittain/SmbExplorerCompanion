@@ -8,10 +8,13 @@ namespace SmbExplorerCompanion.Core.Commands.Actions.Awards;
 
 public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
 {
-    public AddPlayerAwardsRequest(List<PlayerAwardRequestDto> playerAwardRequestDtos)
+    public AddPlayerAwardsRequest(List<PlayerAwardRequestDto> playerAwardRequestDtos, int seasonId)
     {
         PlayerAwardRequestDtos = playerAwardRequestDtos;
+        SeasonId = seasonId;
     }
+    
+    private int SeasonId { get; }
 
     private List<PlayerAwardRequestDto> PlayerAwardRequestDtos { get; }
     
@@ -27,7 +30,7 @@ public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
 
         public async Task<OneOf<Success, Exception>> Handle(AddPlayerAwardsRequest request, CancellationToken cancellationToken)
         {
-            return await _awardRepository.AddPlayerAwards(request.PlayerAwardRequestDtos, cancellationToken);
+            return await _awardRepository.AddPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
         }
     }
 }

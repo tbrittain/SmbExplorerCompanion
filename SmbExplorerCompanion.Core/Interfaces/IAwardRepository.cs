@@ -6,6 +6,7 @@ namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface IAwardRepository
 {
-    public Task<OneOf<Success, Exception>> AddPlayerAwards(List<PlayerAwardRequestDto> playerAwardRequestDtos,
+    public Task<OneOf<Success, Exception>> AddPlayerAwards(int seasonId,
+        List<PlayerAwardRequestDto> playerAwardRequestDtos,
         CancellationToken cancellationToken = default);
 }
