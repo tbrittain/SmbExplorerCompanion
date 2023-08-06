@@ -18,25 +18,27 @@ public interface IPlayerRepository
         bool descending = true,
         CancellationToken cancellationToken = default);
 
-    public Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetTopBattingSeasons(int seasonId,
-        bool isPlayoffs,
-        int? pageNumber,
-        string? orderBy,
-        int? limit,
+    public Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetTopBattingSeasons(
+        int? seasonId = null,
+        bool isPlayoffs = false,
+        int? pageNumber = null,
+        string? orderBy = null,
+        int? limit = null,
         bool descending = true,
         int? teamId = null,
         int? primaryPositionId = null,
-        bool? onlyRookies = null,
+        bool onlyRookies = false,
         CancellationToken cancellationToken = default);
 
-    public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(int seasonId,
-        bool isPlayoffs,
-        int? pageNumber,
-        string? orderBy,
-        int? limit,
+    public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(
+        int? seasonId = null,
+        bool isPlayoffs = false,
+        int? pageNumber = null,
+        string? orderBy = null,
+        int? limit = null,
         bool descending = true,
         int? teamId = null,
-        bool? onlyRookies = null,
+        bool onlyRookies = false,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,

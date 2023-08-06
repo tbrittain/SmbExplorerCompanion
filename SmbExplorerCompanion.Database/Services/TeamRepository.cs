@@ -379,15 +379,10 @@ public class TeamRepository : ITeamRepository
                     teamSeason.AwayPlayoffSchedule);
 
                 var playoffPitchingResult = await _playerRepository.GetTopPitchingSeasons(
-                    seasonId,
-                    true,
-                    null,
-                    null,
-                    null,
-                    true,
-                    teamId,
-                    null,
-                    cancellationToken);
+                    seasonId: seasonId,
+                    isPlayoffs: true,
+                    teamId: teamId,
+                    cancellationToken: cancellationToken);
 
                 if (playoffPitchingResult.TryPickT1(out var e3, out var playoffPitchingSeasonDtos))
                     return e3;
@@ -395,16 +390,10 @@ public class TeamRepository : ITeamRepository
                 teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
 
                 var playoffBattingResult = await _playerRepository.GetTopBattingSeasons(
-                    seasonId,
-                    true,
-                    null,
-                    null,
-                    null,
-                    true,
-                    teamId,
-                    null,
-                    null,
-                    cancellationToken);
+                    seasonId: seasonId,
+                    isPlayoffs: true,
+                    teamId: teamId,
+                    cancellationToken: cancellationToken);
 
                 if (playoffBattingResult.TryPickT1(out var e4, out var playoffBattingSeasonDtos))
                     return e4;
@@ -413,15 +402,10 @@ public class TeamRepository : ITeamRepository
             }
 
             var regularSeasonPitchingResult = await _playerRepository.GetTopPitchingSeasons(
-                seasonId,
-                false,
-                null,
-                null,
-                null,
-                true,
-                teamId,
-                null,
-                cancellationToken);
+                seasonId: seasonId,
+                isPlayoffs: false,
+                teamId: teamId,
+                cancellationToken: cancellationToken);
 
             if (regularSeasonPitchingResult.TryPickT1(out var e1, out var regularPitchingSeasonDtos))
                 return e1;
@@ -429,16 +413,10 @@ public class TeamRepository : ITeamRepository
             teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
 
             var regularSeasonBattingResult = await _playerRepository.GetTopBattingSeasons(
-                seasonId,
-                false,
-                null,
-                null,
-                null,
-                true,
-                teamId,
-                null,
-                null,
-                cancellationToken);
+                seasonId: seasonId,
+                isPlayoffs: false,
+                teamId: teamId,
+                cancellationToken: cancellationToken);
 
             if (regularSeasonBattingResult.TryPickT1(out var e2, out var regularBattingSeasonDtos))
                 return e2;

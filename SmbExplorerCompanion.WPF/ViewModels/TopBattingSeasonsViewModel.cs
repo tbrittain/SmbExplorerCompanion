@@ -140,11 +140,11 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     public Task GetTopBattingSeason()
     {
         var topBattersResult = _mediator.Send(new GetTopBattingSeasonRequest(
-            SelectedSeason!.Id,
-            IsPlayoffs,
-            PageNumber,
-            SortColumn,
-            true)).Result;
+            seasonId: SelectedSeason!.Id,
+            isPlayoffs: IsPlayoffs,
+            pageNumber: PageNumber,
+            orderBy: SortColumn,
+            descending: true)).Result;
 
         if (topBattersResult.TryPickT1(out var exception, out var topBatters))
         {

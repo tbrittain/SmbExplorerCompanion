@@ -693,17 +693,21 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetTopBattingSeasons(int seasonId,
-        bool isPlayoffs,
-        int? pageNumber,
-        string? orderBy,
-        int? limit,
+    public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetTopBattingSeasons(
+        int? seasonId = null,
+        bool isPlayoffs = false,
+        int? pageNumber = null,
+        string? orderBy = null,
+        int? limit = null,
         bool descending = true,
         int? teamId = null,
         int? primaryPositionId = null,
-        bool? onlyRookies = null,
+        bool onlyRookies = false,
         CancellationToken cancellationToken = default)
     {
+        if (onlyRookies && seasonId is null)
+            throw new ArgumentException("SeasonId must be provided if OnlyRookies is true");
+
         var limitToTeam = teamId is not null;
         if (orderBy is not null)
         {
@@ -720,7 +724,7 @@ public class PlayerRepository : IPlayerRepository
         try
         {
             List<int> rookiePlayerIds = new();
-            if (onlyRookies is not null)
+            if (onlyRookies)
             {
                 rookiePlayerIds = await _dbContext.PlayerSeasonBattingStats
                     .Include(x => x.PlayerSeason)
@@ -751,12 +755,12 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x!.TeamNameHistory)
-                .Where(x => seasonId == default || x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
                 .Where(x => primaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
-                .Where(x => onlyRookies == null || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
+                .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
                 .Select(x => new PlayerBattingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
@@ -808,16 +812,20 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(int seasonId,
-        bool isPlayoffs,
-        int? pageNumber,
-        string? orderBy,
-        int? limit,
+    public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(
+        int? seasonId = null,
+        bool isPlayoffs = false,
+        int? pageNumber = null,
+        string? orderBy = null,
+        int? limit = null,
         bool descending = true,
         int? teamId = null,
-        bool? onlyRookies = null,
+        bool onlyRookies = false,
         CancellationToken cancellationToken = default)
     {
+        if (onlyRookies && seasonId is null)
+            throw new ArgumentException("SeasonId must be provided if OnlyRookies is true");
+
         var limitToTeam = teamId is not null;
         if (orderBy is not null)
         {
@@ -834,7 +842,7 @@ public class PlayerRepository : IPlayerRepository
         try
         {
             List<int> rookiePlayerIds = new();
-            if (onlyRookies is not null)
+            if (onlyRookies)
             {
                 rookiePlayerIds = await _dbContext.PlayerSeasonBattingStats
                     .Include(x => x.PlayerSeason)
@@ -842,7 +850,7 @@ public class PlayerRepository : IPlayerRepository
                     .Select(x => x.PlayerSeason.PlayerId)
                     .ToListAsync(cancellationToken: cancellationToken);
             }
-            
+
             var playerPitchingDtos = await _dbContext.PlayerSeasonPitchingStats
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
@@ -865,11 +873,11 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x!.TeamNameHistory)
-                .Where(x => seasonId == default || x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
-                .Where(x => onlyRookies == null || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
+                .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
                 .Select(x => new PlayerPitchingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
@@ -921,8 +929,8 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    private static readonly string[] PositiveFieldingTraitNames = new string[] {"Cannon Arm", "Dive Wizard", "Utility", "Magic Hands"};
-    private static readonly string[] NegativeFieldingTraitNames = new string[] {"Butter Fingers", "Noodle Arm", "Wild Thrower"};
+    private static readonly string[] PositiveFieldingTraitNames = new[] {"Cannon Arm", "Dive Wizard", "Utility", "Magic Hands"};
+    private static readonly string[] NegativeFieldingTraitNames = new[] {"Butter Fingers", "Noodle Arm", "Wild Thrower"};
 
     public async Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
         int? primaryPositionId,
