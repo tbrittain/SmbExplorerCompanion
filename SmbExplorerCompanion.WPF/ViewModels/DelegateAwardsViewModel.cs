@@ -48,4 +48,7 @@ public class DelegateAwardsViewModel : ViewModelBase
     
     public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
+    
+    // TODO: Will need one of these for each position
+    public ObservableCollection<PlayerFieldingRanking> TopFielding1B { get; } = new();
 }

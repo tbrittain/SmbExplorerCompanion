@@ -1020,6 +1020,15 @@ public class PlayerRepository : IPlayerRepository
                         .Where(y => negativeFieldingTraits.Contains(y))
                         .Select(y => y.Name)
                         .ToList(),
+                    WeightedFieldingRanking =
+                        x.Fielding + x.Speed + (x.Arm ?? 0) +
+                        (x.PlayerSeason.Traits.Count(y => positiveFieldingTraits.Contains(y)) * 20) -
+                        (x.PlayerSeason.Traits.Count(y => negativeFieldingTraits.Contains(y)) * 20) +
+                        (x.PlayerSeason.Player.PitcherRoleId != null
+                            ? x.PlayerSeason.PitchingStats.Sum(y => y.InningsPitched ?? 0)
+                            : x.PlayerSeason.BattingStats.Sum(y => y.PlateAppearances)) /
+                        (x.PlayerSeason.BattingStats.Sum(y => y.Errors) * 2 +
+                         x.PlayerSeason.BattingStats.Sum(y => y.PassedBalls) * 1.5)
                 })
                 .OrderByDescending(x => x.WeightedFieldingRanking)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)

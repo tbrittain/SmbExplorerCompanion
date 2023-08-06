@@ -22,7 +22,7 @@ public class PlayerFieldingRankingDto : PlayerBaseDto
     /// Cannon Arm, Dive Wizard, Utility, Magic Hands
     /// </summary>
     public List<string> PositiveFieldingTraits { get; init; } = new();
-    
+
     /// <summary>
     /// Noodle Arm, Wild Thrower, Butter Fingers
     /// </summary>
@@ -34,22 +34,5 @@ public class PlayerFieldingRankingDto : PlayerBaseDto
     /// their fielding traits, and the number of errors and passed balls they have,
     /// which also depends on the number of innings/plate appearances they have
     /// </summary>
-    public double WeightedFieldingRanking
-    {
-        get
-        {
-            var combinedFieldingRating = Fielding + Speed + (Arm ?? 0);
-            var fieldingTraitModifier = PositiveFieldingTraits.Count * 20 - NegativeFieldingTraits.Count * 20;
-
-            var errorModifier = Errors * 2 + PassedBalls * 1.5;
-
-            var experienceModifier = Position switch
-            {
-                Position.Pitcher => InningsPitched.GetValueOrDefault(),
-                _ => PlateAppearances.GetValueOrDefault()
-            };
-
-            return (combinedFieldingRating + fieldingTraitModifier + experienceModifier) / errorModifier;
-        }
-    }
+    public double WeightedFieldingRanking { get; set; }
 }
