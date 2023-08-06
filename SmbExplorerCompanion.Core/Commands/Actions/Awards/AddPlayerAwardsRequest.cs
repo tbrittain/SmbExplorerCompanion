@@ -21,16 +21,16 @@ public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
     // ReSharper disable once UnusedType.Global
     public class AddPlayerAwardsHandler : IRequestHandler<AddPlayerAwardsRequest, OneOf<Success, Exception>>
     {
-        private readonly IAwardRepository _awardRepository;
+        private readonly IAwardDelegationRepository _awardDelegationRepository;
 
-        public AddPlayerAwardsHandler(IAwardRepository awardRepository)
+        public AddPlayerAwardsHandler(IAwardDelegationRepository awardDelegationRepository)
         {
-            _awardRepository = awardRepository;
+            _awardDelegationRepository = awardDelegationRepository;
         }
 
         public async Task<OneOf<Success, Exception>> Handle(AddPlayerAwardsRequest request, CancellationToken cancellationToken)
         {
-            return await _awardRepository.AddPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
+            return await _awardDelegationRepository.AddPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
         }
     }
 }

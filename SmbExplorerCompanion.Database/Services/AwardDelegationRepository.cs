@@ -6,11 +6,11 @@ using SmbExplorerCompanion.Core.ValueObjects.Awards;
 
 namespace SmbExplorerCompanion.Database.Services;
 
-public class AwardRepository : IAwardRepository
+public class AwardDelegationRepository : IAwardDelegationRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
 
-    public AwardRepository(SmbExplorerCompanionDbContext dbContext)
+    public AwardDelegationRepository(SmbExplorerCompanionDbContext dbContext)
     {
         _dbContext = dbContext;
     }

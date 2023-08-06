@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.ValueObjects.Awards;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
-public interface IAwardRepository
+public interface IAwardDelegationRepository
 {
     public Task<OneOf<Success, Exception>> AddPlayerAwards(int seasonId,
         List<PlayerAwardRequestDto> playerAwardRequestDtos,
