@@ -16,7 +16,8 @@ public class AwardRepository : IAwardRepository
     }
 
     public async Task<OneOf<Success, Exception>> AddPlayerAwards(int seasonId,
-        List<PlayerAwardRequestDto> playerAwardRequestDtos,CancellationToken cancellationToken = default)
+        List<PlayerAwardRequestDto> playerAwardRequestDtos,
+        CancellationToken cancellationToken = default)
     {
         var awardsByPlayerId = playerAwardRequestDtos
             .GroupBy(x => x.PlayerId)
@@ -31,12 +32,12 @@ public class AwardRepository : IAwardRepository
             var allAwardIds = awards
                 .Select(x => x.Id)
                 .ToList();
-            
+
             var invalidAwardIds = playerAwardRequestDtos
                 .Select(x => x.AwardId)
                 .Except(allAwardIds)
                 .ToList();
-            
+
             if (invalidAwardIds.Any())
             {
                 await transaction.RollbackAsync(cancellationToken);
@@ -47,18 +48,19 @@ public class AwardRepository : IAwardRepository
             foreach (var awardsByPlayer in awardsByPlayerId)
             {
                 var playerId = awardsByPlayer.Key;
-                var newPlayerAwardIds= awardsByPlayer
+                var newPlayerAwardIds = awardsByPlayer
                     .Select(x => x.AwardId)
                     .ToList();
 
                 var newPlayerAwards = awards
                     .Where(x => newPlayerAwardIds.Contains(x.Id))
                     .ToList();
-                
+
                 var playerSeason = await _dbContext.PlayerSeasons
                     .Include(x => x.Awards)
-                    .FirstAsync(x => x.PlayerId == playerId && 
-                                              x.SeasonId == seasonId, cancellationToken: cancellationToken);
+                    .FirstAsync(x => x.PlayerId == playerId &&
+                                     x.SeasonId == seasonId,
+                        cancellationToken: cancellationToken);
 
                 playerSeason.Awards.Clear();
                 await _dbContext.SaveChangesAsync(cancellationToken);
