@@ -66,6 +66,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     }
 
     public bool ShortCircuitPageNumberRefresh { get; set; }
+    private bool ShortCircuitOnlyRookiesRefresh { get; set; }
 
     private const int ResultsPerPage = 20;
     private bool CanSelectPreviousPage => PageNumber > 1;
@@ -82,7 +83,9 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         {
             if (value is not null && (value?.Id == default(int) || value?.Id == MinSeasonId))
             {
+                ShortCircuitOnlyRookiesRefresh = true;
                 OnlyRookies = false;
+                ShortCircuitOnlyRookiesRefresh = false;
             }
 
             SetField(ref _selectedSeason, value);
@@ -155,7 +158,8 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
                 ShortCircuitPageNumberRefresh = false;
-                await GetTopBattingSeason();
+
+                if (!ShortCircuitOnlyRookiesRefresh) await GetTopBattingSeason();
                 break;
             }
             case nameof(SelectedPlayer):

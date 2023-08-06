@@ -785,6 +785,7 @@ public class PlayerRepository : IPlayerRepository
                     BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
                     ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
                     PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
+                    PitcherRole = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRole.Name : null,
                     Chemistry = x.PlayerSeason.Player.Chemistry!.Name,
                     SeasonNumber = x.PlayerSeason.Season.Number,
                     AtBats = x.AtBats,
