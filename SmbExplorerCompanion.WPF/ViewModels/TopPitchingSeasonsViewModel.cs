@@ -27,6 +27,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private int _pageNumber = 1;
     private PlayerBase? _selectedPlayer;
     private Season? _selectedSeason;
+    private bool _onlyRookies;
 
     public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
     {
@@ -43,12 +44,15 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         }
 
         var seasonMapper = new SeasonMapping();
+
+        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+        MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
+
         Seasons.Add(new Season
         {
             Id = default
         });
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
-        SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         GetTopPitchingSeason();
 
@@ -57,10 +61,25 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     public ObservableCollection<Season> Seasons { get; } = new();
 
+    private int MinSeasonId { get; }
+
+
     public Season? SelectedSeason
     {
         get => _selectedSeason;
-        set => SetField(ref _selectedSeason, value);
+        set
+        {
+            if (value is not null && (value?.Id == default(int) || value?.Id == MinSeasonId))
+            {
+                ShortCircuitOnlyRookiesRefresh = true;
+                OnlyRookies = false;
+                ShortCircuitOnlyRookiesRefresh = false;
+            }
+
+            SetField(ref _selectedSeason, value);
+
+            OnPropertyChanged(nameof(CanSelectOnlyRookies));
+        }
     }
 
     public int PageNumber
@@ -82,6 +101,24 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         set => SetField(ref _isPlayoffs, value);
     }
 
+    public bool CanSelectOnlyRookies
+    {
+        get
+        {
+            if (SelectedSeason is null) return false;
+            if (SelectedSeason.Id == default) return false;
+            if (SelectedSeason.Id == MinSeasonId) return false;
+
+            return true;
+        }
+    }
+
+    public bool OnlyRookies
+    {
+        get => _onlyRookies;
+        set => SetField(ref _onlyRookies, value);
+    }
+
     public string SortColumn { get; set; } = nameof(PlayerPitchingSeasonDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
@@ -93,21 +130,26 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     }
 
     public bool ShortCircuitPageNumberRefresh { get; set; }
+    private bool ShortCircuitOnlyRookiesRefresh { get; set; }
+
+    private const int ResultsPerPage = 20;
 
     private bool CanSelectPreviousPage => PageNumber > 1;
-    private bool CanSelectNextPage => TopSeasonPitchers.Count == 20;
+    private bool CanSelectNextPage => TopSeasonPitchers.Count == ResultsPerPage;
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
         {
+            case nameof(OnlyRookies):
             case nameof(IsPlayoffs):
             case nameof(SelectedSeason):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
                 ShortCircuitPageNumberRefresh = false;
-                await GetTopPitchingSeason();
+
+                if (!ShortCircuitOnlyRookiesRefresh) await GetTopPitchingSeason();
                 break;
             }
             case nameof(SelectedPlayer):
@@ -140,10 +182,12 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     public Task GetTopPitchingSeason()
     {
         var topPitchersResult = _mediator.Send(new GetTopPitchingSeasonRequest(
-            seasonId: SelectedSeason!.Id,
+            seasonId: SelectedSeason!.Id == default ? null : SelectedSeason!.Id,
             isPlayoffs: IsPlayoffs,
             pageNumber: PageNumber,
             orderBy: SortColumn,
+            limit: ResultsPerPage,
+            onlyRookies: OnlyRookies,
             descending: true)).Result;
 
         if (topPitchersResult.TryPickT1(out var exception, out var topPitchers))
@@ -156,6 +200,9 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
         var mapper = new PlayerSeasonMapping();
         TopSeasonPitchers.AddRange(topPitchers.Select(p => mapper.FromPitchingDto(p)));
+        
+        IncrementPageCommand.NotifyCanExecuteChanged();
+        DecrementPageCommand.NotifyCanExecuteChanged();
 
         return Task.CompletedTask;
     }

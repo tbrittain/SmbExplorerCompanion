@@ -37,11 +37,19 @@
             </StackPanel>
 
             <StackPanel
-                DockPanel.Dock="Right"
+                DockPanel.Dock="Left"
                 Orientation="Horizontal">
                 <Label Content="Playoffs" />
                 <CheckBox
                     IsChecked="{Binding IsPlayoffs}" />
+            </StackPanel>
+            <StackPanel
+                DockPanel.Dock="Left"
+                Orientation="Horizontal">
+                <Label Content="Only Rookies" />
+                <CheckBox
+                    IsEnabled="{Binding CanSelectOnlyRookies}"
+                    IsChecked="{Binding OnlyRookies}" />
             </StackPanel>
         </DockPanel>
 

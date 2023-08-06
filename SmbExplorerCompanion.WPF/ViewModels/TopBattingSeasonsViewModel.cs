@@ -70,6 +70,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
     private const int ResultsPerPage = 20;
     private bool CanSelectPreviousPage => PageNumber > 1;
+
     private bool CanSelectNextPage => TopSeasonBatters.Count == ResultsPerPage;
 
     public ObservableCollection<Season> Seasons { get; } = new();

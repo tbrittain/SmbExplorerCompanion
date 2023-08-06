@@ -7,7 +7,8 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSeasonDto>, Exception>>
 {
-    public GetTopPitchingSeasonRequest(int seasonId,
+    public GetTopPitchingSeasonRequest(
+        int? seasonId = null,
         int? limit = null,
         bool isPlayoffs = false,
         int? pageNumber = null,
@@ -26,7 +27,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
         TeamId = teamId;
     }
 
-    private int SeasonId { get; }
+    private int? SeasonId { get; }
     private bool IsPlayoffs { get; }
     private int? PageNumber { get; }
     private string? OrderBy { get; }
