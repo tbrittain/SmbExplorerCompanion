@@ -723,13 +723,23 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
+            var minSeasonId = await _dbContext.Seasons
+                .MinAsync(x => x.Id, cancellationToken: cancellationToken);
+
+            if (seasonId == minSeasonId) onlyRookies = false;
+
             List<int> rookiePlayerIds = new();
             if (onlyRookies)
             {
-                rookiePlayerIds = await _dbContext.PlayerSeasonBattingStats
-                    .Include(x => x.PlayerSeason)
-                    .Where(x => x.PlayerSeason.SeasonId == seasonId)
-                    .Select(x => x.PlayerSeason.PlayerId)
+                rookiePlayerIds = await _dbContext.Players
+                    .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasonId))
+                    .Select(x => new
+                    {
+                        PlayerId = x.Id,
+                        FirstSeasonId = x.PlayerSeasons.OrderBy(ps => ps.SeasonId).First().SeasonId
+                    })
+                    .Where(x => x.FirstSeasonId == seasonId)
+                    .Select(x => x.PlayerId)
                     .ToListAsync(cancellationToken: cancellationToken);
             }
 
@@ -841,13 +851,23 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
+            var minSeasonId = await _dbContext.Seasons
+                .MinAsync(x => x.Id, cancellationToken: cancellationToken);
+
+            if (seasonId == minSeasonId) onlyRookies = false;
+
             List<int> rookiePlayerIds = new();
             if (onlyRookies)
             {
-                rookiePlayerIds = await _dbContext.PlayerSeasonBattingStats
-                    .Include(x => x.PlayerSeason)
-                    .Where(x => x.PlayerSeason.SeasonId == seasonId)
-                    .Select(x => x.PlayerSeason.PlayerId)
+                rookiePlayerIds = await _dbContext.Players
+                    .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasonId))
+                    .Select(x => new
+                    {
+                        PlayerId = x.Id,
+                        FirstSeasonId = x.PlayerSeasons.OrderBy(ps => ps.SeasonId).First().SeasonId
+                    })
+                    .Where(x => x.FirstSeasonId == seasonId)
+                    .Select(x => x.PlayerId)
                     .ToListAsync(cancellationToken: cancellationToken);
             }
 
