@@ -114,6 +114,13 @@ public partial class MainWindowViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    [RelayCommand]
+    private Task NavigateToDelegateAwards()
+    {
+        NavigationService.NavigateTo<DelegateAwardsViewModel>();
+        return Task.CompletedTask;
+    }
+
     override public void Dispose()
     {
         _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
