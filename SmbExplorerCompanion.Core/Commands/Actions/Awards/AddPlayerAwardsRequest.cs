@@ -30,7 +30,7 @@ public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
 
         public async Task<OneOf<Success, Exception>> Handle(AddPlayerAwardsRequest request, CancellationToken cancellationToken)
         {
-            return await _awardDelegationRepository.AddPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
+            return await _awardDelegationRepository.AddRegularSeasonPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
         }
     }
 }
