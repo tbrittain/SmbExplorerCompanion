@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Windows;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 
@@ -36,7 +39,20 @@ public class DelegateAwardsViewModel : ViewModelBase
         });
         Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+        
+        var regularSeasonAwards = _mediator.Send(GetPlayerAwardsRequest.Default).Result;
+        if (regularSeasonAwards.TryPickT1(out exception, out var awards))
+        {
+            MessageBox.Show(exception.Message);
+            return;
+        }
+
+        var awardsMapper = new PlayerAwardMapping();
+        AllAwards.AddRange(awards.Select(a => awardsMapper.FromDto(a)));
     }
+    
+    // TODO: create sub-collections for each award type for easier binding
+    public ObservableCollection<PlayerAward> AllAwards { get; } = new();
     
     public ObservableCollection<Season> Seasons { get; } = new();
 
