@@ -808,7 +808,7 @@ public class PlayerRepository : IPlayerRepository
                     OpsPlus = x.OpsPlus ?? 0,
                     Errors = x.Errors,
                     Strikeouts = x.Strikeouts,
-                    WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.AtBats / 10000,
+                    WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.PlateAppearances / 10000,
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
