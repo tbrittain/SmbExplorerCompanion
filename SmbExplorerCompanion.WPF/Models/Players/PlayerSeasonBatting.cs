@@ -27,5 +27,5 @@ public class PlayerSeasonBatting : PlayerSeasonBase
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
     public List<PlayerAwardBase> Awards { get; set; } = new();
-    public string DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
+    public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

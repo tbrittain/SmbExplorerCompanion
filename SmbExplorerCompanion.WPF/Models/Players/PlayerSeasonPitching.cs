@@ -26,5 +26,5 @@ public class PlayerSeasonPitching : PlayerSeasonBase
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
     public List<PlayerAwardBase> Awards { get; set; } = new();
-    public string DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
+    public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }
