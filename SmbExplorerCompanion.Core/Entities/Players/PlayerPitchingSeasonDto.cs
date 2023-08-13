@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Players;
+﻿using SmbExplorerCompanion.Core.Entities.Lookups;
+
+namespace SmbExplorerCompanion.Core.Entities.Players;
 
 public class PlayerPitchingSeasonDto : PlayerSeasonDto
 {
@@ -21,4 +23,5 @@ public class PlayerPitchingSeasonDto : PlayerSeasonDto
     public double FipMinus { get; set; }
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
+    public List<PlayerAwardBase> Awards { get; set; } = new();
 }

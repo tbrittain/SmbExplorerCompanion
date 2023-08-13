@@ -14,6 +14,7 @@ using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
+
 // ReSharper disable InconsistentNaming
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -67,7 +68,7 @@ public class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show("No season selected.");
             return;
         }
-        
+
         var topSeasonBattersResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
@@ -92,10 +93,10 @@ public class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show(exception.Message);
             return;
         }
-        
+
         TopSeasonPitchers.AddRange(topSeasonPitchers
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
-        
+
         var topSeasonBattingRookiesResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
@@ -107,10 +108,10 @@ public class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show(exception.Message);
             return;
         }
-        
+
         TopSeasonBattingRookies.AddRange(topSeasonBattingRookies
             .Select(s => seasonPlayerMapper.FromBattingDto(s)));
-        
+
         var topSeasonPitchingRookiesResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
                 seasonId: SelectedSeason.Id,
@@ -122,9 +123,11 @@ public class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show(exception.Message);
             return;
         }
-        
+
         TopSeasonPitchingRookies.AddRange(topSeasonPitchingRookies
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
+        
+        // TODO: Fielding
     }
 
     private ObservableCollection<PlayerAward> AllAwards { get; } = new();

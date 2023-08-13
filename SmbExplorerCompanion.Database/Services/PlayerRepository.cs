@@ -4,6 +4,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using System.Linq.Dynamic.Core;
+using SmbExplorerCompanion.Core.Entities.Lookups;
 
 namespace SmbExplorerCompanion.Database.Services;
 
@@ -745,6 +746,8 @@ public class PlayerRepository : IPlayerRepository
 
             var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
                 .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Awards)
+                .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
                 .ThenInclude(x => x.Chemistry)
                 .Include(x => x.PlayerSeason)
@@ -809,6 +812,15 @@ public class PlayerRepository : IPlayerRepository
                     Errors = x.Errors,
                     Strikeouts = x.Strikeouts,
                     WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.PlateAppearances / 10000,
+                    Awards = x.PlayerSeason.Awards
+                        .Select(y => new PlayerAwardBase
+                        {
+                            Id = y.Id,
+                            Name = y.Name,
+                            Importance = y.Importance,
+                            OmitFromGroupings = y.OmitFromGroupings
+                        })
+                        .ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
@@ -874,6 +886,8 @@ public class PlayerRepository : IPlayerRepository
 
             var playerPitchingDtos = await _dbContext.PlayerSeasonPitchingStats
                 .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Awards)
+                .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
                 .ThenInclude(x => x.Chemistry)
                 .Include(x => x.PlayerSeason)
@@ -936,6 +950,15 @@ public class PlayerRepository : IPlayerRepository
                     CompleteGames = x.CompleteGames,
                     Shutouts = x.Shutouts,
                     WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * 2.25 / 10000,
+                    Awards = x.PlayerSeason.Awards
+                        .Select(y => new PlayerAwardBase
+                        {
+                            Id = y.Id,
+                            Name = y.Name,
+                            Importance = y.Importance,
+                            OmitFromGroupings = y.OmitFromGroupings
+                        })
+                        .ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
