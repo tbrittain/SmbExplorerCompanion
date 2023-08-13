@@ -214,6 +214,10 @@
                     Header="E"
                     Binding="{Binding Errors}"
                     CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="Awards"
+                    Binding="{Binding DisplayAwards}"
+                    CanUserSort="False" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

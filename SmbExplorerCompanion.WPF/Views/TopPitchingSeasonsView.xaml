@@ -216,6 +216,10 @@
                     Header="HBP"
                     Binding="{Binding HitByPitch}"
                     CanUserSort="True" />
+                <DataGridTextColumn
+                    Header="Awards"
+                    Binding="{Binding DisplayAwards}"
+                    CanUserSort="False" />
             </DataGrid.Columns>
         </DataGrid>
 

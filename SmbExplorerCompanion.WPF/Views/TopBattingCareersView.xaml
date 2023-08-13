@@ -157,6 +157,10 @@
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
+            <DataGridTextColumn
+                Header="Awards"
+                Binding="{Binding DisplayAwards}"
+                CanUserSort="False" />
         </DataGrid.Columns>
     </DataGrid>
 </UserControl>
