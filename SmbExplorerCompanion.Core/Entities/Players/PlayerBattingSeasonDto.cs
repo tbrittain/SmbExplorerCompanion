@@ -24,5 +24,5 @@ public class PlayerBattingSeasonDto : PlayerSeasonDto
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
-    public List<PlayerAwardBase> Awards { get; set; } = new();
+    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
 }

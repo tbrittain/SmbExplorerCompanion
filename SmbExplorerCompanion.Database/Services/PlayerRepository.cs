@@ -506,6 +506,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.Season)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.BattingStats)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.Awards)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Select(x => new PlayerCareerDto
                 {
@@ -549,6 +551,16 @@ public class PlayerRepository : IPlayerRepository
                     SacrificeHits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeHits)),
                     SacrificeFlies = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
                     Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
+                    Awards = x.PlayerSeasons
+                        .SelectMany(y => y.Awards)
+                        .Select(y => new PlayerAwardBaseDto
+                        {
+                            Id = y.Id,
+                            Name = y.Name,
+                            Importance = y.Importance,
+                            OmitFromGroupings = y.OmitFromGroupings
+                        })
+                        .ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * 30)
@@ -618,6 +630,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.Season)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PitchingStats)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.Awards)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PitcherRole != null)
                 .Select(x => new PlayerCareerDto
@@ -665,6 +679,16 @@ public class PlayerRepository : IPlayerRepository
                         .SelectMany(y => y.PitchingStats)
                         .Where(y => y.FipMinus != null && y.IsRegularSeason)
                         .Average(y => y.FipMinus ?? 0),
+                    Awards = x.PlayerSeasons
+                        .SelectMany(y => y.Awards)
+                        .Select(y => new PlayerAwardBaseDto
+                        {
+                            Id = y.Id,
+                            Name = y.Name,
+                            Importance = y.Importance,
+                            OmitFromGroupings = y.OmitFromGroupings
+                        })
+                        .ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * 30)
@@ -813,7 +837,7 @@ public class PlayerRepository : IPlayerRepository
                     Strikeouts = x.Strikeouts,
                     WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.PlateAppearances / 10000,
                     Awards = x.PlayerSeason.Awards
-                        .Select(y => new PlayerAwardBase
+                        .Select(y => new PlayerAwardBaseDto
                         {
                             Id = y.Id,
                             Name = y.Name,
@@ -951,7 +975,7 @@ public class PlayerRepository : IPlayerRepository
                     Shutouts = x.Shutouts,
                     WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * 2.25 / 10000,
                     Awards = x.PlayerSeason.Awards
-                        .Select(y => new PlayerAwardBase
+                        .Select(y => new PlayerAwardBaseDto
                         {
                             Id = y.Id,
                             Name = y.Name,

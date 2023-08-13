@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Lookups;
 
-public class PlayerAwardBase
+public class PlayerAwardBaseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = default!;

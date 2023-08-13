@@ -23,5 +23,5 @@ public class PlayerPitchingSeasonDto : PlayerSeasonDto
     public double FipMinus { get; set; }
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
-    public List<PlayerAwardBase> Awards { get; set; } = new();
+    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
 }
