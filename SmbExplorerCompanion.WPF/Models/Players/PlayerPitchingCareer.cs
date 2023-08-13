@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
@@ -25,4 +26,5 @@ public class PlayerPitchingCareer : PlayerCareerBase
     public double Fip { get; set; }
     public double Whip { get; set; }
     public List<PlayerAwardBase> Awards { get; set; } = new();
+    public string DisplayAwards => Awards.GetFormattedAwards(isSeason: false);
 }
