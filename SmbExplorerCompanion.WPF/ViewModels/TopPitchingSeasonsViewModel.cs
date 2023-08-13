@@ -54,7 +54,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Id = default
         });
 
-        GetTopPitchingSeason();
+        GetTopPitchingSeason().Wait();
 
         PropertyChanged += OnPropertyChanged;
     }
@@ -179,21 +179,21 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         PageNumber--;
     }
 
-    public Task GetTopPitchingSeason()
+    public async Task GetTopPitchingSeason()
     {
-        var topPitchersResult = _mediator.Send(new GetTopPitchingSeasonRequest(
+        var topPitchersResult = await _mediator.Send(new GetTopPitchingSeasonRequest(
             seasonId: SelectedSeason!.Id == default ? null : SelectedSeason!.Id,
             isPlayoffs: IsPlayoffs,
             pageNumber: PageNumber,
             orderBy: SortColumn,
             limit: ResultsPerPage,
             onlyRookies: OnlyRookies,
-            descending: true)).Result;
+            descending: true));
 
         if (topPitchersResult.TryPickT1(out var exception, out var topPitchers))
         {
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return Task.CompletedTask;
+            return;
         }
 
         TopSeasonPitchers.Clear();
@@ -203,8 +203,6 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
-
-        return Task.CompletedTask;
     }
 
     private void NavigateToPlayerOverview(PlayerBase player)

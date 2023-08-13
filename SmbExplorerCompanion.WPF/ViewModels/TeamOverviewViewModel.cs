@@ -16,7 +16,7 @@ public class TeamOverviewViewModel : ViewModelBase
     private TeamTopPlayerHistory? _selectedPlayer;
     private TeamOverviewSeasonHistory? _selectedTeamSeason;
 
-    public TeamOverviewViewModel(INavigationService navigationService, IMediator mediator)
+    public TeamOverviewViewModel(INavigationService navigationService, ISender mediator)
     {
         _navigationService = navigationService;
 

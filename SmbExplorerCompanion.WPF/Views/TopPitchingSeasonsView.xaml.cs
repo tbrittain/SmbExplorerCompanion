@@ -12,7 +12,7 @@ public partial class TopPitchingSeasonsView
         InitializeComponent();
     }
 
-    private void TopSeasonPitchingDataGrid_OnSorting(object sender, DataGridSortingEventArgs e)
+    private async void TopSeasonPitchingDataGrid_OnSorting(object sender, DataGridSortingEventArgs e)
     {
         Debug.Assert(e.Column.SortMemberPath is not null, "e.Column.SortMemberPath is not null");
         var columnPropertyName = e.Column.SortMemberPath;
@@ -23,7 +23,7 @@ public partial class TopPitchingSeasonsView
         viewModel.ShortCircuitPageNumberRefresh = true;
         viewModel.PageNumber = 1;
         viewModel.ShortCircuitPageNumberRefresh = false;
-        viewModel.GetTopPitchingSeason();
+        await viewModel.GetTopPitchingSeason();
 
         TopSeasonPitchingDataGrid.Items.SortDescriptions.Clear();
         TopSeasonPitchingDataGrid.Items.SortDescriptions.Add(new SortDescription(columnPropertyName, ListSortDirection.Descending));

@@ -56,7 +56,7 @@ public class DelegateAwardsViewModel : ViewModelBase
         BattingAwards.AddRange(AllAwards.Where(a => a.IsBattingAward));
         PitchingAwards.AddRange(AllAwards.Where(a => a.IsPitchingAward));
         FieldingAwards.AddRange(AllAwards.Where(a => a.IsFieldingAward));
-        
+
         GetAwardNominees().Wait();
     }
 
