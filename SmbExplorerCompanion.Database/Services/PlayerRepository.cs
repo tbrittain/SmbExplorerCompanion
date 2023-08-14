@@ -508,6 +508,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.BattingStats)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Awards)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Select(x => new PlayerCareerDto
                 {
@@ -560,7 +562,9 @@ public class PlayerRepository : IPlayerRepository
                             Importance = y.Importance,
                             OmitFromGroupings = y.OmitFromGroupings
                         })
-                        .ToList()
+                        .ToList(),
+                    NumChampionships = x.PlayerSeasons
+                        .Count(y => y.ChampionshipWinner != null)
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * 30)
@@ -584,6 +588,20 @@ public class PlayerRepository : IPlayerRepository
                     : (playerCareerDto.Singles + playerCareerDto.Doubles * 2 + playerCareerDto.Triples * 3 +
                        playerCareerDto.HomeRuns * 4) / (double) playerCareerDto.AtBats;
                 playerCareerDto.Ops = playerCareerDto.Obp + playerCareerDto.Slg;
+
+                if (playerCareerDto.NumChampionships > 0)
+                {
+                    foreach (var i in Enumerable.Range(1, playerCareerDto.NumChampionships))
+                    {
+                        playerCareerDto.Awards.Add(new PlayerAwardBaseDto
+                        {
+                            Id = 0,
+                            Name = "Champion",
+                            Importance = 10,
+                            OmitFromGroupings = false
+                        });
+                    }
+                }
             }
 
             return playerCareerDtos;
@@ -632,6 +650,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.PitchingStats)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Awards)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PitcherRole != null)
                 .Select(x => new PlayerCareerDto
@@ -688,7 +708,9 @@ public class PlayerRepository : IPlayerRepository
                             Importance = y.Importance,
                             OmitFromGroupings = y.OmitFromGroupings
                         })
-                        .ToList()
+                        .ToList(),
+                    NumChampionships = x.PlayerSeasons
+                        .Count(y => y.ChampionshipWinner != null)
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * 30)
@@ -708,6 +730,20 @@ public class PlayerRepository : IPlayerRepository
                     ? 0
                     : (13 * playerCareerDto.HomeRuns + 3 * (playerCareerDto.Walks + playerCareerDto.HitByPitch) -
                        2 * playerCareerDto.Strikeouts) / playerCareerDto.InningsPitched + 3.10;
+                
+                if (playerCareerDto.NumChampionships > 0)
+                {
+                    foreach (var i in Enumerable.Range(1, playerCareerDto.NumChampionships))
+                    {
+                        playerCareerDto.Awards.Add(new PlayerAwardBaseDto
+                        {
+                            Id = 0,
+                            Name = "Champion",
+                            Importance = 10,
+                            OmitFromGroupings = false
+                        });
+                    }
+                }
             }
 
             return playerCareerDtos;
@@ -792,6 +828,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x!.TeamNameHistory)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
@@ -844,12 +882,27 @@ public class PlayerRepository : IPlayerRepository
                             Importance = y.Importance,
                             OmitFromGroupings = y.OmitFromGroupings
                         })
-                        .ToList()
+                        .ToList(),
+                    IsChampion = x.PlayerSeason.ChampionshipWinner != null
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
                 .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
+
+            foreach (var player in playerBattingDtos)
+            {
+                if (player.IsChampion)
+                {
+                    player.Awards.Add(new PlayerAwardBaseDto
+                    {
+                        Id = 0,
+                        Name = "Champion",
+                        Importance = 10,
+                        OmitFromGroupings = false
+                    });
+                }
+            }
 
             return playerBattingDtos;
         }
@@ -932,6 +985,8 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x!.TeamNameHistory)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
@@ -982,12 +1037,27 @@ public class PlayerRepository : IPlayerRepository
                             Importance = y.Importance,
                             OmitFromGroupings = y.OmitFromGroupings
                         })
-                        .ToList()
+                        .ToList(),
+                    IsChampion = x.PlayerSeason.ChampionshipWinner != null
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
                 .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
+            
+            foreach (var player in playerPitchingDtos)
+            {
+                if (player.IsChampion)
+                {
+                    player.Awards.Add(new PlayerAwardBaseDto
+                    {
+                        Id = 0,
+                        Name = "Champion",
+                        Importance = 10,
+                        OmitFromGroupings = false
+                    });
+                }
+            }
 
             return playerPitchingDtos;
         }
@@ -997,8 +1067,8 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    private static readonly string[] PositiveFieldingTraitNames = new[] {"Cannon Arm", "Dive Wizard", "Utility", "Magic Hands"};
-    private static readonly string[] NegativeFieldingTraitNames = new[] {"Butter Fingers", "Noodle Arm", "Wild Thrower"};
+    private static readonly string[] PositiveFieldingTraitNames = {"Cannon Arm", "Dive Wizard", "Utility", "Magic Hands"};
+    private static readonly string[] NegativeFieldingTraitNames = {"Butter Fingers", "Noodle Arm", "Wild Thrower"};
 
     public async Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
         int? primaryPositionId,

@@ -25,4 +25,5 @@ public class PlayerBattingSeasonDto : PlayerSeasonDto
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
     public List<PlayerAwardBaseDto> Awards { get; set; } = new();
+    public bool IsChampion { get; set; }
 }

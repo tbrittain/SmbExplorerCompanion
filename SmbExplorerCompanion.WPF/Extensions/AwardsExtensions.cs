@@ -21,7 +21,8 @@ public static class AwardsExtensions
 
         var groupings = awards
             .GroupBy(x => x.Id)
-            .OrderByDescending(x => x.First().Importance)
+            .OrderBy(x => x.First().Importance)
+            .ThenBy(x => x.First().Name)
             .ToList();
 
         var lastGrouping = groupings.Last();

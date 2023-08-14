@@ -50,4 +50,5 @@ public class PlayerCareerDto : PlayerDetailsBaseDto
     public int Shutouts { get; set; }
     
     public List<PlayerAwardBaseDto> Awards { get; set; } = new();
+    public int NumChampionships { get; set; }
 }

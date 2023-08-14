@@ -24,4 +24,5 @@ public class PlayerPitchingSeasonDto : PlayerSeasonDto
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
     public List<PlayerAwardBaseDto> Awards { get; set; } = new();
+    public bool IsChampion { get; set; }
 }
