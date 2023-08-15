@@ -2,6 +2,7 @@
 
 public record PlayerAward : PlayerAwardBase
 {
+    public string OriginalName { get; init; } = default!;
     public bool IsBuiltIn { get; init; }
     public bool IsBattingAward { get; init; }
     public bool IsPitchingAward { get; init; }

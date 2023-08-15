@@ -107,6 +107,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             .Select(s => seasonTeamMapper.FromTeamDto(s))
             .OrderBy(x => x.TeamName));
 
+        var atLeastOneUserAwardAdded = false;
         var topSeasonBattersResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
@@ -123,6 +124,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         TopSeasonBatters.Clear();
         TopSeasonBatters.AddRange(topSeasonBatters
             .Select(s => seasonPlayerMapper.FromBattingDto(s)));
+        
+        if (TopSeasonBatters.Any(x => x.Awards.Any()))
+            atLeastOneUserAwardAdded = true;
 
         var topSeasonPitchersResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
@@ -140,6 +144,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         TopSeasonPitchers.Clear();
         TopSeasonPitchers.AddRange(topSeasonPitchers
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
+        
+        if (TopSeasonPitchers.Any(x => x.Awards.Any()))
+            atLeastOneUserAwardAdded = true;
 
         var topSeasonBattingRookiesResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
@@ -158,6 +165,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         TopSeasonBattingRookies.Clear();
         TopSeasonBattingRookies.AddRange(topSeasonBattingRookies
             .Select(s => seasonPlayerMapper.FromBattingDto(s)));
+        
+        if (TopSeasonBattingRookies.Any(x => x.Awards.Any()))
+            atLeastOneUserAwardAdded = true;
 
         var topSeasonPitchingRookiesResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
@@ -176,6 +186,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         TopSeasonPitchingRookies.Clear();
         TopSeasonPitchingRookies.AddRange(topSeasonPitchingRookies
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
+        
+        if (TopSeasonPitchingRookies.Any(x => x.Awards.Any()))
+            atLeastOneUserAwardAdded = true;
 
         TopBattersPerTeam.Clear();
         TopPitchersPerTeam.Clear();
@@ -196,7 +209,21 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topBattersPerTeamObservable = topBattersPerTeam
-                .Select(s => seasonPlayerMapper.FromBattingDto(s));
+                .Select(s => seasonPlayerMapper.FromBattingDto(s))
+                .ToList();
+            
+            // Automate the process of suggesting all-stars. We will use a proxy of if ANY awards have been added to the
+            // overall players, then we will not add all-stars. Otherwise, we do it, as a way to save time.
+
+            var allStarAward = AllAwards.First(x => x.OriginalName == "All-Star");
+            if (!atLeastOneUserAwardAdded)
+            {
+                // Only assign to the top two by default
+                foreach (var player in topBattersPerTeamObservable.Take(2))
+                {
+                    player.Awards.Add(allStarAward);
+                }
+            }
 
             TopBattersPerTeam.Add(new ObservableGroup<string, PlayerSeasonBatting>(team.TeamName, topBattersPerTeamObservable));
 
@@ -215,7 +242,16 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topPitchersPerTeamObservable = topPitchersPerTeam
-                .Select(s => seasonPlayerMapper.FromPitchingDto(s));
+                .Select(s => seasonPlayerMapper.FromPitchingDto(s))
+                .ToList();
+
+            if (!atLeastOneUserAwardAdded)
+            {
+                foreach (var player in topPitchersPerTeamObservable.Take(2))
+                {
+                    player.Awards.Add(allStarAward);
+                }
+            }
 
             TopPitchersPerTeam.Add(new ObservableGroup<string, PlayerSeasonPitching>(team.TeamName, topPitchersPerTeamObservable));
         }
