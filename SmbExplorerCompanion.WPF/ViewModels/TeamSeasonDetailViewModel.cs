@@ -16,7 +16,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     private readonly INavigationService _navigationService;
     private PlayerBase? _selectedPlayer;
 
-    public TeamSeasonDetailViewModel(INavigationService navigationService, IMediator mediator)
+    public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator)
     {
         _navigationService = navigationService;
 

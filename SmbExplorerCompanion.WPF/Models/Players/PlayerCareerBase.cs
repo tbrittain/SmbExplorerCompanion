@@ -2,7 +2,7 @@
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
-public abstract class PlayerCareerBase : PlayerBase
+public abstract class PlayerCareerBase : PlayerDetailBase
 {
     public int StartSeasonNumber { get; set; }
     public int EndSeasonNumber { get; set; }

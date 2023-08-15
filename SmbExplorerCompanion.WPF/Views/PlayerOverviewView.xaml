@@ -44,7 +44,7 @@
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock FontSize="14" Text="Career earnings:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.TotalSalary}" FontSize="14" />
+                    <TextBlock Text="{Binding PlayerOverview.TotalSalary, StringFormat={}${0:N0}}" FontSize="14" />
                 </StackPanel>
 
                 <StackPanel

@@ -26,7 +26,7 @@ public class TopPitchingCareersViewModel : ViewModelBase
 
         PropertyChanged += OnPropertyChanged;
 
-        GetTopPitchingCareers();
+        GetTopPitchingCareers().Wait();
     }
 
     public int PageNumber
@@ -67,16 +67,16 @@ public class TopPitchingCareersViewModel : ViewModelBase
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }
 
-    public Task GetTopPitchingCareers()
+    public async Task GetTopPitchingCareers()
     {
-        var topPitchersResult = _mediator.Send(new GetTopPitchingCareersRequest(
+        var topPitchersResult = await _mediator.Send(new GetTopPitchingCareersRequest(
             PageNumber,
             SortColumn
-        )).Result;
+        ));
         if (topPitchersResult.TryPickT1(out var exception, out var topPlayers))
         {
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return Task.CompletedTask;
+            return;
         }
 
         TopPitchingCareers.Clear();
@@ -86,8 +86,6 @@ public class TopPitchingCareersViewModel : ViewModelBase
         {
             TopPitchingCareers.Add(mapper.FromPitchingDto(player));
         }
-
-        return Task.CompletedTask;
     }
 
     protected override void Dispose(bool disposing)

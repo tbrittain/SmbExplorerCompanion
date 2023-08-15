@@ -1,4 +1,8 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Players;
+﻿using System.Collections.Generic;
+using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Models.Lookups;
+
+namespace SmbExplorerCompanion.WPF.Models.Players;
 
 public class PlayerBattingCareer : PlayerCareerBase
 {
@@ -22,4 +26,6 @@ public class PlayerBattingCareer : PlayerCareerBase
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
+    public List<PlayerAwardBase> Awards { get; set; } = new();
+    public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: false);
 }

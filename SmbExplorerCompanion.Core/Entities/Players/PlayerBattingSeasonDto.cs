@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Players;
+﻿using SmbExplorerCompanion.Core.Entities.Lookups;
+
+namespace SmbExplorerCompanion.Core.Entities.Players;
 
 public class PlayerBattingSeasonDto : PlayerSeasonDto
 {
@@ -22,4 +24,6 @@ public class PlayerBattingSeasonDto : PlayerSeasonDto
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
+    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
+    public bool IsChampion { get; set; }
 }

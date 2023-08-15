@@ -15,7 +15,7 @@ public class GetPlayerOverviewRequest : IRequest<OneOf<PlayerOverviewDto, Except
     private int PlayerId { get; }
 
     // ReSharper disable once UnusedType.Global
-    public class GetPlayerOverviewHandler : IRequestHandler<GetPlayerOverviewRequest, OneOf<PlayerOverviewDto, Exception>>
+    internal class GetPlayerOverviewHandler : IRequestHandler<GetPlayerOverviewRequest, OneOf<PlayerOverviewDto, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 

@@ -45,6 +45,13 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Left" />
             </Button>
+            
+            <TextBlock
+                Margin="0, 10, 0, 0"
+                Text="Stats"
+                FontSize="20"
+                FontWeight="Bold"
+                HorizontalAlignment="Center" />
 
             <Button Command="{Binding NavigateToTeamsCommand}">
                 <TextBlock
@@ -85,6 +92,28 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Left" />
             </Button>
+            
+            <TextBlock
+                Margin="0, 10, 0, 0"
+                Text="Management"
+                FontSize="20"
+                FontWeight="Bold"
+                HorizontalAlignment="Center" />
+            
+            <Button Command="{Binding NavigateToDelegateAwardsCommand}">
+                <TextBlock
+                    Text="Season Awards"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
+            
+            <TextBlock
+                Margin="0, 10, 0, 0"
+                Text="Utilities"
+                FontSize="20"
+                FontWeight="Bold"
+                HorizontalAlignment="Center" />
 
             <Button Command="{Binding NavigateToImportCsvCommand}" Margin="0, 10, 0, 0">
                 <TextBlock

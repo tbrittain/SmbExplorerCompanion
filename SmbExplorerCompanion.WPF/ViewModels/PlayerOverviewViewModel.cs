@@ -15,7 +15,7 @@ public class PlayerOverviewViewModel : ViewModelBase
     public const string PlayerIdProp = "PlayerId";
     private readonly INavigationService _navigationService;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, IMediator mediator)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator)
     {
         _navigationService = navigationService;
 
@@ -45,6 +45,7 @@ public class PlayerOverviewViewModel : ViewModelBase
         }
     }
 
+    // TODO: replace these with bool properties and use a converter to return Visibility.Collapsed if false
     public Visibility CareerPitchingVisibility => PlayerOverview.IsPitcher ? Visibility.Visible : Visibility.Collapsed;
     public Visibility CareerBattingVisibility => PlayerOverview.IsPitcher ? Visibility.Collapsed : Visibility.Visible;
 

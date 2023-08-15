@@ -228,7 +228,22 @@ namespace SmbExplorerCompanion.Database.Migrations
                     b.Property<int>("Importance")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsBattingAward")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsBuiltIn")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFieldingAward")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsPitchingAward")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsPlayoffAward")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsUserAssignable")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -251,6 +266,9 @@ namespace SmbExplorerCompanion.Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsPrimaryPosition")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")

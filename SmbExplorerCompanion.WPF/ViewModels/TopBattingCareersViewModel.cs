@@ -28,7 +28,7 @@ public class TopBattingCareersViewModel : ViewModelBase
 
         PropertyChanged += OnPropertyChanged;
 
-        GetTopBattingCareers();
+        GetTopBattingCareers().Wait();
     }
 
     public int PageNumber
@@ -69,24 +69,22 @@ public class TopBattingCareersViewModel : ViewModelBase
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }
 
-    public Task GetTopBattingCareers()
+    public async Task GetTopBattingCareers()
     {
-        var topBattersResult = _mediator.Send(new GetTopBattingCareersRequest(
+        var topBattersResult = await _mediator.Send(new GetTopBattingCareersRequest(
             PageNumber,
             SortColumn
-        )).Result;
+        ));
         if (topBattersResult.TryPickT1(out var exception, out var topPlayers))
         {
             Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return Task.CompletedTask;
+            return;
         }
 
         TopBattingCareers.Clear();
 
         var mapper = new PlayerCareerMapping();
         TopBattingCareers.AddRange(topPlayers.Select(b => mapper.FromBattingDto(b)));
-
-        return Task.CompletedTask;
     }
 
     protected override void Dispose(bool disposing)

@@ -19,6 +19,36 @@ public class TeamRepository : ITeamRepository
         _playerRepository = playerRepository;
     }
 
+    public async Task<OneOf<IEnumerable<TeamDto>, Exception>> GetSeasonTeams(int seasonId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var teams = await _dbContext.SeasonTeamHistory
+                .Include(x => x.Season)
+                .Include(x => x.TeamNameHistory)
+                .Include(x => x.Division)
+                .ThenInclude(x => x.Conference)
+                .Where(x => x.SeasonId == seasonId)
+                .Select(x => new TeamDto
+                {
+                    SeasonId = x.SeasonId,
+                    SeasonNumber = x.Season.Number,
+                    SeasonTeamId = x.Id,
+                    TeamId = x.TeamId,
+                    TeamName = x.TeamNameHistory.Name,
+                    DivisionName = x.Division.Name,
+                    ConferenceName = x.Division.Conference.Name
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            return teams;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
     public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
@@ -27,7 +57,7 @@ public class TeamRepository : ITeamRepository
             .Include(x => x.SeasonTeamHistory)
             .ThenInclude(x => x.Division)
             .ThenInclude(x => x.Conference)
-            .Where(x => x.SeasonTeamHistory.First().Division.Conference.FranchiseId == franchiseId);
+            .Where(x => x.FranchiseId == franchiseId);
 
         try
         {
@@ -327,7 +357,7 @@ public class TeamRepository : ITeamRepository
                 .Include(x => x.AwayPlayoffSchedule)
                 .Where(x => x.Id == teamSeasonId)
                 .SingleAsync(cancellationToken: cancellationToken);
-            
+
             var seasonId = teamSeason.SeasonId;
             var teamId = teamSeason.TeamId;
 
@@ -373,66 +403,54 @@ public class TeamRepository : ITeamRepository
             if (teamSeasonDetailDto.MadePlayoffs && seasonPlayoffsCompleted)
             {
                 teamSeasonDetailDto.IncludesPlayoffData = true;
-                
+
                 teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(maxPlayoffSeries,
                     teamSeason.HomePlayoffSchedule,
                     teamSeason.AwayPlayoffSchedule);
-                
+
                 var playoffPitchingResult = await _playerRepository.GetTopPitchingSeasons(
-                    seasonId,
-                    true,
-                    null,
-                    null,
-                    true,
-                    teamId,
-                    cancellationToken);
-            
+                    seasonId: seasonId,
+                    isPlayoffs: true,
+                    teamId: teamId,
+                    cancellationToken: cancellationToken);
+
                 if (playoffPitchingResult.TryPickT1(out var e3, out var playoffPitchingSeasonDtos))
                     return e3;
-            
+
                 teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
-            
+
                 var playoffBattingResult = await _playerRepository.GetTopBattingSeasons(
-                    seasonId,
-                    true,
-                    null,
-                    null,
-                    true,
-                    teamId,
-                    cancellationToken);
-            
+                    seasonId: seasonId,
+                    isPlayoffs: true,
+                    teamId: teamId,
+                    cancellationToken: cancellationToken);
+
                 if (playoffBattingResult.TryPickT1(out var e4, out var playoffBattingSeasonDtos))
                     return e4;
-            
+
                 teamSeasonDetailDto.PlayoffBatting = playoffBattingSeasonDtos;
             }
 
             var regularSeasonPitchingResult = await _playerRepository.GetTopPitchingSeasons(
-                seasonId,
-                false,
-                null,
-                null,
-                true,
-                teamId,
-                cancellationToken);
+                seasonId: seasonId,
+                isPlayoffs: false,
+                teamId: teamId,
+                cancellationToken: cancellationToken);
 
             if (regularSeasonPitchingResult.TryPickT1(out var e1, out var regularPitchingSeasonDtos))
                 return e1;
 
             teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
-            
+
             var regularSeasonBattingResult = await _playerRepository.GetTopBattingSeasons(
-                seasonId,
-                false,
-                null,
-                null,
-                true,
-                teamId,
-                cancellationToken);
+                seasonId: seasonId,
+                isPlayoffs: false,
+                teamId: teamId,
+                cancellationToken: cancellationToken);
 
             if (regularSeasonBattingResult.TryPickT1(out var e2, out var regularBattingSeasonDtos))
                 return e2;
-            
+
             teamSeasonDetailDto.RegularSeasonBatting = regularBattingSeasonDtos;
 
             return teamSeasonDetailDto;

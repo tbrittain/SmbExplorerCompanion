@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+      <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0" />
       <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
         <PrivateAssets>all</PrivateAssets>
@@ -32,5 +33,7 @@
         <SubType>Designer</SubType>
       </Page>
     </ItemGroup>
+
+
 
 </Project>

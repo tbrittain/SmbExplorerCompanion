@@ -25,7 +25,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void NavigationServiceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        // TODO: Was going to use this to conditionally change the background color of the selected sidebar item
         switch (e.PropertyName)
         {
             case nameof(INavigationService.CanNavigateBack):
@@ -111,6 +110,13 @@ public partial class MainWindowViewModel : ViewModelBase
     private Task NavigateToSeasonPitching()
     {
         NavigationService.NavigateTo<TopPitchingSeasonsViewModel>();
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private Task NavigateToDelegateAwards()
+    {
+        NavigationService.NavigateTo<DelegateAwardsViewModel>();
         return Task.CompletedTask;
     }
 

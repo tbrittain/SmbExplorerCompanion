@@ -41,7 +41,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>,
     );
 
     // ReSharper disable once UnusedType.Global
-    public class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, OneOf<List<PlayerCareerDto>, Exception>>
+    internal class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, OneOf<List<PlayerCareerDto>, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 

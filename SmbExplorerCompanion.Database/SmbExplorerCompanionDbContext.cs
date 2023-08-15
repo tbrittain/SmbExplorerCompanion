@@ -51,11 +51,11 @@ public class SmbExplorerCompanionDbContext : DbContext
         var connectionString = Path.Combine(BaseApplicationDirectory, "SmbExplorerCompanion.db");
         optionsBuilder.UseSqlite($"Data Source={connectionString}");
 
-        #if DEBUG
+#if DEBUG
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.EnableDetailedErrors();
-        #endif
-        
+#endif
+
         base.OnConfiguring(optionsBuilder);
     }
 
@@ -110,7 +110,7 @@ public class SmbExplorerCompanionDbContext : DbContext
             .HasOne(x => x.PrimaryPosition)
             .WithMany(x => x.PrimaryPositionPlayers)
             .HasForeignKey(x => x.PrimaryPositionId);
-        
+
         modelBuilder.Entity<Season>()
             .HasOne(s => s.ChampionshipWinner)
             .WithOne(cw => cw.Season)
@@ -149,15 +149,15 @@ public class SmbExplorerCompanionDbContext : DbContext
         );
 
         dbContext.Positions.AddRange(
-            new Position {Name = "P"},
-            new Position {Name = "C"},
-            new Position {Name = "1B"},
-            new Position {Name = "2B"},
-            new Position {Name = "3B"},
-            new Position {Name = "SS"},
-            new Position {Name = "LF"},
-            new Position {Name = "CF"},
-            new Position {Name = "RF"},
+            new Position {Name = "P", IsPrimaryPosition = true},
+            new Position {Name = "C", IsPrimaryPosition = true},
+            new Position {Name = "1B", IsPrimaryPosition = true},
+            new Position {Name = "2B", IsPrimaryPosition = true},
+            new Position {Name = "3B", IsPrimaryPosition = true},
+            new Position {Name = "SS", IsPrimaryPosition = true},
+            new Position {Name = "LF", IsPrimaryPosition = true},
+            new Position {Name = "CF", IsPrimaryPosition = true},
+            new Position {Name = "RF", IsPrimaryPosition = true},
             new Position {Name = "IF"},
             new Position {Name = "OF"},
             new Position {Name = "1B/OF"},
@@ -181,112 +181,142 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Name = "MVP",
                 OriginalName = "MVP",
                 Importance = 0,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true,
+                IsPitchingAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "Triple Crown (Batting)",
                 OriginalName = "Triple Crown (Batting)",
                 Importance = 0,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true
             },
             new()
             {
                 Name = "Triple Crown (Pitching)",
                 OriginalName = "Triple Crown (Pitching)",
                 Importance = 0,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsPitchingAward = true
             },
             new()
             {
                 Name = "Cy Young",
                 OriginalName = "Cy Young",
                 Importance = 1,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsPitchingAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "Silver Slugger",
                 OriginalName = "Silver Slugger",
                 Importance = 1,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "ROY",
                 OriginalName = "ROY",
                 Importance = 1,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "Gold Glove",
                 OriginalName = "Gold Glove",
                 Importance = 2,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsFieldingAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "Playoff MVP",
                 OriginalName = "Playoff MVP",
                 Importance = 2,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true,
+                IsPitchingAward = true,
+                IsPlayoffAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "Championship MVP",
                 OriginalName = "Championship MVP",
                 Importance = 2,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true,
+                IsPitchingAward = true,
+                IsPlayoffAward = true,
+                IsUserAssignable = true
             },
             new()
             {
                 Name = "Batting Title",
                 OriginalName = "Batting Title",
                 Importance = 3,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true
             },
             new()
             {
                 Name = "Home Run Title",
                 OriginalName = "Home Run Title",
                 Importance = 3,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true
             },
             new()
             {
                 Name = "RBI Title",
                 OriginalName = "RBI Title",
                 Importance = 3,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsBattingAward = true
             },
             new()
             {
                 Name = "ERA Title",
                 OriginalName = "ERA Title",
                 Importance = 3,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsPitchingAward = true
             },
             new()
             {
                 Name = "Wins Title",
                 OriginalName = "Wins Title",
                 Importance = 3,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsPitchingAward = true
             },
             new()
             {
                 Name = "Strikeouts Title",
                 OriginalName = "Strikeouts Title",
                 Importance = 3,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsPitchingAward = true
             },
             new()
             {
                 Name = "All-Star",
                 OriginalName = "All-Star",
                 Importance = 4,
-                IsBuiltIn = true
+                IsBuiltIn = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -294,7 +324,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "MVP-2",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -302,7 +335,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "MVP-3",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -310,7 +346,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "MVP-4",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -318,7 +357,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "MVP-5",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -326,7 +368,9 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "Cy Young-2",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true
             },
             new()
             {
@@ -334,7 +378,9 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "Cy Young-3",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true
             },
             new()
             {
@@ -342,7 +388,9 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "Cy Young-4",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true
             },
             new()
             {
@@ -350,7 +398,9 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "Cy Young-5",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true
             },
             new()
             {
@@ -358,7 +408,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "ROY-2",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -366,7 +419,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "ROY-3",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -374,7 +430,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "ROY-4",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             },
             new()
             {
@@ -382,7 +441,10 @@ public class SmbExplorerCompanionDbContext : DbContext
                 OriginalName = "ROY-5",
                 Importance = 5,
                 IsBuiltIn = true,
-                OmitFromGroupings = true
+                OmitFromGroupings = true,
+                IsUserAssignable = true,
+                IsPitchingAward = true,
+                IsBattingAward = true,
             }
         };
 

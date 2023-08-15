@@ -22,7 +22,7 @@ public class ImportPlayoffDataRequest : IRequest<OneOf<Success, Exception>>
     private string PlayoffScheduleCsvFilePath { get; }
 
     // ReSharper disable once UnusedType.Global
-    public class ImportPlayoffDataHandler : IRequestHandler<ImportPlayoffDataRequest, OneOf<Success, Exception>>
+    internal class ImportPlayoffDataHandler : IRequestHandler<ImportPlayoffDataRequest, OneOf<Success, Exception>>
     {
         private readonly ICsvImportRepository _csvImportRepository;
 

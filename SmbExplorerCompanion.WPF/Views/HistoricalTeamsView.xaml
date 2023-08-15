@@ -6,18 +6,16 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HistoricalTeamsViewModel}">
-    <ScrollViewer Name="ScrollViewer">
-        <DataGrid
-            Name="TeamsDataGrid"
-            IsReadOnly="True"
-            ItemsSource="{Binding HistoricalTeams}"
-            SelectedItem="{Binding SelectedHistoricalTeam}"
-            AutoGenerateColumns="True"
-            CanUserAddRows="False"
-            CanUserDeleteRows="False"
-            CanUserReorderColumns="False"
-            CanUserSortColumns="True"
-            CanUserResizeColumns="True"
-            SelectionMode="Single" />
-    </ScrollViewer>
+    <DataGrid
+        Name="TeamsDataGrid"
+        IsReadOnly="True"
+        ItemsSource="{Binding HistoricalTeams}"
+        SelectedItem="{Binding SelectedHistoricalTeam}"
+        AutoGenerateColumns="True"
+        CanUserAddRows="False"
+        CanUserDeleteRows="False"
+        CanUserReorderColumns="False"
+        CanUserSortColumns="True"
+        CanUserResizeColumns="True"
+        SelectionMode="Single" />
 </UserControl>
