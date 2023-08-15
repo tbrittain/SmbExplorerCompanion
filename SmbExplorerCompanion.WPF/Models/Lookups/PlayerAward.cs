@@ -1,10 +1,10 @@
 ﻿namespace SmbExplorerCompanion.WPF.Models.Lookups;
 
-public class PlayerAward : PlayerAwardBase
+public record PlayerAward : PlayerAwardBase
 {
-    public bool IsBuiltIn { get; set; }
-    public bool IsBattingAward { get; set; }
-    public bool IsPitchingAward { get; set; }
-    public bool IsFieldingAward { get; set; }
-    public bool IsPlayoffAward { get; set; }
+    public bool IsBuiltIn { get; init; }
+    public bool IsBattingAward { get; init; }
+    public bool IsPitchingAward { get; init; }
+    public bool IsFieldingAward { get; init; }
+    public bool IsPlayoffAward { get; init; }
 }

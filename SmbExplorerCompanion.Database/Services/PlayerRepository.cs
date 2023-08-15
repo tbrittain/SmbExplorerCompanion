@@ -555,6 +555,7 @@ public class PlayerRepository : IPlayerRepository
                     Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                     Awards = x.PlayerSeasons
                         .SelectMany(y => y.Awards)
+                        .Where(y => !y.OmitFromGroupings)
                         .Select(y => new PlayerAwardBaseDto
                         {
                             Id = y.Id,
@@ -701,6 +702,7 @@ public class PlayerRepository : IPlayerRepository
                         .Average(y => y.FipMinus ?? 0),
                     Awards = x.PlayerSeasons
                         .SelectMany(y => y.Awards)
+                        .Where(y => !y.OmitFromGroupings)
                         .Select(y => new PlayerAwardBaseDto
                         {
                             Id = y.Id,
