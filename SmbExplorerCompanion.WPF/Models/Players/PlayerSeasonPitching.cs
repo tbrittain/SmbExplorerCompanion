@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 
@@ -25,6 +25,6 @@ public class PlayerSeasonPitching : PlayerSeasonBase
     public double FipMinus { get; set; }
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
-    public List<PlayerAwardBase> Awards { get; set; } = new();
+    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

@@ -1,22 +1,26 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using CommunityToolkit.Mvvm.Collections;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
+using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
+using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
+using SmbExplorerCompanion.WPF.Models.Teams;
 
 // ReSharper disable InconsistentNaming
-
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public class DelegateAwardsViewModel : ViewModelBase
@@ -58,10 +62,25 @@ public class DelegateAwardsViewModel : ViewModelBase
         PitchingAwards.AddRange(AllAwards.Where(a => a.IsPitchingAward));
         FieldingAwards.AddRange(AllAwards.Where(a => a.IsFieldingAward));
 
-        GetAwardNominees().Wait();
+        GetAwardNomineesForSeason().Wait();
+
+        PropertyChanged += OnPropertyChanged;
     }
 
-    private async Task GetAwardNominees()
+    private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SelectedSeason):
+            {
+                if (SelectedSeason is not null)
+                    await GetAwardNomineesForSeason();
+                break;
+            }
+        }
+    }
+
+    private async Task GetAwardNomineesForSeason()
     {
         if (SelectedSeason is null)
         {
@@ -69,11 +88,24 @@ public class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
+        var seasonTeamsResponse = await _mediator.Send(
+            new GetSeasonTeamsRequest(SelectedSeason.Id));
+
+        if (seasonTeamsResponse.TryPickT1(out var exception, out var seasonTeams))
+        {
+            MessageBox.Show(exception.Message);
+            return;
+        }
+
+        var seasonTeamMapper = new SeasonTeamMapping();
+        SeasonTeams.Clear();
+        SeasonTeams.AddRange(seasonTeams.Select(s => seasonTeamMapper.FromTeamDto(s)));
+
         var topSeasonBattersResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
                 limit: 5));
-        if (topSeasonBattersResponse.TryPickT1(out var exception, out var topSeasonBatters))
+        if (topSeasonBattersResponse.TryPickT1(out exception, out var topSeasonBatters))
         {
             MessageBox.Show(exception.Message);
             return;
@@ -126,10 +158,48 @@ public class DelegateAwardsViewModel : ViewModelBase
 
         TopSeasonPitchingRookies.AddRange(topSeasonPitchingRookies
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
-        
+
+        foreach (var team in SeasonTeams)
+        {
+            var topBattersPerTeamResponse = await _mediator.Send(
+                new GetTopBattingSeasonRequest(
+                    seasonId: SelectedSeason.Id,
+                    teamId: team.TeamId,
+                    limit: 5));
+
+            if (topBattersPerTeamResponse.TryPickT1(out exception, out var topBattersPerTeam))
+            {
+                MessageBox.Show(exception.Message);
+                return;
+            }
+
+            var topBattersPerTeamObservable = topBattersPerTeam
+                .Select(s => seasonPlayerMapper.FromBattingDto(s));
+
+            TopBattersPerTeam.Add(new ObservableGroup<int, PlayerSeasonBatting>(team.TeamId, topBattersPerTeamObservable));
+            
+            var topPitchersPerTeamResponse = await _mediator.Send(
+                new GetTopPitchingSeasonRequest(
+                    seasonId: SelectedSeason.Id,
+                    teamId: team.TeamId,
+                    limit: 5));
+
+            if (topPitchersPerTeamResponse.TryPickT1(out exception, out var topPitchersPerTeam))
+            {
+                MessageBox.Show(exception.Message);
+                return;
+            }
+
+            var topPitchersPerTeamObservable = topPitchersPerTeam
+                .Select(s => seasonPlayerMapper.FromPitchingDto(s));
+            
+            TopPitchersPerTeam.Add(new ObservableGroup<int, PlayerSeasonPitching>(team.TeamId, topPitchersPerTeamObservable));
+        }
+
         // TODO: Fielding
     }
 
+    public ObservableCollection<SimpleTeam> SeasonTeams { get; } = new();
     private ObservableCollection<PlayerAward> AllAwards { get; } = new();
     public ObservableCollection<PlayerAward> BattingAwards { get; } = new();
     public ObservableCollection<PlayerAward> PitchingAwards { get; } = new();
@@ -147,6 +217,8 @@ public class DelegateAwardsViewModel : ViewModelBase
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
     public ObservableCollection<PlayerSeasonBatting> TopSeasonBattingRookies { get; } = new();
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchingRookies { get; } = new();
+    public ObservableGroupedCollection<int, PlayerSeasonBatting> TopBattersPerTeam { get; } = new();
+    public ObservableGroupedCollection<int, PlayerSeasonPitching> TopPitchersPerTeam { get; } = new();
 
     public ObservableCollection<PlayerFieldingRanking> TopFielding1B { get; } = new();
     public ObservableCollection<PlayerFieldingRanking> TopFielding2B { get; } = new();
@@ -157,4 +229,14 @@ public class DelegateAwardsViewModel : ViewModelBase
     public ObservableCollection<PlayerFieldingRanking> TopFieldingRF { get; } = new();
     public ObservableCollection<PlayerFieldingRanking> TopFieldingC { get; } = new();
     public ObservableCollection<PlayerFieldingRanking> TopFieldingP { get; } = new();
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            PropertyChanged -= OnPropertyChanged;
+        }
+
+        base.Dispose(disposing);
+    }
 }

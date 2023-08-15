@@ -7,19 +7,20 @@ namespace SmbExplorerCompanion.WPF.Extensions;
 
 public static class AwardsExtensions
 {
-    public static string? GetFormattedAwards(this List<PlayerAwardBase> awards, bool isSeason = true)
+    public static string? GetFormattedAwards(this IEnumerable<PlayerAwardBase> awards, bool isSeason = true)
     {
-        if (!awards.Any()) return null;
+        var awardsList = awards.ToList();
+        if (!awardsList.Any()) return null;
 
         if (!isSeason)
         {
-            awards = awards.Where(x => !x.OmitFromGroupings).ToList();
+            awards = awardsList.Where(x => !x.OmitFromGroupings).ToList();
             if (!awards.Any()) return null;
         }
 
         var sb = new StringBuilder();
 
-        var groupings = awards
+        var groupings = awardsList
             .GroupBy(x => x.Id)
             .OrderBy(x => x.First().Importance)
             .ThenBy(x => x.First().Name)
