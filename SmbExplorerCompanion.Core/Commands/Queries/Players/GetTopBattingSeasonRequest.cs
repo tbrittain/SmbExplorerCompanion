@@ -17,8 +17,10 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
         int? teamId = null,
         int? primaryPositionId = null,
         bool onlyRookies = false,
-        bool includeChampionAwards = true)
+        bool includeChampionAwards = true,
+        bool onlyUserAssignableAwards = false)
     {
+        OnlyUserAssignableAwards = onlyUserAssignableAwards;
         SeasonId = seasonId;
         OnlyRookies = onlyRookies;
         IsPlayoffs = isPlayoffs;
@@ -41,6 +43,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
     private int? PrimaryPositionId { get; }
     private bool OnlyRookies { get; }
     private bool IncludeChampionAwards { get; }
+    private bool OnlyUserAssignableAwards { get; }
 
     // ReSharper disable once UnusedType.Global
     internal class GetTopBattingSeasonHandler : IRequestHandler<GetTopBattingSeasonRequest, OneOf<List<PlayerBattingSeasonDto>, Exception>>
@@ -65,6 +68,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
                 request.PrimaryPositionId,
                 request.OnlyRookies,
                 request.IncludeChampionAwards,
+                request.OnlyUserAssignableAwards,
                 cancellationToken);
         }
     }

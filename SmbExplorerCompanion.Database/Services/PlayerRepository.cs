@@ -765,6 +765,7 @@ public class PlayerRepository : IPlayerRepository
         int? primaryPositionId = null,
         bool onlyRookies = false,
         bool includeChampionAwards = true,
+        bool onlyUserAssignableAwards = false,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
@@ -876,6 +877,7 @@ public class PlayerRepository : IPlayerRepository
                     Strikeouts = x.Strikeouts,
                     WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.PlateAppearances / 10000,
                     Awards = x.PlayerSeason.Awards
+                        .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
                         {
                             Id = y.Id,
@@ -923,6 +925,7 @@ public class PlayerRepository : IPlayerRepository
         int? teamId = null,
         bool onlyRookies = false,
         bool includeChampionAwards = true,
+        bool onlyUserAssignableAwards = false,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
@@ -1032,6 +1035,7 @@ public class PlayerRepository : IPlayerRepository
                     Shutouts = x.Shutouts,
                     WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * 2.25 / 10000,
                     Awards = x.PlayerSeason.Awards
+                        .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
                         {
                             Id = y.Id,

@@ -111,7 +111,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
                 limit: 5,
-                includeChampionAwards: false));
+                includeChampionAwards: false,
+                onlyUserAssignableAwards: true));
         if (topSeasonBattersResponse.TryPickT1(out exception, out var topSeasonBatters))
         {
             MessageBox.Show(exception.Message);
@@ -119,6 +120,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         var seasonPlayerMapper = new PlayerSeasonMapping();
+        TopSeasonBatters.Clear();
         TopSeasonBatters.AddRange(topSeasonBatters
             .Select(s => seasonPlayerMapper.FromBattingDto(s)));
 
@@ -126,14 +128,16 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             new GetTopPitchingSeasonRequest(
                 seasonId: SelectedSeason.Id,
                 limit: 5,
-                includeChampionAwards: false));
+                includeChampionAwards: false,
+                onlyUserAssignableAwards: true));
 
         if (topSeasonPitchersResponse.TryPickT1(out exception, out var topSeasonPitchers))
         {
             MessageBox.Show(exception.Message);
             return;
         }
-
+        
+        TopSeasonPitchers.Clear();
         TopSeasonPitchers.AddRange(topSeasonPitchers
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
 
@@ -142,7 +146,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 seasonId: SelectedSeason.Id,
                 limit: 5,
                 onlyRookies: true,
-                includeChampionAwards: false));
+                includeChampionAwards: false,
+                onlyUserAssignableAwards: true));
 
         if (topSeasonBattingRookiesResponse.TryPickT1(out exception, out var topSeasonBattingRookies))
         {
@@ -150,6 +155,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
+        TopSeasonBattingRookies.Clear();
         TopSeasonBattingRookies.AddRange(topSeasonBattingRookies
             .Select(s => seasonPlayerMapper.FromBattingDto(s)));
 
@@ -158,7 +164,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 seasonId: SelectedSeason.Id,
                 limit: 5,
                 onlyRookies: true,
-                includeChampionAwards: false));
+                includeChampionAwards: false,
+                onlyUserAssignableAwards: true));
 
         if (topSeasonPitchingRookiesResponse.TryPickT1(out exception, out var topSeasonPitchingRookies))
         {
@@ -166,9 +173,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
+        TopSeasonPitchingRookies.Clear();
         TopSeasonPitchingRookies.AddRange(topSeasonPitchingRookies
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
 
+        TopBattersPerTeam.Clear();
+        TopPitchersPerTeam.Clear();
         foreach (var team in SeasonTeams)
         {
             var topBattersPerTeamResponse = await _mediator.Send(
@@ -176,7 +186,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     seasonId: SelectedSeason.Id,
                     teamId: team.TeamId,
                     limit: 5,
-                    includeChampionAwards: false));
+                    includeChampionAwards: false,
+                    onlyUserAssignableAwards: true));
 
             if (topBattersPerTeamResponse.TryPickT1(out exception, out var topBattersPerTeam))
             {
@@ -194,7 +205,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     seasonId: SelectedSeason.Id,
                     teamId: team.TeamId,
                     limit: 5,
-                    includeChampionAwards: false));
+                    includeChampionAwards: false,
+                    onlyUserAssignableAwards: true));
 
             if (topPitchersPerTeamResponse.TryPickT1(out exception, out var topPitchersPerTeam))
             {
