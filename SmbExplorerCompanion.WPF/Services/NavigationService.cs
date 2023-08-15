@@ -9,11 +9,11 @@ namespace SmbExplorerCompanion.WPF.Services;
 
 public sealed class NavigationService : INavigationService
 {
+    private readonly LinkedList<ViewModelBase> _navigationStack = new();
+    private readonly Dictionary<string, object> _parameters = new();
     private readonly Func<Type, ViewModelBase> _viewModelFactory;
 
     private ViewModelBase _currentViewModel = null!;
-    private readonly Stack<ViewModelBase> _navigationStack = new();
-    private readonly Dictionary<string, object> _parameters = new();
 
     public NavigationService(Func<Type, ViewModelBase> viewModelFactory)
     {
@@ -26,14 +26,14 @@ public sealed class NavigationService : INavigationService
         private set => SetField(ref _currentViewModel, value);
     }
 
-    public void NavigateTo<TViewModelBase>() where TViewModelBase : ViewModelBase
+    public void NavigateTo<T>() where T : ViewModelBase
     {
-        var viewModelBase = _viewModelFactory.Invoke(typeof(TViewModelBase));
-        if (viewModelBase is not FranchiseSelectViewModel)
-        {
-            _navigationStack.Push(viewModelBase);
-        }
-        
+        if (typeof(T) == CurrentView?.GetType()) return;
+
+        var viewModelBase = _viewModelFactory.Invoke(typeof(T));
+        RemoveExistingViewModelIfPresent(viewModelBase);
+        if (viewModelBase is not FranchiseSelectViewModel) _navigationStack.AddLast(viewModelBase);
+
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
     }
@@ -44,9 +44,10 @@ public sealed class NavigationService : INavigationService
         {
             _parameters.Add(parameterName, parameterValue);
         }
-        
+
         var viewModelBase = _viewModelFactory.Invoke(typeof(T));
-        _navigationStack.Push(viewModelBase);
+        RemoveExistingViewModelIfPresent(viewModelBase);
+        _navigationStack.AddLast(viewModelBase);
 
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
@@ -56,10 +57,10 @@ public sealed class NavigationService : INavigationService
     {
         if (_navigationStack.Count <= 1) return;
 
-        _navigationStack.Pop();
+        _navigationStack.RemoveLast();
 
         OnPropertyChanged(nameof(CanNavigateBack));
-        CurrentView = _navigationStack.Peek();
+        CurrentView = _navigationStack.Last!.Value;
     }
 
     public bool CanNavigateBack => _navigationStack.Count > 1;
@@ -84,6 +85,12 @@ public sealed class NavigationService : INavigationService
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void RemoveExistingViewModelIfPresent(ViewModelBase viewModelBase)
+    {
+        var existingViewModel = _navigationStack.FirstOrDefault(vm => vm.GetType() == viewModelBase.GetType());
+        if (existingViewModel is not null) _navigationStack.Remove(existingViewModel);
+    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
