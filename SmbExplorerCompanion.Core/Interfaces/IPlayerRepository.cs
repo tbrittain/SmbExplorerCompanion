@@ -28,6 +28,7 @@ public interface IPlayerRepository
         int? teamId = null,
         int? primaryPositionId = null,
         bool onlyRookies = false,
+        bool includeChampionAwards = true,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(
@@ -39,6 +40,7 @@ public interface IPlayerRepository
         bool descending = true,
         int? teamId = null,
         bool onlyRookies = false,
+        bool includeChampionAwards = true,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,

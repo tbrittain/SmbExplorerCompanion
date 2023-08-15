@@ -103,12 +103,15 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var seasonTeamMapper = new SeasonTeamMapping();
         SeasonTeams.Clear();
-        SeasonTeams.AddRange(seasonTeams.Select(s => seasonTeamMapper.FromTeamDto(s)));
+        SeasonTeams.AddRange(seasonTeams
+            .Select(s => seasonTeamMapper.FromTeamDto(s))
+            .OrderBy(x => x.TeamName));
 
         var topSeasonBattersResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
-                limit: 5));
+                limit: 5,
+                includeChampionAwards: false));
         if (topSeasonBattersResponse.TryPickT1(out exception, out var topSeasonBatters))
         {
             MessageBox.Show(exception.Message);
@@ -122,7 +125,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var topSeasonPitchersResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
                 seasonId: SelectedSeason.Id,
-                limit: 5));
+                limit: 5,
+                includeChampionAwards: false));
 
         if (topSeasonPitchersResponse.TryPickT1(out exception, out var topSeasonPitchers))
         {
@@ -137,7 +141,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
                 limit: 5,
-                onlyRookies: true));
+                onlyRookies: true,
+                includeChampionAwards: false));
 
         if (topSeasonBattingRookiesResponse.TryPickT1(out exception, out var topSeasonBattingRookies))
         {
@@ -152,7 +157,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             new GetTopPitchingSeasonRequest(
                 seasonId: SelectedSeason.Id,
                 limit: 5,
-                onlyRookies: true));
+                onlyRookies: true,
+                includeChampionAwards: false));
 
         if (topSeasonPitchingRookiesResponse.TryPickT1(out exception, out var topSeasonPitchingRookies))
         {
@@ -169,7 +175,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 new GetTopBattingSeasonRequest(
                     seasonId: SelectedSeason.Id,
                     teamId: team.TeamId,
-                    limit: 5));
+                    limit: 5,
+                    includeChampionAwards: false));
 
             if (topBattersPerTeamResponse.TryPickT1(out exception, out var topBattersPerTeam))
             {
@@ -186,7 +193,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 new GetTopPitchingSeasonRequest(
                     seasonId: SelectedSeason.Id,
                     teamId: team.TeamId,
-                    limit: 5));
+                    limit: 5,
+                    includeChampionAwards: false));
 
             if (topPitchersPerTeamResponse.TryPickT1(out exception, out var topPitchersPerTeam))
             {

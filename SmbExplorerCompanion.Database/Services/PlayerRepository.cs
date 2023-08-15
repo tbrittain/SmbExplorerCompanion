@@ -764,6 +764,7 @@ public class PlayerRepository : IPlayerRepository
         int? teamId = null,
         int? primaryPositionId = null,
         bool onlyRookies = false,
+        bool includeChampionAwards = true,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
@@ -890,9 +891,9 @@ public class PlayerRepository : IPlayerRepository
                 .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
 
-            foreach (var player in playerBattingDtos)
+            if (includeChampionAwards)
             {
-                if (player.IsChampion)
+                foreach (var player in playerBattingDtos.Where(player => player.IsChampion))
                 {
                     player.Awards.Add(new PlayerAwardBaseDto
                     {
@@ -921,6 +922,7 @@ public class PlayerRepository : IPlayerRepository
         bool descending = true,
         int? teamId = null,
         bool onlyRookies = false,
+        bool includeChampionAwards = true,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
@@ -1044,10 +1046,10 @@ public class PlayerRepository : IPlayerRepository
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
                 .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
-            
-            foreach (var player in playerPitchingDtos)
+
+            if (includeChampionAwards)
             {
-                if (player.IsChampion)
+                foreach (var player in playerPitchingDtos.Where(player => player.IsChampion))
                 {
                     player.Awards.Add(new PlayerAwardBaseDto
                     {

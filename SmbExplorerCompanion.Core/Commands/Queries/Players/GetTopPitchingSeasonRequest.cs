@@ -15,7 +15,8 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
         string? orderBy = null,
         bool descending = true,
         int? teamId = null,
-        bool onlyRookies = false)
+        bool onlyRookies = false,
+        bool includeChampionAwards = true)
     {
         SeasonId = seasonId;
         Limit = limit;
@@ -25,6 +26,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
         Descending = descending;
         OnlyRookies = onlyRookies;
         TeamId = teamId;
+        IncludeChampionAwards = includeChampionAwards;
     }
 
     private int? SeasonId { get; }
@@ -35,6 +37,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
     private int? Limit { get; }
     private int? TeamId { get; }
     private bool OnlyRookies { get; }
+    private bool IncludeChampionAwards { get; }
 
     // ReSharper disable once UnusedType.Global
     internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
@@ -57,6 +60,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
                 request.Descending,
                 request.TeamId,
                 request.OnlyRookies,
+                request.IncludeChampionAwards,
                 cancellationToken);
         }
     }
