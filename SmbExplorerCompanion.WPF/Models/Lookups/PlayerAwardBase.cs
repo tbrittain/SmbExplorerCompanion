@@ -6,4 +6,9 @@ public class PlayerAwardBase
     public string Name { get; set; } = default!;
     public int Importance { get; set; }
     public bool OmitFromGroupings { get; set; }
+
+    override public string ToString()
+    {
+        return Name;
+    }
 }

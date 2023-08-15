@@ -136,7 +136,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show(exception.Message);
             return;
         }
-        
+
         TopSeasonPitchers.Clear();
         TopSeasonPitchers.AddRange(topSeasonPitchers
             .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
@@ -247,7 +247,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     }));
             }
         }
-        
+
         foreach (var topSeasonPitcher in TopSeasonPitchers)
         {
             if (topSeasonPitcher.Awards.Any())
@@ -260,7 +260,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     }));
             }
         }
-        
+
         foreach (var topSeasonBattingRookie in TopSeasonBattingRookies)
         {
             if (topSeasonBattingRookie.Awards.Any())
@@ -273,7 +273,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     }));
             }
         }
-        
+
         foreach (var topSeasonPitchingRookie in TopSeasonPitchingRookies)
         {
             if (topSeasonPitchingRookie.Awards.Any())
@@ -286,7 +286,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     }));
             }
         }
-        
+
         foreach (var topBattersPerTeam in TopBattersPerTeam)
         {
             foreach (var topBatter in topBattersPerTeam)
@@ -302,7 +302,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 }
             }
         }
-        
+
         foreach (var topPitchersPerTeam in TopPitchersPerTeam)
         {
             foreach (var topPitcher in topPitchersPerTeam)
@@ -321,14 +321,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var request = new AddPlayerAwardsRequest(playerAwardRequestDtos.Distinct().ToList(), SelectedSeason.Id);
         var response = await _mediator.Send(request);
-        
+
         if (response.TryPickT1(out var exception, out _))
         {
             MessageBox.Show("Unable to add player awards. Please try again. " + exception.Message);
             return;
         }
-        
-        MessageBox.Show($"Player awards for season {SelectedSeason.Number} added successfully!");
+
+        MessageBox.Show($"Player awards for Season {SelectedSeason.Number} added successfully!");
     }
 
     public ObservableCollection<SimpleTeam> SeasonTeams { get; } = new();
