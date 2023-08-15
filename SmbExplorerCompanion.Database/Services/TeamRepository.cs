@@ -19,6 +19,36 @@ public class TeamRepository : ITeamRepository
         _playerRepository = playerRepository;
     }
 
+    public async Task<OneOf<IEnumerable<TeamDto>, Exception>> GetSeasonTeams(int seasonId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var teams = await _dbContext.SeasonTeamHistory
+                .Include(x => x.Season)
+                .Include(x => x.TeamNameHistory)
+                .Include(x => x.Division)
+                .ThenInclude(x => x.Conference)
+                .Where(x => x.SeasonId == seasonId)
+                .Select(x => new TeamDto
+                {
+                    SeasonId = x.SeasonId,
+                    SeasonNumber = x.Season.Number,
+                    SeasonTeamId = x.Id,
+                    TeamId = x.TeamId,
+                    TeamName = x.TeamNameHistory.Name,
+                    DivisionName = x.Division.Name,
+                    ConferenceName = x.Division.Conference.Name
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            return teams;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
     public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
@@ -27,7 +57,7 @@ public class TeamRepository : ITeamRepository
             .Include(x => x.SeasonTeamHistory)
             .ThenInclude(x => x.Division)
             .ThenInclude(x => x.Conference)
-            .Where(x => x.SeasonTeamHistory.First().Division.Conference.FranchiseId == franchiseId);
+            .Where(x => x.FranchiseId == franchiseId);
 
         try
         {
