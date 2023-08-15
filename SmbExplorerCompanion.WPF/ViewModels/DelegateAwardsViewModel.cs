@@ -319,12 +319,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
         }
 
-        var request = new AddPlayerAwardsRequest(playerAwardRequestDtos, SelectedSeason.Id);
+        var request = new AddPlayerAwardsRequest(playerAwardRequestDtos.Distinct().ToList(), SelectedSeason.Id);
         var response = await _mediator.Send(request);
         
         if (response.TryPickT1(out var exception, out _))
         {
-            MessageBox.Show("Unable to add player awards. Please try again." + exception.Message);
+            MessageBox.Show("Unable to add player awards. Please try again. " + exception.Message);
             return;
         }
         

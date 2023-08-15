@@ -67,7 +67,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             .Where(x => x.BattingAverage != null)
             .MaxAsync(x => x.BattingAverage, cancellationToken: cancellationToken);
 
-        const double delta = 0.01;
+        const double delta = 0.001;
         var topBattingAverageHitters = await battingIQueryable
             .Where(x => x.BattingAverage != null && Math.Abs(x.BattingAverage.Value - maxQualifyingBattingAverage!.Value) < delta)
             .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
