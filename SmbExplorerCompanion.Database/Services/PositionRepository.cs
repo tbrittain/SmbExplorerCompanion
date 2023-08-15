@@ -27,7 +27,8 @@ public class PositionRepository : IRepository<PositionDto>
                 .Select(p => new PositionDto
                 {
                     Id = p.Id,
-                    Name = p.Name
+                    Name = p.Name,
+                    IsPrimaryPosition = p.IsPrimaryPosition
                 })
                 .ToList();
         }
