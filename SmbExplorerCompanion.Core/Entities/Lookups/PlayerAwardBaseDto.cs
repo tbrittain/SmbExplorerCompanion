@@ -1,9 +1,9 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Lookups;
+﻿using SmbExplorerCompanion.Core.ValueObjects;
 
-public class PlayerAwardBaseDto
+namespace SmbExplorerCompanion.Core.Entities.Lookups;
+
+public class PlayerAwardBaseDto : LookupBaseDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = default!;
     public int Importance { get; set; }
     public bool OmitFromGroupings { get; set; }
 }

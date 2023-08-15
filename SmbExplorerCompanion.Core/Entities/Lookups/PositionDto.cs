@@ -2,6 +2,7 @@
 
 namespace SmbExplorerCompanion.Core.Entities.Lookups;
 
-public class PositionDto : LookupBase
+public class PositionDto : LookupBaseDto
 {
+    public bool IsPrimaryPosition { get; set; }
 }

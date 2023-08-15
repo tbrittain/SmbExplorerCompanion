@@ -149,7 +149,7 @@ public class SmbExplorerCompanionDbContext : DbContext
         );
 
         dbContext.Positions.AddRange(
-            new Position {Name = "P"},
+            new Position {Name = "P", IsPrimaryPosition = true},
             new Position {Name = "C", IsPrimaryPosition = true},
             new Position {Name = "1B", IsPrimaryPosition = true},
             new Position {Name = "2B", IsPrimaryPosition = true},
