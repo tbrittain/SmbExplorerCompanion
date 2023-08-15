@@ -19,7 +19,7 @@ public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
     private List<PlayerAwardRequestDto> PlayerAwardRequestDtos { get; }
     
     // ReSharper disable once UnusedType.Global
-    public class AddPlayerAwardsHandler : IRequestHandler<AddPlayerAwardsRequest, OneOf<Success, Exception>>
+    internal class AddPlayerAwardsHandler : IRequestHandler<AddPlayerAwardsRequest, OneOf<Success, Exception>>
     {
         private readonly IAwardDelegationRepository _awardDelegationRepository;
 

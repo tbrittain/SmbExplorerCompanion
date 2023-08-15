@@ -16,7 +16,7 @@ public class AddFranchiseRequest : IRequest<OneOf<FranchiseDto, Exception>>
     private string Name { get; }
     
     // ReSharper disable once UnusedType.Global
-    public class AddFranchiseHandler : IRequestHandler<AddFranchiseRequest, OneOf<FranchiseDto, Exception>>
+    internal class AddFranchiseHandler : IRequestHandler<AddFranchiseRequest, OneOf<FranchiseDto, Exception>>
     {
         private readonly IRepository<FranchiseDto> _franchiseRepository;
 

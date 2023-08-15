@@ -21,7 +21,7 @@ public class GetPlayerFieldingRankingsRequest : IRequest<OneOf<List<PlayerFieldi
     private int? Limit { get; }
     
     // ReSharper disable once UnusedType.Global
-    public class GetPlayerFieldingRankingsHandler : IRequestHandler<GetPlayerFieldingRankingsRequest, OneOf<List<PlayerFieldingRankingDto>, Exception>>
+    internal class GetPlayerFieldingRankingsHandler : IRequestHandler<GetPlayerFieldingRankingsRequest, OneOf<List<PlayerFieldingRankingDto>, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 

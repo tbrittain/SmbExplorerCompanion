@@ -37,7 +37,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
     private bool OnlyRookies { get; }
 
     // ReSharper disable once UnusedType.Global
-    public class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
+    internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 

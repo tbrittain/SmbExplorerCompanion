@@ -8,7 +8,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Teams;
 public class GetHistoricalTeamsRequest : IRequest<OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
 {
     // ReSharper disable once UnusedType.Global
-    public class GetHistoricalTeamsHandler : IRequestHandler<GetHistoricalTeamsRequest, OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
+    internal class GetHistoricalTeamsHandler : IRequestHandler<GetHistoricalTeamsRequest, OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
     {
         private readonly ITeamRepository _teamRepository;
 

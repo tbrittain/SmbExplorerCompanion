@@ -15,7 +15,7 @@ public class GetTeamOverviewRequest : IRequest<OneOf<TeamOverviewDto, Exception>
     private int TeamId { get; }
     
     // ReSharper disable once UnusedType.Global
-    public class GetTeamOverviewHandler : IRequestHandler<GetTeamOverviewRequest, OneOf<TeamOverviewDto, Exception>>
+    internal class GetTeamOverviewHandler : IRequestHandler<GetTeamOverviewRequest, OneOf<TeamOverviewDto, Exception>>
     {
         private readonly ITeamRepository _teamRepository;
         

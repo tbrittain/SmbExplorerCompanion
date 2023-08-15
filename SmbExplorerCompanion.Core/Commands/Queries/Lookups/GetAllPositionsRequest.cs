@@ -8,7 +8,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 public class GetAllPositionsRequest : IRequest<OneOf<List<PositionDto>, Exception>>
 {
     // ReSharper disable once UnusedType.Global
-    public class GetAllPositionsHandler : IRequestHandler<GetAllPositionsRequest, OneOf<List<PositionDto>, Exception>>
+    internal class GetAllPositionsHandler : IRequestHandler<GetAllPositionsRequest, OneOf<List<PositionDto>, Exception>>
     {
         private readonly IRepository<PositionDto> _positionRepository;
 

@@ -8,7 +8,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Franchises;
 public class GetAllFranchisesRequest : IRequest<OneOf<IEnumerable<FranchiseDto>, Exception>>
 {
     // ReSharper disable once UnusedType.Global
-    public class GetAllFranchisesHandler : IRequestHandler<GetAllFranchisesRequest, OneOf<IEnumerable<FranchiseDto>, Exception>>
+    internal class GetAllFranchisesHandler : IRequestHandler<GetAllFranchisesRequest, OneOf<IEnumerable<FranchiseDto>, Exception>>
     {
         private readonly IRepository<FranchiseDto> _franchiseRepository;
 

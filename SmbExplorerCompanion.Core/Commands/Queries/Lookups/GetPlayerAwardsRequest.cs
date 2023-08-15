@@ -22,7 +22,7 @@ public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Excep
     public static GetPlayerAwardsRequest DefaultPlayoffs => Playoffs(true);
 
     // ReSharper disable once UnusedType.Global
-    public class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, OneOf<List<PlayerAwardDto>, Exception>>
+    internal class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, OneOf<List<PlayerAwardDto>, Exception>>
     {
         private readonly IRepository<PlayerAwardDto> _playerAwardRepository;
 

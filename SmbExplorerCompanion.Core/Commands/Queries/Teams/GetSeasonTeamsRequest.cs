@@ -15,7 +15,7 @@ public class GetSeasonTeamsRequest : IRequest<OneOf<IEnumerable<TeamDto>, Except
     private int SeasonId { get; }
 
     // ReSharper disable once UnusedType.Global
-    public class GetSeasonTeamsHandler : IRequestHandler<GetSeasonTeamsRequest, OneOf<IEnumerable<TeamDto>, Exception>>
+    internal class GetSeasonTeamsHandler : IRequestHandler<GetSeasonTeamsRequest, OneOf<IEnumerable<TeamDto>, Exception>>
     {
         private readonly ITeamRepository _teamRepository;
 
