@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
@@ -41,6 +43,7 @@ public class PlayerOverview
     public int Strikeouts { get; set; }
     public double Whip { get; set; }
     public double EraMinus { get; set; }
+    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
 
     public void PopulateCareerStats()
     {
@@ -48,6 +51,8 @@ public class PlayerOverview
             PopulateCareerPitchingStats();
         else
             PopulateCareerBattingStats();
+
+        PopulateCareerAwards();
     }
 
     private void PopulateCareerBattingStats()
@@ -83,6 +88,24 @@ public class PlayerOverview
             Whip = Whip,
             EraMinus = EraMinus
         });
+    }
+
+    private void PopulateCareerAwards()
+    {
+        var minSeason = PlayerSeasonBatting.Any() 
+            ? PlayerSeasonBatting.Min(x => x.SeasonNumber)
+            : PlayerSeasonPitching.Min(x => x.SeasonNumber);
+        var maxSeason = PlayerSeasonBatting.Any() 
+            ? PlayerSeasonBatting.Max(x => x.SeasonNumber)
+            : PlayerSeasonPitching.Max(x => x.SeasonNumber);
+
+        for (var season = minSeason; season <= maxSeason; season++)
+        {
+            // here, we will aggregate all of the awards for each given season
+            // this is necessary because if we were to concat, then we may get duplicates
+            // if we concat the awards for a season and a playoff, for example
+            // if we union, then we may lost awards that are the same for different seasons
+        }
     }
 
     public ObservableCollection<PlayerCareerBattingOverview> PlayerCareerBatting { get; set; } = new();

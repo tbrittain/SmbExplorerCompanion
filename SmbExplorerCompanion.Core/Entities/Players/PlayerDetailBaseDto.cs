@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerDetailsBaseDto : PlayerBaseDto
+public class PlayerDetailBaseDto : PlayerBaseDto
 {
     public bool IsPitcher { get; set; }
     public int TotalSalary { get; set; }

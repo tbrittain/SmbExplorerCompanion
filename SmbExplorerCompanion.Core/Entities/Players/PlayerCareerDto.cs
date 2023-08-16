@@ -1,15 +1,8 @@
-﻿using SmbExplorerCompanion.Core.Entities.Lookups;
-
-namespace SmbExplorerCompanion.Core.Entities.Players;
+﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
 // TODO: May want to break this up into separate DTOs for pitchers and batters?
-public class PlayerCareerDto : PlayerDetailsBaseDto
+public class PlayerCareerDto : PlayerCareerBaseDto
 {
-    public int StartSeasonNumber { get; set; }
-    public int EndSeasonNumber { get; set; }
-    public bool IsRetired { get; set; }
-    public int NumSeasons { get; set; }
-
     // Batting stats, applicable to both pitchers and batters
     public int AtBats { get; set; }
     public int Hits { get; set; }
@@ -48,7 +41,4 @@ public class PlayerCareerDto : PlayerDetailsBaseDto
     public double FipMinus { get; set; }
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
-    
-    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
-    public int NumChampionships { get; set; }
 }

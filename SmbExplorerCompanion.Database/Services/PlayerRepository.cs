@@ -50,6 +50,10 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x!.TeamNameHistory)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.Awards)
+                .Include(x => x.PlayerSeasons)
+                .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.Id == playerId)
                 .SingleAsync(cancellationToken: cancellationToken);
 
@@ -210,7 +214,9 @@ public class PlayerRepository : IPlayerRepository
                     SecondaryPosition = x.SecondaryPosition?.Name,
                     Traits = x.Traits.Any() ? string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
                     x.Age,
-                    x.BattingStats
+                    x.BattingStats,
+                    x.Awards,
+                    IsChampion = x.ChampionshipWinner is not null
                 })
                 .ToList();
 
@@ -230,11 +236,13 @@ public class PlayerRepository : IPlayerRepository
                     Traits = x.Traits.Any() ? string.Join(", ", x.Traits.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
                     PitchTypes = x.PitchTypes.Any() ? string.Join(", ", x.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name)) : string.Empty,
                     x.Age,
-                    x.PitchingStats
+                    x.PitchingStats,
+                    x.Awards,
+                    IsChampion = x.ChampionshipWinner is not null
                 })
                 .ToList();
 
-            var seasonBatting = battingSeasons
+            var seasonsBatting = battingSeasons
                 .Select(x =>
                 {
                     var battingStat = x.BattingStats.SingleOrDefault(y => y.IsRegularSeason);
@@ -272,15 +280,25 @@ public class PlayerRepository : IPlayerRepository
                         SacrificeHits = battingStat.SacrificeHits,
                         SacrificeFlies = battingStat.SacrificeFlies,
                         Errors = battingStat.Errors,
+                        Awards = x.Awards
+                            .Select(y => new PlayerAwardBaseDto
+                            {
+                                Id = y.Id,
+                                Name = y.Name,
+                                Importance = y.Importance,
+                                OmitFromGroupings = y.OmitFromGroupings
+                            })
+                            .ToList(),
+                        IsChampion = x.IsChampion
                     };
                 })
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToList();
 
-            playerOverviewDto.PlayerSeasonBatting.AddRange(seasonBatting);
+            playerOverviewDto.PlayerSeasonBatting.AddRange(seasonsBatting);
 
-            var playoffBatting = battingSeasons
+            var playoffsBatting = battingSeasons
                 .Select(x =>
                 {
                     var battingStat = x.BattingStats.SingleOrDefault(y => !y.IsRegularSeason);
@@ -318,15 +336,37 @@ public class PlayerRepository : IPlayerRepository
                         SacrificeHits = battingStat.SacrificeHits,
                         SacrificeFlies = battingStat.SacrificeFlies,
                         Errors = battingStat.Errors,
+                        Awards = x.Awards
+                            .Select(y => new PlayerAwardBaseDto
+                            {
+                                Id = y.Id,
+                                Name = y.Name,
+                                Importance = y.Importance,
+                                OmitFromGroupings = y.OmitFromGroupings
+                            })
+                            .ToList(),
+                        IsChampion = x.IsChampion
                     };
                 })
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToList();
 
-            playerOverviewDto.PlayerPlayoffBatting.AddRange(playoffBatting);
+            foreach (var playoffBatting in playoffsBatting
+                         .Where(x => x.IsChampion))
+            {
+                playoffBatting.Awards.Add(new PlayerAwardBaseDto
+                {
+                    Id = 0,
+                    Name = "Champion",
+                    Importance = 10,
+                    OmitFromGroupings = false
+                });
+            }
 
-            var seasonPitching = pitchingSeasons
+            playerOverviewDto.PlayerPlayoffBatting.AddRange(playoffsBatting);
+
+            var seasonsPitching = pitchingSeasons
                 .Select(x =>
                 {
                     var pitchingStat = x.PitchingStats.SingleOrDefault(y => y.IsRegularSeason);
@@ -365,16 +405,26 @@ public class PlayerRepository : IPlayerRepository
                         CompleteGames = pitchingStat.CompleteGames,
                         Shutouts = pitchingStat.Shutouts,
                         HitByPitch = pitchingStat.HitByPitch,
-                        BattersFaced = pitchingStat.BattersFaced
+                        BattersFaced = pitchingStat.BattersFaced,
+                        Awards = x.Awards
+                            .Select(y => new PlayerAwardBaseDto
+                            {
+                                Id = y.Id,
+                                Name = y.Name,
+                                Importance = y.Importance,
+                                OmitFromGroupings = y.OmitFromGroupings
+                            })
+                            .ToList(),
+                        IsChampion = x.IsChampion
                     };
                 })
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToList();
 
-            playerOverviewDto.PlayerSeasonPitching.AddRange(seasonPitching);
+            playerOverviewDto.PlayerSeasonPitching.AddRange(seasonsPitching);
 
-            var playoffPitching = pitchingSeasons
+            var playoffsPitching = pitchingSeasons
                 .Select(x =>
                 {
                     var pitchingStat = x.PitchingStats.SingleOrDefault(y => !y.IsRegularSeason);
@@ -413,14 +463,36 @@ public class PlayerRepository : IPlayerRepository
                         CompleteGames = pitchingStat.CompleteGames,
                         Shutouts = pitchingStat.Shutouts,
                         HitByPitch = pitchingStat.HitByPitch,
-                        BattersFaced = pitchingStat.BattersFaced
+                        BattersFaced = pitchingStat.BattersFaced,
+                        Awards = x.Awards
+                            .Select(y => new PlayerAwardBaseDto
+                            {
+                                Id = y.Id,
+                                Name = y.Name,
+                                Importance = y.Importance,
+                                OmitFromGroupings = y.OmitFromGroupings
+                            })
+                            .ToList(),
+                        IsChampion = x.IsChampion
                     };
                 })
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToList();
+            
+            foreach (var playoffPitching in playoffsPitching
+                         .Where(x => x.IsChampion))
+            {
+                playoffPitching.Awards.Add(new PlayerAwardBaseDto
+                {
+                    Id = 0,
+                    Name = "Champion",
+                    Importance = 10,
+                    OmitFromGroupings = false
+                });
+            }
 
-            playerOverviewDto.PlayerPlayoffPitching.AddRange(playoffPitching);
+            playerOverviewDto.PlayerPlayoffPitching.AddRange(playoffsPitching);
 
             var gameStats = playerWithSeasons.PlayerSeasons
                 .Select(x => new
@@ -564,6 +636,7 @@ public class PlayerRepository : IPlayerRepository
                             OmitFromGroupings = y.OmitFromGroupings
                         })
                         .ToList(),
+                    IsHallOfFamer = x.IsHallOfFamer,
                     NumChampionships = x.PlayerSeasons
                         .Count(y => y.ChampionshipWinner != null)
                 })
@@ -711,6 +784,7 @@ public class PlayerRepository : IPlayerRepository
                             OmitFromGroupings = y.OmitFromGroupings
                         })
                         .ToList(),
+                    IsHallOfFamer = x.IsHallOfFamer,
                     NumChampionships = x.PlayerSeasons
                         .Count(y => y.ChampionshipWinner != null)
                 })
