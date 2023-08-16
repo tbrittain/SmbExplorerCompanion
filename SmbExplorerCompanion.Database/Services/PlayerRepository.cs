@@ -32,11 +32,16 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetTopBattingCareers(int? pageNumber,
-        string? orderBy,
+    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetTopBattingCareers(
+        int? pageNumber = null,
+        string? orderBy = null,
         bool descending = true,
+        int? playerId = null,
         CancellationToken cancellationToken = default)
     {
+        if (playerId is not null && pageNumber is not null)
+            throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
+
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
         if (orderBy is not null)
@@ -73,6 +78,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => playerId == null || x.Id == playerId)
                 .Select(x => new PlayerCareerBattingDto
                 {
                     PlayerId = x.Id,
@@ -177,11 +183,16 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetTopPitchingCareers(int? pageNumber,
-        string? orderBy,
+    public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetTopPitchingCareers(
+        int? pageNumber = null,
+        string? orderBy = null,
         bool descending = true,
+        int? playerId = null,
         CancellationToken cancellationToken = default)
     {
+        if (playerId is not null && pageNumber is not null)
+            throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
+        
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
         if (orderBy is not null)
@@ -219,6 +230,7 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PitcherRole != null)
+                .Where(x => playerId == null || x.Id == playerId)
                 .Select(x => new PlayerCareerPitchingDto
                 {
                     PlayerId = x.Id,
