@@ -7,6 +7,6 @@ namespace SmbExplorerCompanion.WPF.Mappings.Players;
 [Mapper]
 public partial class PlayerCareerMapping
 {
-    public partial PlayerBattingCareer FromBattingDto(PlayerCareerDto careerDto);
-    public partial PlayerPitchingCareer FromPitchingDto(PlayerCareerDto careerDto);
+    public partial PlayerBattingCareer FromBattingDto(PlayerCareerBattingDto careerDto);
+    public partial PlayerPitchingCareer FromPitchingDto(PlayerCareerPitchingDto careerDto);
 }

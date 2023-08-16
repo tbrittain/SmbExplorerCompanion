@@ -41,7 +41,7 @@ public class TopPitchingCareersViewModel : ViewModelBase
         set => SetField(ref _selectedPlayer, value);
     }
 
-    public string SortColumn { get; set; } = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+    public string SortColumn { get; set; } = nameof(PlayerCareerPitchingDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
 

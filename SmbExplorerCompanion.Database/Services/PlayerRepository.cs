@@ -542,7 +542,7 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
+    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetTopBattingCareers(int? pageNumber,
         string? orderBy,
         bool descending = true,
         CancellationToken cancellationToken = default)
@@ -555,7 +555,7 @@ public class PlayerRepository : IPlayerRepository
         }
         else
         {
-            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            const string defaultOrderByProperty = nameof(PlayerCareerBattingDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
@@ -583,7 +583,7 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.FranchiseId == franchiseId)
-                .Select(x => new PlayerCareerDto
+                .Select(x => new PlayerCareerBattingDto
                 {
                     PlayerId = x.Id,
                     PlayerName = $"{x.FirstName} {x.LastName}",
@@ -663,6 +663,7 @@ public class PlayerRepository : IPlayerRepository
                        playerCareerDto.HomeRuns * 4) / (double) playerCareerDto.AtBats;
                 playerCareerDto.Ops = playerCareerDto.Obp + playerCareerDto.Slg;
 
+                // TODO: going to completely scrap this method
                 if (playerCareerDto.NumChampionships > 0)
                 {
                     foreach (var i in Enumerable.Range(1, playerCareerDto.NumChampionships))
@@ -686,7 +687,7 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopPitchingCareers(int? pageNumber,
+    public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetTopPitchingCareers(int? pageNumber,
         string? orderBy,
         bool descending = true,
         CancellationToken cancellationToken = default)
@@ -699,7 +700,7 @@ public class PlayerRepository : IPlayerRepository
         }
         else
         {
-            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            const string defaultOrderByProperty = nameof(PlayerCareerPitchingDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
@@ -728,7 +729,7 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PitcherRole != null)
-                .Select(x => new PlayerCareerDto
+                .Select(x => new PlayerCareerPitchingDto
                 {
                     PlayerId = x.Id,
                     PlayerName = $"{x.FirstName} {x.LastName}",
@@ -854,7 +855,7 @@ public class PlayerRepository : IPlayerRepository
         }
         else
         {
-            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            const string defaultOrderByProperty = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
@@ -1014,7 +1015,7 @@ public class PlayerRepository : IPlayerRepository
         }
         else
         {
-            const string defaultOrderByProperty = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+            const string defaultOrderByProperty = nameof(PlayerPitchingSeasonDto.WeightedOpsPlusOrEraMinus);
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
