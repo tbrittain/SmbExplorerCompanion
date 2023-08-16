@@ -29,18 +29,22 @@ public class PlayerRepository : IPlayerRepository
             if (playerCareerBattingResult.TryPickT1(out var exception, out var playerCareerBattingDtos))
                 return exception;
 
-            var playerCareerBattingDto = playerCareerBattingDtos.First();
-
             var playerCareerPitchingResult = await GetTopPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
 
             if (playerCareerPitchingResult.TryPickT1(out exception, out var playerCareerPitchingDtos))
                 return exception;
 
-            var playerCareerPitchingDto = playerCareerPitchingDtos.First();
-
             var playerOverview = await GetPlayerOverview(playerId, cancellationToken);
-            playerOverview.CareerBatting = playerCareerBattingDto;
-            playerOverview.CareerPitching = playerCareerPitchingDto;
+
+            if (playerCareerBattingDtos.Any())
+            {
+                playerOverview.CareerBatting = playerCareerBattingDtos.First();
+            }
+            
+            if (playerCareerPitchingDtos.Any())
+            {
+                playerOverview.CareerPitching = playerCareerPitchingDtos.First();
+            }
 
             var playerSeasonBatting = await GetTopBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
 
@@ -139,6 +143,14 @@ public class PlayerRepository : IPlayerRepository
             .Include(x => x.BatHandedness)
             .Include(x => x.PrimaryPosition)
             .Include(x => x.PitcherRole)
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.BattingStats)
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.PitchingStats)
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.PlayerTeamHistory)
+            .ThenInclude(x => x.SeasonTeamHistory)
+            .ThenInclude(x => x!.TeamNameHistory)
             .Where(x => x.Id == playerId)
             .SingleAsync(cancellationToken: cancellationToken);
         
@@ -190,6 +202,19 @@ public class PlayerRepository : IPlayerRepository
         
         playerOverview.CurrentTeam = currentTeam is null ? "Free Agent" : currentTeam.Name;
         playerOverview.CurrentTeamId = currentTeam?.Id;
+
+        var weightedOpsPlus = player.PlayerSeasons
+            .SelectMany(y => y.BattingStats)
+            .Where(y => y.OpsPlus != null)
+            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000);
+
+        var weightedEraMinus = player.PlayerSeasons
+            .SelectMany(y => y.PitchingStats)
+            .Where(y => y.EraMinus != null && y.InningsPitched != null)
+            .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * 2.25 / 10000);
+
+        var weightedOpsPlusOrEraMinus = weightedOpsPlus + weightedEraMinus;
+        playerOverview.WeightedOpsPlusOrEraMinus = weightedOpsPlusOrEraMinus;
 
         return playerOverview;
     }

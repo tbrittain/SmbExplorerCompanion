@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using MediatR;
@@ -40,7 +39,6 @@ public class PlayerOverviewViewModel : ViewModelBase
 
         var mapper = new PlayerOverviewMapping();
         var overview = mapper.FromDto(playerOverview);
-        overview.PopulateCareerStats();
         PlayerOverview = overview;
     }
 
