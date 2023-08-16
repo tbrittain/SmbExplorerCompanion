@@ -24,12 +24,174 @@ public class PlayerRepository : IPlayerRepository
     {
         try
         {
-            throw new NotImplementedException();
+            var playerCareerBattingResult = await GetTopBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
+
+            if (playerCareerBattingResult.TryPickT1(out var exception, out var playerCareerBattingDtos))
+                return exception;
+
+            var playerCareerBattingDto = playerCareerBattingDtos.First();
+
+            var playerCareerPitchingResult = await GetTopPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+
+            if (playerCareerPitchingResult.TryPickT1(out exception, out var playerCareerPitchingDtos))
+                return exception;
+
+            var playerCareerPitchingDto = playerCareerPitchingDtos.First();
+
+            var playerOverview = await GetPlayerOverview(playerId, cancellationToken);
+            playerOverview.CareerBatting = playerCareerBattingDto;
+            playerOverview.CareerPitching = playerCareerPitchingDto;
+
+            var playerSeasonBatting = await GetTopBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+
+            if (playerSeasonBatting.TryPickT1(out exception, out var playerSeasonBattingDtos))
+                return exception;
+
+            playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos;
+
+            var playerSeasonPitching = await GetTopPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+
+            if (playerSeasonPitching.TryPickT1(out exception, out var playerSeasonPitchingDtos))
+                return exception;
+
+            playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos;
+
+            var playerPlayoffBatting = await GetTopBattingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
+
+            if (playerPlayoffBatting.TryPickT1(out exception, out var playerPlayoffBattingDtos))
+                return exception;
+
+            playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos;
+
+            var playerPlayoffPitching = await GetTopPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
+
+            if (playerPlayoffPitching.TryPickT1(out exception, out var playerPlayoffPitchingDtos))
+                return exception;
+
+            playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos;
+
+            var gameStats = await _dbContext.PlayerSeasonGameStats
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Season)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.PlayerTeamHistory)
+                .ThenInclude(x => x.SeasonTeamHistory)
+                .ThenInclude(x => x!.TeamNameHistory)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.SecondaryPosition)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Traits)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.PitchTypes)
+                .Where(x => x.PlayerSeason.PlayerId == playerId)
+                .Select(x => new PlayerGameStatOverviewDto
+                {
+                    SeasonNumber = x.PlayerSeason.Season.Number,
+                    Age = x.PlayerSeason.Age,
+                    TeamNames = string.Join(", ",
+                        x.PlayerSeason.PlayerTeamHistory
+                            .OrderBy(y => y.Order)
+                            .Where(y => y.SeasonTeamHistory != null)
+                            .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
+                    Power = x.Power,
+                    Contact = x.Contact,
+                    Speed = x.Speed,
+                    Fielding = x.Fielding,
+                    Arm = x.Arm,
+                    Velocity = x.Velocity,
+                    Junk = x.Junk,
+                    Accuracy = x.Accuracy,
+                    Salary = x.PlayerSeason.PlayerTeamHistory
+                        .SingleOrDefault(y => y.Order == 1) == null
+                        ? 0
+                        : x.PlayerSeason.Salary,
+                    SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
+                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                    PitchTypes = string.Join(", ", x.PlayerSeason.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name))
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            playerOverview.GameStats = gameStats;
+
+            return playerOverview;
         }
         catch (Exception e)
         {
             return e;
         }
+    }
+
+    private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)
+    {
+        var playerOverview = new PlayerOverviewDto();
+
+        var player = await _dbContext.Players
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.Awards)
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.Season)
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.PlayerTeamHistory)
+            .Include(x => x.PlayerSeasons)
+            .ThenInclude(x => x.ChampionshipWinner)
+            .Include(x => x.Chemistry)
+            .Include(x => x.ThrowHandedness)
+            .Include(x => x.BatHandedness)
+            .Include(x => x.PrimaryPosition)
+            .Include(x => x.PitcherRole)
+            .Where(x => x.Id == playerId)
+            .SingleAsync(cancellationToken: cancellationToken);
+        
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var mostRecentSeason = await _dbContext.Seasons
+            .Where(x => x.FranchiseId == franchiseId)
+            .OrderByDescending(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        playerOverview.PlayerId = player.Id;
+        playerOverview.PlayerName = $"{player.FirstName} {player.LastName}";
+        playerOverview.IsHallOfFamer = player.IsHallOfFamer;
+        playerOverview.IsPitcher = player.PitcherRole is not null;
+        playerOverview.TotalSalary = player.PlayerSeasons
+            .Sum(x => x.PlayerTeamHistory
+                .SingleOrDefault(y => y.Order == 1) == null
+                ? 0
+                : x.Salary);
+        playerOverview.BatHandedness = player.BatHandedness.Name;
+        playerOverview.ThrowHandedness = player.ThrowHandedness.Name;
+        playerOverview.PrimaryPosition = player.PrimaryPosition.Name;
+        playerOverview.PitcherRole = player.PitcherRole?.Name;
+        playerOverview.Chemistry = player.Chemistry!.Name;
+        playerOverview.NumSeasons = player.PlayerSeasons.Count;
+        playerOverview.Awards = player.PlayerSeasons
+            .SelectMany(x => x.Awards)
+            .Where(x => !x.OmitFromGroupings)
+            .Select(x => new PlayerAwardBaseDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Importance = x.Importance,
+                OmitFromGroupings = x.OmitFromGroupings
+            })
+            .ToList();
+        playerOverview.NumChampionships = player.PlayerSeasons
+            .Count(x => x.ChampionshipWinner is not null);
+
+        var startSeason = player.PlayerSeasons.MinBy(x => x.SeasonId)!.Season;
+        var endPlayerSeason = player.PlayerSeasons.MaxBy(x => x.SeasonId)!;
+        var endSeason = endPlayerSeason.Season;
+        playerOverview.StartSeasonNumber = startSeason.Number;
+        playerOverview.EndSeasonNumber = endSeason.Number;
+        playerOverview.IsRetired = endSeason.Number < mostRecentSeason.Number;
+        var currentTeam = endPlayerSeason.PlayerTeamHistory
+            .OrderBy(x => x.Order)
+            .LastOrDefault(x => x.SeasonTeamHistory != null)?
+            .SeasonTeamHistory?.TeamNameHistory;
+        
+        playerOverview.CurrentTeam = currentTeam is null ? "Free Agent" : currentTeam.Name;
+        playerOverview.CurrentTeamId = currentTeam?.Id;
+
+        return playerOverview;
     }
 
     public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetTopBattingCareers(
@@ -159,7 +321,6 @@ public class PlayerRepository : IPlayerRepository
                        playerCareerDto.HomeRuns * 4) / (double) playerCareerDto.AtBats;
                 playerCareerDto.Ops = playerCareerDto.Obp + playerCareerDto.Slg;
 
-                // TODO: going to completely scrap this method
                 if (playerCareerDto.NumChampionships > 0)
                 {
                     foreach (var i in Enumerable.Range(1, playerCareerDto.NumChampionships))
@@ -192,7 +353,7 @@ public class PlayerRepository : IPlayerRepository
     {
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
-        
+
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
         if (orderBy is not null)
@@ -309,7 +470,7 @@ public class PlayerRepository : IPlayerRepository
                     ? 0
                     : (13 * playerCareerDto.HomeRuns + 3 * (playerCareerDto.Walks + playerCareerDto.HitByPitch) -
                        2 * playerCareerDto.Strikeouts) / playerCareerDto.InningsPitched + 3.10;
-                
+
                 if (playerCareerDto.NumChampionships > 0)
                 {
                     foreach (var i in Enumerable.Range(1, playerCareerDto.NumChampionships))
@@ -345,10 +506,14 @@ public class PlayerRepository : IPlayerRepository
         bool onlyRookies = false,
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
+        int? playerId = null,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
             throw new ArgumentException("SeasonId must be provided if OnlyRookies is true");
+
+        if (playerId is not null && pageNumber is not null)
+            throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
 
         var limitToTeam = teamId is not null;
         if (orderBy is not null)
@@ -387,6 +552,10 @@ public class PlayerRepository : IPlayerRepository
 
             var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
                 .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.SecondaryPosition)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Traits)
+                .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Awards)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
@@ -417,6 +586,7 @@ public class PlayerRepository : IPlayerRepository
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
                 .Where(x => primaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
                 .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
+                .Where(x => playerId == null || x.PlayerSeason.PlayerId == playerId)
                 .Select(x => new PlayerBattingSeasonDto
                 {
                     PlayerId = x.PlayerSeason.PlayerId,
@@ -427,7 +597,10 @@ public class PlayerRepository : IPlayerRepository
                             .Where(y => y.SeasonTeamHistory != null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
-                    TotalSalary = x.PlayerSeason.Salary,
+                    TotalSalary = x.PlayerSeason.PlayerTeamHistory
+                        .SingleOrDefault(y => y.Order == 1) == null
+                        ? 0
+                        : x.PlayerSeason.Salary,
                     BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
                     ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
                     PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
@@ -465,7 +638,15 @@ public class PlayerRepository : IPlayerRepository
                             OmitFromGroupings = y.OmitFromGroupings
                         })
                         .ToList(),
-                    IsChampion = x.PlayerSeason.ChampionshipWinner != null
+                    IsChampion = x.PlayerSeason.ChampionshipWinner != null,
+                    Age = x.PlayerSeason.Age,
+                    GamesBatting = x.GamesBatting,
+                    GamesPlayed = x.GamesPlayed,
+                    PlateAppearances = x.PlateAppearances,
+                    CaughtStealing = x.CaughtStealing,
+                    TotalBases = x.TotalBases,
+                    SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
+                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
@@ -505,10 +686,14 @@ public class PlayerRepository : IPlayerRepository
         bool onlyRookies = false,
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
+        int? playerId = null,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
             throw new ArgumentException("SeasonId must be provided if OnlyRookies is true");
+
+        if (playerId is not null && pageNumber is not null)
+            throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
 
         var limitToTeam = teamId is not null;
         if (orderBy is not null)
@@ -547,6 +732,10 @@ public class PlayerRepository : IPlayerRepository
 
             var playerPitchingDtos = await _dbContext.PlayerSeasonPitchingStats
                 .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Traits)
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.PitchTypes)
+                .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Awards)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
@@ -573,6 +762,7 @@ public class PlayerRepository : IPlayerRepository
                 .ThenInclude(x => x.ChampionshipWinner)
                 .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
+                .Where(x => playerId == null || x.PlayerSeason.PlayerId == playerId)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
                 .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
@@ -586,7 +776,10 @@ public class PlayerRepository : IPlayerRepository
                             .Where(y => y.SeasonTeamHistory != null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
-                    TotalSalary = x.PlayerSeason.Salary,
+                    TotalSalary = x.PlayerSeason.PlayerTeamHistory
+                        .SingleOrDefault(y => y.Order == 1) == null
+                        ? 0
+                        : x.PlayerSeason.Salary,
                     BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
                     ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
                     PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
@@ -623,7 +816,18 @@ public class PlayerRepository : IPlayerRepository
                             OmitFromGroupings = y.OmitFromGroupings
                         })
                         .ToList(),
-                    IsChampion = x.PlayerSeason.ChampionshipWinner != null
+                    IsChampion = x.PlayerSeason.ChampionshipWinner != null,
+                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
+                    Age = x.PlayerSeason.Age,
+                    Era = x.EarnedRunAverage ?? 0,
+                    GamesFinished = x.GamesFinished,
+                    BattersFaced = x.BattersFaced,
+                    HitsPerNine = x.HitsPerNine ?? 0,
+                    HomeRunsPerNine = x.HomeRunsPerNine ?? 0,
+                    WalksPerNine = x.WalksPerNine ?? 0,
+                    StrikeoutsPerNine = x.StrikeoutsPerNine ?? 0,
+                    StrikeoutToWalkRatio = x.StrikeoutsPerWalk ?? 0,
+                    PitchTypes = string.Join(", ", x.PlayerSeason.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name))
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
