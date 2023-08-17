@@ -5,19 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              xmlns:dataTemplateSelectors="clr-namespace:SmbExplorerCompanion.WPF.DataTemplateSelectors"
+             xmlns:players="clr-namespace:SmbExplorerCompanion.WPF.Models.Players"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
     <UserControl.Resources>
-        <DataTemplate x:Key="BasicAwardTemplate">
-            <Label
-                Content="{Binding DisplayName}"
-                HorizontalAlignment="Left" />
+        <DataTemplate x:Key="BasicAwardTemplate" d:DataContext="{d:DesignInstance players:FormattedPlayerAward}">
+            <Border Background="{Binding Color}" Padding="2" Margin="1">
+                <Label
+                    Content="{Binding DisplayName}"
+                    HorizontalAlignment="Left" />
+            </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="EliteAwardTemplate">
-            <Label
-                Content="{Binding DisplayName}"
-                HorizontalAlignment="Stretch" />
+            <Border Background="{Binding Color}" Padding="2" Margin="1">
+                <Label
+                    Content="{Binding DisplayName}"
+                    HorizontalAlignment="Stretch" />
+            </Border>
         </DataTemplate>
 
         <dataTemplateSelectors:AwardTemplateSelector x:Key="AwardTemplateSelector"
@@ -87,7 +92,10 @@
                     Orientation="Vertical">
                     <ItemsControl
                         ItemsSource="{Binding PlayerOverview.AggregatedAwards}"
-                        ItemTemplateSelector="{StaticResource AwardTemplateSelector}">
+                        ItemTemplateSelector="{StaticResource AwardTemplateSelector}"
+                        FlowDirection="LeftToRight"
+                        FontWeight="Bold"
+                        Margin="5">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel Orientation="Horizontal" />

@@ -1,15 +1,16 @@
-﻿using SmbExplorerCompanion.WPF.Models.Lookups;
+﻿using System.Windows.Media;
+using Color = System.Drawing.Color;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
 public class FormattedPlayerAward
 {
-    public const string BaseColor = "#d1d1d1";
-    public const string Importance1Color = "#f5f5f5";
-    public const string HallOfFameColor = "#fcc616";
+    public static readonly Brush BaseColor = Brushes.Silver;
+    public static readonly Brush Importance1Color = Brushes.Gold;
+    public static readonly Brush HallOfFameColor = Brushes.LightGreen;
     
     public string DisplayName { get; init; } = default!;
     public int Importance { get; init; }
     public bool FullWidth { get; init; }
-    public string Color { get; init; } = default!;
+    public required Brush Color { get; init; }
 }
