@@ -178,12 +178,19 @@ public class PlayerRepository : IPlayerRepository
         playerOverview.Awards = player.PlayerSeasons
             .SelectMany(x => x.Awards)
             .Where(x => !x.OmitFromGroupings)
-            .Select(x => new PlayerAwardBaseDto
+            .Select(x => new PlayerAwardDto
             {
                 Id = x.Id,
                 Name = x.Name,
                 Importance = x.Importance,
-                OmitFromGroupings = x.OmitFromGroupings
+                OmitFromGroupings = x.OmitFromGroupings,
+                OriginalName = x.OriginalName,
+                IsBattingAward = x.IsBattingAward,
+                IsBuiltIn = x.IsBuiltIn,
+                IsFieldingAward = x.IsFieldingAward,
+                IsPitchingAward = x.IsPitchingAward,
+                IsPlayoffAward = x.IsPlayoffAward,
+                IsUserAssignable = x.IsUserAssignable
             })
             .ToList();
         playerOverview.NumChampionships = player.PlayerSeasons

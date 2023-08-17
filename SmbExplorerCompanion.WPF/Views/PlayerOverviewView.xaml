@@ -4,50 +4,102 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+             xmlns:dataTemplateSelectors="clr-namespace:SmbExplorerCompanion.WPF.DataTemplateSelectors"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
+    <UserControl.Resources>
+        <DataTemplate x:Key="BasicAwardTemplate">
+            <Label
+                Content="{Binding DisplayName}"
+                HorizontalAlignment="Left" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="EliteAwardTemplate">
+            <Label
+                Content="{Binding DisplayName}"
+                HorizontalAlignment="Stretch" />
+        </DataTemplate>
+
+        <dataTemplateSelectors:AwardTemplateSelector x:Key="AwardTemplateSelector"
+                                                     HalfWidthTemplate="{StaticResource BasicAwardTemplate}"
+                                                     FullWidthTemplate="{StaticResource EliteAwardTemplate}" />
+    </UserControl.Resources>
+
     <ScrollViewer>
         <StackPanel Orientation="Vertical">
 
-            <StackPanel
-                Orientation="Vertical"
-                Margin="0, 0, 0, 15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="16" Text="Player name:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.PlayerName}" FontSize="16" />
-                </StackPanel>
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Orientation="Vertical"
+                    Margin="0, 0, 0, 15">
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="Bats:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.BatHandedness}" FontSize="14" />
-                    <TextBlock FontSize="14" Text="•" Padding="5, 0, 5, 0" />
-                    <TextBlock FontSize="14" Text="Throws:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.ThrowHandedness}" FontSize="14" />
-                </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="16" Text="Player name:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.PlayerName}" FontSize="16" />
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <!-- TODO Will have Navigation here to take us to the current season team page -->
-                    <TextBlock FontSize="14" Text="Team:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.CurrentTeam}" FontSize="14" />
-                </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Bats:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.BatHandedness}" FontSize="14" />
+                        <TextBlock FontSize="14" Text="•" Padding="5, 0, 5, 0" />
+                        <TextBlock FontSize="14" Text="Throws:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.ThrowHandedness}" FontSize="14" />
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="Position:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.DisplayPosition}" FontSize="14" />
-                </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <!-- TODO Will have Navigation here to take us to the current season team page -->
+                        <TextBlock FontSize="14" Text="Team:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.CurrentTeam}" FontSize="14" />
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="Chemistry:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.Chemistry}" FontSize="14" />
-                </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Position:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.DisplayPosition}" FontSize="14" />
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="Career earnings:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding PlayerOverview.TotalSalary, StringFormat={}${0:N0}}" FontSize="14" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Chemistry:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.Chemistry}" FontSize="14" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Career earnings:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.TotalSalary, StringFormat={}${0:N0}}" FontSize="14" />
+                    </StackPanel>
+
                 </StackPanel>
 
                 <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Orientation="Vertical">
+                    <ItemsControl
+                        ItemsSource="{Binding PlayerOverview.AggregatedAwards}"
+                        ItemTemplateSelector="{StaticResource AwardTemplateSelector}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+                
+                <StackPanel
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
                     Orientation="Vertical"
                     Visibility="{Binding CareerBattingVisibility}"
                     Margin="0, 10, 0, 0">
@@ -64,6 +116,9 @@
                 </StackPanel>
 
                 <StackPanel
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
                     Orientation="Vertical"
                     Visibility="{Binding CareerPitchingVisibility}"
                     Margin="0, 10, 0, 0">
@@ -78,8 +133,7 @@
                         CanUserResizeColumns="False"
                         SelectionMode="Single" />
                 </StackPanel>
-
-            </StackPanel>
+            </Grid>
 
             <Grid>
                 <Grid.RowDefinitions>

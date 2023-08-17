@@ -1,9 +1,12 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Players;
+﻿using SmbExplorerCompanion.Core.Entities.Lookups;
+
+namespace SmbExplorerCompanion.Core.Entities.Players;
 
 public class PlayerOverviewDto : PlayerCareerBaseDto
 {
     public string CurrentTeam { get; set; } = string.Empty;
     public int? CurrentTeamId { get; set; }
+    new public List<PlayerAwardDto> Awards { get; set; } = new();
 
     public PlayerCareerBattingDto CareerBatting { get; set; } = new();
     public PlayerCareerPitchingDto CareerPitching { get; set; } = new();
