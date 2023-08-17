@@ -5,6 +5,7 @@ using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using System.Linq.Dynamic.Core;
 using SmbExplorerCompanion.Core.Entities.Lookups;
+using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services;
 
@@ -238,13 +239,13 @@ public class PlayerRepository : IPlayerRepository
 
         var weightedOpsPlus = player.PlayerSeasons
             .SelectMany(y => y.BattingStats)
-            .Where(y => y.OpsPlus != null)
-            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000);
+            .Where(y => y.OpsPlus is not null)
+            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats * BattingScalingFactor);
 
         var weightedEraMinus = player.PlayerSeasons
             .SelectMany(y => y.PitchingStats)
-            .Where(y => y.EraMinus != null && y.InningsPitched != null)
-            .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * 2.25 / 10000);
+            .Where(y => y is {EraMinus: not null, InningsPitched: not null})
+            .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * PitchingScalingFactor);
 
         var weightedOpsPlusOrEraMinus = weightedOpsPlus + weightedEraMinus;
         playerOverview.WeightedOpsPlusOrEraMinus = weightedOpsPlusOrEraMinus;
@@ -326,7 +327,7 @@ public class PlayerRepository : IPlayerRepository
                     WeightedOpsPlusOrEraMinus = x.PlayerSeasons
                         .SelectMany(y => y.BattingStats)
                         .Where(y => y.OpsPlus != null)
-                        .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000),
+                        .Sum(y => (y.OpsPlus ?? 0) * y.AtBats * BattingScalingFactor),
                     // Simply average the OPS+ values
                     OpsPlus = x.PlayerSeasons
                         .SelectMany(y => y.BattingStats)
@@ -485,7 +486,7 @@ public class PlayerRepository : IPlayerRepository
                     WeightedOpsPlusOrEraMinus = x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
                         .Where(y => y.EraMinus != null && y.InningsPitched != null)
-                        .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * 2.25 / 10000),
+                        .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0) * PitchingScalingFactor),
                     // Simply average the ERA- values, only taking into account regular season games for this calculation
                     EraMinus = x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
@@ -685,7 +686,7 @@ public class PlayerRepository : IPlayerRepository
                     OpsPlus = x.OpsPlus ?? 0,
                     Errors = x.Errors,
                     Strikeouts = x.Strikeouts,
-                    WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.PlateAppearances / 10000,
+                    WeightedOpsPlusOrEraMinus = (x.OpsPlus ?? 0) * x.PlateAppearances * BattingScalingFactor,
                     Awards = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
@@ -863,7 +864,7 @@ public class PlayerRepository : IPlayerRepository
                     FipMinus = x.FipMinus ?? 0,
                     CompleteGames = x.CompleteGames,
                     Shutouts = x.Shutouts,
-                    WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * 2.25 / 10000,
+                    WeightedOpsPlusOrEraMinus = (x.EraMinus ?? 0) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
                     Awards = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto

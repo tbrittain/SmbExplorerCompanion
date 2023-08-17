@@ -56,47 +56,119 @@
                 </StackPanel>
             </Grid>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition MaxHeight="500" />
-                </Grid.RowDefinitions>
+            <ScrollViewer>
+                <StackPanel Orientation="Vertical">
+                    <Grid>
 
-                <ScrollViewer>
-                    <DataGrid
-                        Name="TeamSeasonsDataGrid"
-                        IsReadOnly="True"
-                        ItemsSource="{Binding TeamOverview.TeamHistory}"
-                        SelectedItem="{Binding SelectedTeamSeason}"
-                        AutoGenerateColumns="True"
-                        CanUserAddRows="False"
-                        CanUserDeleteRows="False"
-                        CanUserReorderColumns="False"
-                        CanUserSortColumns="True"
-                        CanUserResizeColumns="True"
-                        SelectionMode="Single" />
-                </ScrollViewer>
-            </Grid>
+                        <DataGrid
+                            Name="TeamSeasonsDataGrid"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding TeamOverview.TeamHistory}"
+                            SelectedItem="{Binding SelectedTeamSeason}"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Season #"
+                                    SortDirection="Descending"
+                                    Binding="{Binding SeasonNumber}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Team"
+                                    Binding="{Binding TeamName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Division"
+                                    Binding="{Binding DivisionName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Conference"
+                                    Binding="{Binding ConferenceName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="W"
+                                    Binding="{Binding Wins}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="L"
+                                    Binding="{Binding Losses}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="GB"
+                                    Binding="{Binding GamesBehind, StringFormat={}{0:N1}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Playoff Seed"
+                                    Binding="{Binding PlayoffSeed}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Playoff W"
+                                    Binding="{Binding PlayoffWins}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Playoff L"
+                                    Binding="{Binding PlayoffLosses}" />
+                                <DataGridCheckBoxColumn
+                                    Header="Won Conference"
+                                    Binding="{Binding WonConference}" />
+                                <DataGridCheckBoxColumn
+                                    Header="Won Championship"
+                                    Binding="{Binding WonChampionship}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition MaxHeight="500" />
-                </Grid.RowDefinitions>
+                    <Grid>
 
-                <ScrollViewer>
-                    <DataGrid
-                        Name="TopPlayersDataGrid"
-                        ItemsSource="{Binding TeamOverview.TopPlayers}"
-                        SelectedItem="{Binding SelectedPlayer}"
-                        AutoGenerateColumns="True"
-                        CanUserAddRows="False"
-                        CanUserDeleteRows="False"
-                        CanUserReorderColumns="False"
-                        CanUserSortColumns="True"
-                        CanUserResizeColumns="True"
-                        SelectionMode="Single"
-                        IsReadOnly="True" />
-                </ScrollViewer>
-            </Grid>
+                        <DataGrid
+                            Name="TopPlayersDataGrid"
+                            ItemsSource="{Binding TeamOverview.TopPlayers}"
+                            SelectedItem="{Binding SelectedPlayer}"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserSortColumns="True"
+                            CanUserResizeColumns="True"
+                            SelectionMode="Single"
+                            IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Player"
+                                    Binding="{Binding PlayerName}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="# Seasons w/ Team"
+                                    Binding="{Binding NumSeasonsWithTeam}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Position"
+                                    Binding="{Binding PlayerPosition}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Cumulative OPS+/ERA- w/ Team"
+                                    SortDirection="Descending"
+                                    Binding="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:N1}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Avg OPS+"
+                                    Binding="{Binding AverageOpsPlus, StringFormat={}{0:F1}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Avg ERA-"
+                                    Binding="{Binding AverageEraMinus, StringFormat={}{0:F1}}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
