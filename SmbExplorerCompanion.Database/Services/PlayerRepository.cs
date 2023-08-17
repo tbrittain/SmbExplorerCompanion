@@ -40,7 +40,7 @@ public class PlayerRepository : IPlayerRepository
             {
                 playerOverview.CareerBatting = playerCareerBattingDtos.First();
             }
-            
+
             if (playerCareerPitchingDtos.Any())
             {
                 playerOverview.CareerPitching = playerCareerPitchingDtos.First();
@@ -153,7 +153,7 @@ public class PlayerRepository : IPlayerRepository
             .ThenInclude(x => x!.TeamNameHistory)
             .Where(x => x.Id == playerId)
             .SingleAsync(cancellationToken: cancellationToken);
-        
+
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
         var mostRecentSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
@@ -196,6 +196,32 @@ public class PlayerRepository : IPlayerRepository
         playerOverview.NumChampionships = player.PlayerSeasons
             .Count(x => x.ChampionshipWinner is not null);
 
+        if (player.IsHallOfFamer)
+        {
+            playerOverview.Awards.Add(new PlayerAwardDto
+            {
+                Id = -1,
+                Importance = -1,
+                Name = "Hall of Fame",
+                OriginalName = "Hall of Fame",
+                OmitFromGroupings = false
+            });
+        }
+
+        if (playerOverview.NumChampionships > 0)
+        {
+            foreach (var i in Enumerable.Range(1, playerOverview.NumChampionships))
+            {
+                playerOverview.Awards.Add(new PlayerAwardDto
+                {
+                    Id = 0,
+                    Name = "Champion",
+                    Importance = 10,
+                    OmitFromGroupings = false
+                });
+            }
+        }
+
         var startSeason = player.PlayerSeasons.MinBy(x => x.SeasonId)!.Season;
         var endPlayerSeason = player.PlayerSeasons.MaxBy(x => x.SeasonId)!;
         var endSeason = endPlayerSeason.Season;
@@ -206,7 +232,7 @@ public class PlayerRepository : IPlayerRepository
             .OrderBy(x => x.Order)
             .LastOrDefault(x => x.SeasonTeamHistory != null)?
             .SeasonTeamHistory?.TeamNameHistory;
-        
+
         playerOverview.CurrentTeam = currentTeam is null ? "Free Agent" : currentTeam.Name;
         playerOverview.CurrentTeamId = currentTeam?.Id;
 

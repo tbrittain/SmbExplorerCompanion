@@ -10,7 +10,11 @@
              d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
     <UserControl.Resources>
         <DataTemplate x:Key="BasicAwardTemplate" d:DataContext="{d:DesignInstance players:FormattedPlayerAward}">
-            <Border Background="{Binding Color}" Padding="2" Margin="1">
+            <Border
+                Background="{Binding Color}"
+                Padding="2"
+                Margin="1"
+                CornerRadius="5">
                 <Label
                     Content="{Binding DisplayName}"
                     HorizontalAlignment="Left" />
@@ -18,7 +22,11 @@
         </DataTemplate>
 
         <DataTemplate x:Key="EliteAwardTemplate">
-            <Border Background="{Binding Color}" Padding="2" Margin="1">
+            <Border
+                Background="{Binding Color}"
+                Padding="2"
+                Margin="1"
+                CornerRadius="5">
                 <Label
                     Content="{Binding DisplayName}"
                     HorizontalAlignment="Stretch" />
@@ -35,13 +43,13 @@
 
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                
+
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -83,6 +91,11 @@
                         <TextBlock FontSize="14" Text="Career earnings:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                         <TextBlock Text="{Binding PlayerOverview.TotalSalary, StringFormat={}${0:N0}}" FontSize="14" />
                     </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="14" Text="Cumlative OPS+/ERA-:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock Text="{Binding PlayerOverview.WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" FontSize="14" />
+                    </StackPanel>
 
                 </StackPanel>
 
@@ -103,7 +116,7 @@
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
                 </StackPanel>
-                
+
                 <StackPanel
                     Grid.Row="1"
                     Grid.Column="0"
