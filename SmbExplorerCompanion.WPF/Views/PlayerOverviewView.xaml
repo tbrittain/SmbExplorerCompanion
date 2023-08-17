@@ -39,7 +39,7 @@
     </UserControl.Resources>
 
     <ScrollViewer>
-        <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Vertical" Margin="5">
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -127,13 +127,61 @@
                     <TextBlock FontSize="14" Text="Career Batting" FontWeight="Bold" />
                     <DataGrid
                         ItemsSource="{Binding PlayerOverview.PlayerCareerBatting}"
-                        AutoGenerateColumns="True"
+                        IsReadOnly="True"
+                        AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserReorderColumns="False"
                         CanUserSortColumns="False"
                         CanUserResizeColumns="False"
-                        SelectionMode="Single" />
+                        SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="AB"
+                                Binding="{Binding AtBats}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="H"
+                                Binding="{Binding Hits}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="HR"
+                                Binding="{Binding HomeRuns}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="BA"
+                                Binding="{Binding BattingAverage, StringFormat={}{0:F3}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="R"
+                                Binding="{Binding Runs}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="RBI"
+                                Binding="{Binding RunsBattedIn}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="SB"
+                                Binding="{Binding StolenBases}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="OBP"
+                                Binding="{Binding Obp, StringFormat={}{0:F3}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="SLG"
+                                Binding="{Binding Slg, StringFormat={}{0:F3}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="OPS"
+                                Binding="{Binding Ops, StringFormat={}{0:F3}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="OPS+"
+                                Binding="{Binding OpsPlus, StringFormat={}{0:F1}}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </StackPanel>
 
                 <StackPanel
@@ -146,13 +194,49 @@
                     <TextBlock FontSize="14" Text="Career Pitching" FontWeight="Bold" />
                     <DataGrid
                         ItemsSource="{Binding PlayerOverview.PlayerCareerPitching}"
-                        AutoGenerateColumns="True"
+                        IsReadOnly="True"
+                        AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserReorderColumns="False"
                         CanUserSortColumns="False"
                         CanUserResizeColumns="False"
-                        SelectionMode="Single" />
+                        SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="W"
+                                Binding="{Binding Wins}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="L"
+                                Binding="{Binding Losses}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="ERA"
+                                Binding="{Binding Era, StringFormat={}{0:F2}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="Games Started"
+                                Binding="{Binding GamesStarted}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="SV"
+                                Binding="{Binding Saves}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="IP"
+                                Binding="{Binding InningsPitched, StringFormat={}{0:F1}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="K"
+                                Binding="{Binding Strikeouts}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="WHIP"
+                                Binding="{Binding Whip, StringFormat={}{0:F2}}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </StackPanel>
             </Grid>
 
