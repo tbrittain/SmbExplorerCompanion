@@ -37,7 +37,7 @@ public class TopBattingCareersViewModel : ViewModelBase
         set => SetField(ref _pageNumber, value);
     }
 
-    public string SortColumn { get; set; } = nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus);
+    public string SortColumn { get; set; } = nameof(PlayerCareerBattingDto.WeightedOpsPlusOrEraMinus);
 
     public PlayerBattingCareer? SelectedPlayer
     {

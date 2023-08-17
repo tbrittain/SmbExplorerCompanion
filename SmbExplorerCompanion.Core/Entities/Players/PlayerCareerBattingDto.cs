@@ -1,8 +1,6 @@
-﻿using SmbExplorerCompanion.Core.Entities.Lookups;
+﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-namespace SmbExplorerCompanion.Core.Entities.Players;
-
-public class PlayerBattingSeasonDto : PlayerSeasonDto
+public class PlayerCareerBattingDto : PlayerCareerBaseDto
 {
     public int AtBats { get; set; }
     public int Hits { get; set; }
@@ -24,14 +22,4 @@ public class PlayerBattingSeasonDto : PlayerSeasonDto
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
-    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
-    public bool IsChampion { get; set; }
-    public int Age { get; set; }
-    public int GamesBatting { get; set; }
-    public int PlateAppearances { get; set; }
-    public int CaughtStealing { get; set; }
-    public int TotalBases { get; set; }
-    public string? SecondaryPosition { get; set; } = string.Empty;
-    public string Traits { get; set; } = string.Empty;
-    public int GamesPlayed { get; set; }
 }

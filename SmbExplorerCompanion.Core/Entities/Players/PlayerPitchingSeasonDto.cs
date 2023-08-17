@@ -25,4 +25,16 @@ public class PlayerPitchingSeasonDto : PlayerSeasonDto
     public int Shutouts { get; set; }
     public List<PlayerAwardBaseDto> Awards { get; set; } = new();
     public bool IsChampion { get; set; }
+    public int Age { get; set; }
+    public double WinPercentage => Wins + Losses > 0 ? (double)Wins / (Wins + Losses) : 0;
+    public double Era { get; set; }
+    public int GamesFinished { get; set; }
+    public int BattersFaced { get; set; }
+    public double HitsPerNine { get; set; }
+    public double HomeRunsPerNine { get; set; }
+    public double WalksPerNine { get; set; }
+    public double StrikeoutsPerNine { get; set; }
+    public double StrikeoutToWalkRatio { get; set; }
+    public string Traits { get; set; } = string.Empty;
+    public string PitchTypes { get; set; } = string.Empty;
 }

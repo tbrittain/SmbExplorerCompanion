@@ -8,14 +8,18 @@ public interface IPlayerRepository
     public Task<OneOf<PlayerOverviewDto, Exception>> GetHistoricalPlayer(int playerId,
         CancellationToken cancellationToken = default);
 
-    public Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopBattingCareers(int? pageNumber,
-        string? orderBy,
+    public Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetTopBattingCareers(
+        int? pageNumber = null,
+        string? orderBy = null,
         bool descending = true,
+        int? playerId = null,
         CancellationToken cancellationToken = default);
 
-    public Task<OneOf<List<PlayerCareerDto>, Exception>> GetTopPitchingCareers(int? pageNumber,
-        string? orderBy,
+    public Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetTopPitchingCareers(
+        int? pageNumber = null,
+        string? orderBy = null,
         bool descending = true,
+        int? playerId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetTopBattingSeasons(
@@ -30,6 +34,7 @@ public interface IPlayerRepository
         bool onlyRookies = false,
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
+        int? playerId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(
@@ -43,6 +48,7 @@ public interface IPlayerRepository
         bool onlyRookies = false,
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
+        int? playerId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,

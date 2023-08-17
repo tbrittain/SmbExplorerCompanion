@@ -6,7 +6,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>, Exception>>
+public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBattingDto>, Exception>>
 {
     public GetTopBattingCareersRequest(int? pageNumber = null, string? orderBy = null, bool descending = true)
     {
@@ -20,28 +20,28 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>,
     private bool Descending { get; }
 
     private static ImmutableArray<string> ValidOrderByProperties { get; } = ImmutableArray.Create(
-        nameof(PlayerCareerDto.TotalSalary),
-        nameof(PlayerCareerDto.NumSeasons),
-        nameof(PlayerCareerDto.AtBats),
-        nameof(PlayerCareerDto.Hits),
-        nameof(PlayerCareerDto.Singles),
-        nameof(PlayerCareerDto.Doubles),
-        nameof(PlayerCareerDto.Triples),
-        nameof(PlayerCareerDto.HomeRuns),
-        nameof(PlayerCareerDto.Walks),
-        nameof(PlayerCareerDto.Runs),
-        nameof(PlayerCareerDto.RunsBattedIn),
-        nameof(PlayerCareerDto.StolenBases),
-        nameof(PlayerCareerDto.SacrificeHits),
-        nameof(PlayerCareerDto.SacrificeFlies),
-        nameof(PlayerCareerDto.HitByPitch),
-        nameof(PlayerCareerDto.Errors),
-        nameof(PlayerCareerDto.Strikeouts),
-        nameof(PlayerCareerDto.WeightedOpsPlusOrEraMinus)
+        nameof(PlayerCareerBattingDto.TotalSalary),
+        nameof(PlayerCareerBattingDto.NumSeasons),
+        nameof(PlayerCareerBattingDto.AtBats),
+        nameof(PlayerCareerBattingDto.Hits),
+        nameof(PlayerCareerBattingDto.Singles),
+        nameof(PlayerCareerBattingDto.Doubles),
+        nameof(PlayerCareerBattingDto.Triples),
+        nameof(PlayerCareerBattingDto.HomeRuns),
+        nameof(PlayerCareerBattingDto.Walks),
+        nameof(PlayerCareerBattingDto.Runs),
+        nameof(PlayerCareerBattingDto.RunsBattedIn),
+        nameof(PlayerCareerBattingDto.StolenBases),
+        nameof(PlayerCareerBattingDto.SacrificeHits),
+        nameof(PlayerCareerBattingDto.SacrificeFlies),
+        nameof(PlayerCareerBattingDto.HitByPitch),
+        nameof(PlayerCareerBattingDto.Errors),
+        nameof(PlayerCareerBattingDto.Strikeouts),
+        nameof(PlayerCareerBattingDto.WeightedOpsPlusOrEraMinus)
     );
 
     // ReSharper disable once UnusedType.Global
-    internal class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, OneOf<List<PlayerCareerDto>, Exception>>
+    internal class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, OneOf<List<PlayerCareerBattingDto>, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 
@@ -50,12 +50,16 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerDto>,
             _playerRepository = playerRepository;
         }
 
-        public async Task<OneOf<List<PlayerCareerDto>, Exception>> Handle(GetTopBattingCareersRequest request, CancellationToken cancellationToken)
+        public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> Handle(GetTopBattingCareersRequest request, CancellationToken cancellationToken)
         {
             if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
                 return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
 
-            return await _playerRepository.GetTopBattingCareers(request.PageNumber, request.OrderBy, request.Descending, cancellationToken);
+            return await _playerRepository.GetTopBattingCareers(
+                pageNumber: request.PageNumber, 
+                orderBy: request.OrderBy, 
+                descending: request.Descending, 
+                cancellationToken: cancellationToken);
         }
     }
 }

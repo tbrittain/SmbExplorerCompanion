@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using SmbExplorerCompanion.WPF.Models.Lookups;
+using SmbExplorerCompanion.WPF.Models.Players;
 
 namespace SmbExplorerCompanion.WPF.Extensions;
 
@@ -42,5 +43,30 @@ public static class AwardsExtensions
         }
 
         return sb.ToString();
+    }
+
+    public static FormattedPlayerAward GetFormattedPlayerAward(this IEnumerable<PlayerAward> groupedAwards)
+    {
+        var awards = groupedAwards.ToList();
+        var count = awards.Count;
+        var award = awards.First();
+        
+        var awardName = award.Name;
+
+        return new FormattedPlayerAward
+        {
+            DisplayName = count > 1 ? $"{count}x {awardName}" : awardName,
+            Importance = award.Importance,
+            FullWidth = award.OriginalName == "Hall of Fame",
+            Color = award.OriginalName switch
+            {
+                "Hall of Fame" => FormattedPlayerAward.HallOfFameColor,
+                _ => award.Importance switch
+                {
+                    <= 1 => FormattedPlayerAward.Importance1Color,
+                    _ => FormattedPlayerAward.BaseColor,
+                }
+            }
+        };
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using MediatR;
@@ -35,14 +34,12 @@ public class PlayerOverviewViewModel : ViewModelBase
         {
             MessageBox.Show(exception.Message);
             PlayerOverview = new PlayerOverview();
+            return;
         }
-        else
-        {
-            var mapper = new PlayerOverviewMapping();
-            var overview = mapper.FromDto(playerOverview);
-            overview.PopulateCareerStats();
-            PlayerOverview = overview;
-        }
+
+        var mapper = new PlayerOverviewMapping();
+        var overview = mapper.FromDto(playerOverview);
+        PlayerOverview = overview;
     }
 
     // TODO: replace these with bool properties and use a converter to return Visibility.Collapsed if false

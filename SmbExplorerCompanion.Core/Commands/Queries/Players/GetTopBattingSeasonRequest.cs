@@ -58,18 +58,19 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
         public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> Handle(GetTopBattingSeasonRequest request,
             CancellationToken cancellationToken)
         {
-            return await _playerRepository.GetTopBattingSeasons(request.SeasonId,
-                request.IsPlayoffs,
-                request.PageNumber,
-                request.OrderBy,
-                request.Limit,
-                request.Descending,
-                request.TeamId,
-                request.PrimaryPositionId,
-                request.OnlyRookies,
-                request.IncludeChampionAwards,
-                request.OnlyUserAssignableAwards,
-                cancellationToken);
+            return await _playerRepository.GetTopBattingSeasons(
+                seasonId: request.SeasonId,
+                isPlayoffs: request.IsPlayoffs,
+                pageNumber: request.PageNumber,
+                orderBy: request.OrderBy,
+                limit: request.Limit,
+                descending: request.Descending,
+                teamId: request.TeamId,
+                primaryPositionId: request.PrimaryPositionId,
+                onlyRookies: request.OnlyRookies,
+                includeChampionAwards: request.IncludeChampionAwards,
+                onlyUserAssignableAwards: request.OnlyUserAssignableAwards,
+                cancellationToken: cancellationToken);
         }
     }
 }
