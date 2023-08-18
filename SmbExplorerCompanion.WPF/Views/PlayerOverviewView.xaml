@@ -259,6 +259,7 @@
                             <DataGrid
                                 Name="PlayerSeasonBattingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerSeasonBatting}"
+                                IsReadOnly="True"
                                 AutoGenerateColumns="False"
                                 CanUserAddRows="False"
                                 CanUserDeleteRows="False"
@@ -274,7 +275,7 @@
                                         Binding="{Binding SeasonNumber}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
-                                        Header="Teams"
+                                        Header="Team"
                                         Binding="{Binding TeamNames}" />
                                     <DataGridTextColumn
                                         Header="AB"
@@ -422,6 +423,7 @@
                             <DataGrid
                                 Name="PlayerPlayoffBattingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerPlayoffBatting}"
+                                IsReadOnly="True"
                                 AutoGenerateColumns="False"
                                 CanUserAddRows="False"
                                 CanUserDeleteRows="False"
@@ -437,7 +439,7 @@
                                         Binding="{Binding SeasonNumber}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
-                                        Header="Teams"
+                                        Header="Team"
                                         Binding="{Binding TeamNames}" />
                                     <DataGridTextColumn
                                         Header="AB"
@@ -594,6 +596,7 @@
                             <DataGrid
                                 Name="PlayerSeasonPitchingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerSeasonPitching}"
+                                IsReadOnly="True"
                                 AutoGenerateColumns="False"
                                 CanUserAddRows="False"
                                 CanUserDeleteRows="False"
@@ -609,7 +612,7 @@
                                         Binding="{Binding SeasonNumber}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
-                                        Header="Teams"
+                                        Header="Team"
                                         Binding="{Binding TeamNames}" />
                                     <DataGridTextColumn
                                         Header="W"
@@ -759,6 +762,7 @@
                             <DataGrid
                                 Name="PlayerPlayoffPitchingDataGrid"
                                 ItemsSource="{Binding PlayerOverview.PlayerPlayoffPitching}"
+                                IsReadOnly="True"
                                 AutoGenerateColumns="False"
                                 CanUserAddRows="False"
                                 CanUserDeleteRows="False"
@@ -773,7 +777,7 @@
                                         Binding="{Binding SeasonNumber}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
-                                        Header="Teams"
+                                        Header="Team"
                                         Binding="{Binding TeamNames}" />
                                     <DataGridTextColumn
                                         Header="W"
@@ -925,17 +929,76 @@
                         <TextBlock FontSize="14" Text="Player Stats" FontWeight="Bold" />
                         <DataGrid
                             ItemsSource="{Binding PlayerOverview.GameStats}"
-                            AutoGenerateColumns="True"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
                             CanUserAddRows="False"
                             CanUserDeleteRows="False"
                             CanUserReorderColumns="False"
                             CanUserSortColumns="True"
                             CanUserResizeColumns="True"
-                            SelectionMode="Single" />
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Season #"
+                                    SortDirection="Descending"
+                                    Binding="{Binding SeasonNumber}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Age"
+                                    Binding="{Binding Age}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Team"
+                                    Binding="{Binding TeamNames}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Power"
+                                    Binding="{Binding Power}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Contact"
+                                    Binding="{Binding Contact}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Speed"
+                                    Binding="{Binding Speed}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Fielding"
+                                    Binding="{Binding Speed}" />   <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Arm"
+                                    Binding="{Binding Arm}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Velocity"
+                                    Binding="{Binding Velocity}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Junk"
+                                    Binding="{Binding Junk}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Accuracy"
+                                    Binding="{Binding Accuracy}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Secondary Position"
+                                    Binding="{Binding SecondaryPosition}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Traits"
+                                    Binding="{Binding Traits}" />
+                                <DataGridTextColumn
+                                    CanUserSort="True"
+                                    Header="Salary"
+                                    Binding="{Binding Salary, StringFormat={}${0:N0}}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
-
         </StackPanel>
     </ScrollViewer>
 </UserControl>
