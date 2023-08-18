@@ -52,28 +52,36 @@ public class PlayerRepository : IPlayerRepository
             if (playerSeasonBatting.TryPickT1(out exception, out var playerSeasonBattingDtos))
                 return exception;
 
-            playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos;
+            playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos
+                .OrderByDescending(x => x.SeasonNumber)
+                .ToList();
 
             var playerSeasonPitching = await GetTopPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
 
             if (playerSeasonPitching.TryPickT1(out exception, out var playerSeasonPitchingDtos))
                 return exception;
 
-            playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos;
+            playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos
+                .OrderByDescending(x => x.SeasonNumber)
+                .ToList();
 
             var playerPlayoffBatting = await GetTopBattingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
 
             if (playerPlayoffBatting.TryPickT1(out exception, out var playerPlayoffBattingDtos))
                 return exception;
 
-            playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos;
+            playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos
+                .OrderByDescending(x => x.SeasonNumber)
+                .ToList();
 
             var playerPlayoffPitching = await GetTopPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
 
             if (playerPlayoffPitching.TryPickT1(out exception, out var playerPlayoffPitchingDtos))
                 return exception;
 
-            playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos;
+            playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos
+                .OrderByDescending(x => x.SeasonNumber)
+                .ToList();
 
             var gameStats = await _dbContext.PlayerSeasonGameStats
                 .Include(x => x.PlayerSeason)
@@ -114,6 +122,7 @@ public class PlayerRepository : IPlayerRepository
                     Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
                     PitchTypes = string.Join(", ", x.PlayerSeason.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name))
                 })
+                .OrderByDescending(x => x.SeasonNumber)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             playerOverview.GameStats = gameStats;
