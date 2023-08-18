@@ -3,6 +3,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
+using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services;
 
@@ -312,7 +313,7 @@ public class TeamRepository : ITeamRepository
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.PitchingStats)
                             .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.EraMinus ?? 0) * y.InningsPitched * 2.25 / 10000 ?? 0);
+                            .Sum(y => (y.EraMinus ?? 0) * y.InningsPitched * PitchingScalingFactor ?? 0);
                     }
                     else
                     {
@@ -323,7 +324,7 @@ public class TeamRepository : ITeamRepository
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.BattingStats)
                             .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats / 10000);
+                            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats * BattingScalingFactor);
                     }
 
                     return dto;
