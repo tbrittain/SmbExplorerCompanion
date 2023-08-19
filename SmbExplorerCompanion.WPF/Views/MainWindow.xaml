@@ -107,6 +107,14 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Left" />
             </Button>
+
+            <Button Command="{Binding NavigateToDelegateHallOfFamersCommand}">
+                <TextBlock
+                    Text="Hall of Famers"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Left" />
+            </Button>
             
             <TextBlock
                 Margin="0, 10, 0, 0"
