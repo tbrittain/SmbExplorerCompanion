@@ -1,4 +1,5 @@
 ﻿using OneOf;
+using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Players;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
@@ -54,7 +55,5 @@ public interface IPlayerRepository
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
         int? primaryPositionId, int? pageNumber, int? limit, CancellationToken cancellationToken = default);
 
-    public Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetBattingHallOfFameCandidates(int seasonId);
-
-    public Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetPitchingHallOfFameCandidates(int seasonId);
+    public Task<OneOf<RetiredPlayerCareerStatsDto, None, Exception>> GetHallOfFameCandidates(int seasonId, CancellationToken cancellationToken = default);
 }

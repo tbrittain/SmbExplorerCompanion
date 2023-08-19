@@ -2,6 +2,7 @@
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using OneOf;
+using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
@@ -733,14 +734,70 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetBattingHallOfFameCandidates(int seasonId)
+    public async Task<OneOf<RetiredPlayerCareerStatsDto, None, Exception>> GetHallOfFameCandidates(int seasonId,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
+        try
+        {
+            var season = await _dbContext.Seasons
+                .Where(x => x.Id == seasonId)
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetPitchingHallOfFameCandidates(int seasonId)
-    {
-        throw new NotImplementedException();
+            if (season is null)
+                return new ArgumentException($"Season with id {seasonId} not found.");
+
+            var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+            var allFranchiseSeasons = await _dbContext.Seasons
+                .Where(x => x.FranchiseId == franchiseId)
+                .OrderBy(x => x.Id)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            // Since the purpose of this method is to return player careers who have played in the past
+            // but not in the current season, we can return an empty list if the season provided is the minimum
+            // season for the franchise.
+            if (season.Id == allFranchiseSeasons.First().Id)
+                return new None();
+
+            var previousSeason = allFranchiseSeasons
+                .Where(x => x.Id < season.Id)
+                .OrderByDescending(x => x.Id)
+                .First();
+
+            // Here, we are going to get all of the player IDs that have a player season in the previous season,
+            // but lack one in the season queried
+
+            var retiredPlayers = await _dbContext.PlayerSeasons
+                .Where(x => x.SeasonId == previousSeason.Id)
+                .Select(x => x.PlayerId)
+                .Except(_dbContext.PlayerSeasons
+                    .Where(x => x.SeasonId == season.Id)
+                    .Select(x => x.PlayerId))
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            var battingQueryable = GetCareerBattingIQueryable()
+                .Where(x => retiredPlayers.Contains(x.Id));
+
+            var pitchingQueryable = GetCareerPitchingIQueryable()
+                .Where(x => retiredPlayers.Contains(x.Id));
+
+            // TODO: calculate aggregate stats for both player types
+            var battingDtos = await GetCareerBattingDtos(battingQueryable)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            return new RetiredPlayerCareerStatsDto
+            {
+                BattingCareers = battingDtos,
+                PitchingCareers = pitchingDtos
+            };
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
     }
 
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)
