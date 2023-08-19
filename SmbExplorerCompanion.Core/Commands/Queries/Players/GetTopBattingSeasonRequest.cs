@@ -58,7 +58,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
         public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> Handle(GetTopBattingSeasonRequest request,
             CancellationToken cancellationToken)
         {
-            return await _playerRepository.GetTopBattingSeasons(
+            return await _playerRepository.GetBattingSeasons(
                 seasonId: request.SeasonId,
                 isPlayoffs: request.IsPlayoffs,
                 pageNumber: request.PageNumber,

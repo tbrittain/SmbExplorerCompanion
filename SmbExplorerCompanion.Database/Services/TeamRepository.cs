@@ -409,7 +409,7 @@ public class TeamRepository : ITeamRepository
                     teamSeason.HomePlayoffSchedule,
                     teamSeason.AwayPlayoffSchedule);
 
-                var playoffPitchingResult = await _playerRepository.GetTopPitchingSeasons(
+                var playoffPitchingResult = await _playerRepository.GetPitchingSeasons(
                     seasonId: seasonId,
                     isPlayoffs: true,
                     teamId: teamId,
@@ -420,7 +420,7 @@ public class TeamRepository : ITeamRepository
 
                 teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
 
-                var playoffBattingResult = await _playerRepository.GetTopBattingSeasons(
+                var playoffBattingResult = await _playerRepository.GetBattingSeasons(
                     seasonId: seasonId,
                     isPlayoffs: true,
                     teamId: teamId,
@@ -432,7 +432,7 @@ public class TeamRepository : ITeamRepository
                 teamSeasonDetailDto.PlayoffBatting = playoffBattingSeasonDtos;
             }
 
-            var regularSeasonPitchingResult = await _playerRepository.GetTopPitchingSeasons(
+            var regularSeasonPitchingResult = await _playerRepository.GetPitchingSeasons(
                 seasonId: seasonId,
                 isPlayoffs: false,
                 teamId: teamId,
@@ -443,7 +443,7 @@ public class TeamRepository : ITeamRepository
 
             teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
 
-            var regularSeasonBattingResult = await _playerRepository.GetTopBattingSeasons(
+            var regularSeasonBattingResult = await _playerRepository.GetBattingSeasons(
                 seasonId: seasonId,
                 isPlayoffs: false,
                 teamId: teamId,

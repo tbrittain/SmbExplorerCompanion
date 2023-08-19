@@ -25,12 +25,12 @@ public class PlayerRepository : IPlayerRepository
     {
         try
         {
-            var playerCareerBattingResult = await GetTopBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
+            var playerCareerBattingResult = await GetBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
 
             if (playerCareerBattingResult.TryPickT1(out var exception, out var playerCareerBattingDtos))
                 return exception;
 
-            var playerCareerPitchingResult = await GetTopPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+            var playerCareerPitchingResult = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
 
             if (playerCareerPitchingResult.TryPickT1(out exception, out var playerCareerPitchingDtos))
                 return exception;
@@ -47,7 +47,7 @@ public class PlayerRepository : IPlayerRepository
                 playerOverview.CareerPitching = playerCareerPitchingDtos.First();
             }
 
-            var playerSeasonBatting = await GetTopBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+            var playerSeasonBatting = await GetBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
 
             if (playerSeasonBatting.TryPickT1(out exception, out var playerSeasonBattingDtos))
                 return exception;
@@ -56,7 +56,7 @@ public class PlayerRepository : IPlayerRepository
                 .OrderByDescending(x => x.SeasonNumber)
                 .ToList();
 
-            var playerSeasonPitching = await GetTopPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+            var playerSeasonPitching = await GetPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
 
             if (playerSeasonPitching.TryPickT1(out exception, out var playerSeasonPitchingDtos))
                 return exception;
@@ -65,7 +65,7 @@ public class PlayerRepository : IPlayerRepository
                 .OrderByDescending(x => x.SeasonNumber)
                 .ToList();
 
-            var playerPlayoffBatting = await GetTopBattingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
+            var playerPlayoffBatting = await GetBattingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
 
             if (playerPlayoffBatting.TryPickT1(out exception, out var playerPlayoffBattingDtos))
                 return exception;
@@ -74,7 +74,7 @@ public class PlayerRepository : IPlayerRepository
                 .OrderByDescending(x => x.SeasonNumber)
                 .ToList();
 
-            var playerPlayoffPitching = await GetTopPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
+            var playerPlayoffPitching = await GetPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
 
             if (playerPlayoffPitching.TryPickT1(out exception, out var playerPlayoffPitchingDtos))
                 return exception;
@@ -262,7 +262,7 @@ public class PlayerRepository : IPlayerRepository
         return playerOverview;
     }
 
-    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetTopBattingCareers(
+    public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetBattingCareers(
         int? pageNumber = null,
         string? orderBy = null,
         bool descending = true,
@@ -412,7 +412,7 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetTopPitchingCareers(
+    public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
         int? pageNumber = null,
         string? orderBy = null,
         bool descending = true,
@@ -562,7 +562,7 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetTopBattingSeasons(
+    public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetBattingSeasons(
         int? seasonId = null,
         bool isPlayoffs = false,
         int? pageNumber = null,
@@ -743,7 +743,7 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetTopPitchingSeasons(
+    public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetPitchingSeasons(
         int? seasonId = null,
         bool isPlayoffs = false,
         int? pageNumber = null,
