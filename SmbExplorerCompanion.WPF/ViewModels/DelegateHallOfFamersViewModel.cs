@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -16,17 +17,23 @@ using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class DelegateHallOfFamersViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
+    private readonly INavigationService _navigationService;
+    private PlayerBase? _selectedPlayer;
     private Season? _selectedSeason;
 
-    public DelegateHallOfFamersViewModel(IMediator mediator, IApplicationContext applicationContext)
+    public DelegateHallOfFamersViewModel(IMediator mediator,
+        IApplicationContext applicationContext,
+        INavigationService navigationService)
     {
         _mediator = mediator;
+        _navigationService = navigationService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
             applicationContext.SelectedFranchiseId!.Value)).Result;
@@ -47,6 +54,25 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
     }
 
+    public ObservableCollection<Season> Seasons { get; } = new();
+
+    public Season? SelectedSeason
+    {
+        get => _selectedSeason;
+        set => SetField(ref _selectedSeason, value);
+    }
+
+    private bool CanSubmitHallOfFamers => TopBattingCareers.Any() || TopPitchingCareers.Any();
+
+    public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
+    public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
+
+    public PlayerBase? SelectedPlayer
+    {
+        get => _selectedPlayer;
+        set => SetField(ref _selectedPlayer, value);
+    }
+
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -54,15 +80,22 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             case nameof(SelectedSeason):
                 GetHallOfFamers().Wait();
                 break;
+            case nameof(SelectedPlayer):
+            {
+                if (SelectedPlayer is not null)
+                    NavigateToPlayerOverview(SelectedPlayer);
+                break;
+            }
         }
     }
 
-    public ObservableCollection<Season> Seasons { get; } = new();
-
-    public Season? SelectedSeason
+    private void NavigateToPlayerOverview(PlayerBase player)
     {
-        get => _selectedSeason;
-        set => SetField(ref _selectedSeason, value);
+        var parameters = new Tuple<string, object>[]
+        {
+            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
+        };
+        _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }
 
     private async Task GetHallOfFamers()
@@ -83,7 +116,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             MessageBox.Show("No retired players found. Please try another season.");
             SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
             return;
-        };
+        }
 
         var battingMapper = new PlayerCareerMapping();
         TopBattingCareers.AddRange(retiredPlayers.BattingCareers
@@ -92,7 +125,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         var pitchingMapper = new PlayerCareerMapping();
         TopPitchingCareers.AddRange(retiredPlayers.PitchingCareers
             .Select(p => pitchingMapper.FromPitchingDto(p)));
-        
+
         SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
     }
 
@@ -106,7 +139,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         }
 
         List<PlayerHallOfFameRequestDto> hallOfFamers = new();
-        
+
         foreach (var battingCareer in TopBattingCareers)
         {
             hallOfFamers.Add(new PlayerHallOfFameRequestDto
@@ -115,7 +148,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
                 IsHallOfFamer = battingCareer.IsHallOfFamer
             });
         }
-        
+
         foreach (var pitchingCareer in TopPitchingCareers)
         {
             hallOfFamers.Add(new PlayerHallOfFameRequestDto
@@ -124,7 +157,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
                 IsHallOfFamer = pitchingCareer.IsHallOfFamer
             });
         }
-        
+
         var response = await _mediator.Send(new AddHallOfFamersRequest(hallOfFamers));
         if (response.TryPickT1(out var exception, out _))
         {
@@ -134,11 +167,6 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
 
         MessageBox.Show($"Eligible Hall of Famers for Season {SelectedSeason.Number} added successfully!");
     }
-
-    private bool CanSubmitHallOfFamers => TopBattingCareers.Any() || TopPitchingCareers.Any();
-
-    public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
-    public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
 
     protected override void Dispose(bool disposing)
     {
