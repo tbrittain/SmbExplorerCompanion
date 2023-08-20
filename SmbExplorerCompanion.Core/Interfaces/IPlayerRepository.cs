@@ -11,6 +11,7 @@ public interface IPlayerRepository
 
     public Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetBattingCareers(
         int? pageNumber = null,
+        int? limit = null,
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
@@ -19,6 +20,7 @@ public interface IPlayerRepository
 
     public Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
         int? pageNumber = null,
+        int? limit = null,
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,

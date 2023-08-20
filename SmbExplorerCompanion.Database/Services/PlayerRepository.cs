@@ -135,6 +135,7 @@ public class PlayerRepository : IPlayerRepository
 
     public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetBattingCareers(
         int? pageNumber = null,
+        int? limit = null,
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
@@ -149,6 +150,8 @@ public class PlayerRepository : IPlayerRepository
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
+        var limitValue = limit ?? 30;
+        
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
@@ -175,8 +178,8 @@ public class PlayerRepository : IPlayerRepository
 
             var playerBattingDtos = await GetCareerBattingDtos(queryable)
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 30)
-                .Take(30)
+                .Skip(((pageNumber ?? 1) - 1) * limitValue)
+                .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             // Calculate the rate stats that we omitted above
@@ -220,6 +223,7 @@ public class PlayerRepository : IPlayerRepository
 
     public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
         int? pageNumber = null,
+        int? limit = null,
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
@@ -233,6 +237,8 @@ public class PlayerRepository : IPlayerRepository
             throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+        var limitValue = limit ?? 30;
 
         if (orderBy is not null)
         {
@@ -261,8 +267,8 @@ public class PlayerRepository : IPlayerRepository
 
             var playerPitchingDtos = await GetCareerPitchingDtos(queryable)
                 .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * 30)
-                .Take(30)
+                .Skip(((pageNumber ?? 1) - 1) * limitValue)
+                .Take(limitValue)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             foreach (var pitchingDto in playerPitchingDtos)

@@ -8,15 +8,21 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBattingDto>, Exception>>
 {
-    public GetTopBattingCareersRequest(int? pageNumber = null, string? orderBy = null, bool descending = true, bool onlyHallOfFamers = false)
+    public GetTopBattingCareersRequest(int? pageNumber = null,
+        int? limit = null,
+        string? orderBy = null,
+        bool descending = true,
+        bool onlyHallOfFamers = false)
     {
         PageNumber = pageNumber;
+        Limit = limit;
         OrderBy = orderBy;
         Descending = descending;
         OnlyHallOfFamers = onlyHallOfFamers;
     }
 
     private int? PageNumber { get; }
+    private int? Limit { get; }
     private string? OrderBy { get; }
     private bool Descending { get; }
     private bool OnlyHallOfFamers { get; }
@@ -60,6 +66,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
 
             return await _playerRepository.GetBattingCareers(
                 pageNumber: request.PageNumber,
+                limit: request.Limit,
                 orderBy: request.OrderBy,
                 descending: request.Descending,
                 onlyHallOfFamers: request.OnlyHallOfFamers,
