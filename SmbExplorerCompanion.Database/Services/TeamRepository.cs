@@ -324,7 +324,7 @@ public class TeamRepository : ITeamRepository
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.BattingStats)
                             .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.OpsPlus ?? 0) * y.AtBats * BattingScalingFactor);
+                            .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances * BattingScalingFactor);
                     }
 
                     return dto;
