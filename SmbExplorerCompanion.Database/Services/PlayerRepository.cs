@@ -7,6 +7,7 @@ using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
+using SmbExplorerCompanion.Database.Entities.Lookups;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services;
@@ -140,6 +141,7 @@ public class PlayerRepository : IPlayerRepository
         bool descending = true,
         int? playerId = null,
         bool onlyHallOfFamers = false,
+        int? primaryPositionId = null,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -147,6 +149,9 @@ public class PlayerRepository : IPlayerRepository
         
         if (playerId is not null && onlyHallOfFamers)
             throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
+        
+        if (playerId is not null && primaryPositionId is not null)
+            throw new ArgumentException("Cannot provide both PlayerId and PrimaryPositionId");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
@@ -164,6 +169,16 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
+            if (primaryPositionId is not null)
+            {
+                var position = await _dbContext.Positions
+                    .Where(x => x.IsPrimaryPosition)
+                    .SingleOrDefaultAsync(x => x.Id == primaryPositionId, cancellationToken: cancellationToken);
+                
+                if (position is null)
+                    return new ArgumentException($"No primary position found with Id {primaryPositionId}");
+            }
+
             var mostRecentSeason = await _dbContext.Seasons
                 .Include(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.Team)
@@ -174,7 +189,8 @@ public class PlayerRepository : IPlayerRepository
             var queryable = GetCareerBattingIQueryable()
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => playerId == null || x.Id == playerId)
-                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer);
+                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
+                .Where(x => primaryPositionId == null || x.PrimaryPositionId == primaryPositionId);
 
             var playerBattingDtos = await GetCareerBattingDtos(queryable)
                 .OrderBy(orderBy)
@@ -239,6 +255,7 @@ public class PlayerRepository : IPlayerRepository
         bool descending = true,
         int? playerId = null,
         bool onlyHallOfFamers = false,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -246,6 +263,9 @@ public class PlayerRepository : IPlayerRepository
         
         if (playerId is not null && onlyHallOfFamers)
             throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
+        
+        if (playerId is not null && pitcherRoleId is not null)
+            throw new ArgumentException("Cannot provide both PlayerId and PrimaryPositionId");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
@@ -263,6 +283,15 @@ public class PlayerRepository : IPlayerRepository
 
         try
         {
+            if (pitcherRoleId is not null)
+            {
+                var pitcherRole = await _dbContext.PitcherRoles
+                    .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken: cancellationToken);
+                
+                if (pitcherRole is null)
+                    return new ArgumentException($"No pitcher role found with Id {pitcherRoleId}");
+            }
+            
             var mostRecentSeason = await _dbContext.Seasons
                 .Include(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.Team)
@@ -274,7 +303,8 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PitcherRole != null)
                 .Where(x => playerId == null || x.Id == playerId)
-                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer);
+                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
+                .Where(x => pitcherRoleId == null || x.PitcherRoleId == pitcherRoleId);
 
             var playerPitchingDtos = await GetCareerPitchingDtos(queryable)
                 .OrderBy(orderBy)

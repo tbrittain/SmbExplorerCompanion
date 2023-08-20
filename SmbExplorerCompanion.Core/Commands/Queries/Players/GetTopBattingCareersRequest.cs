@@ -12,13 +12,15 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
         int? limit = null,
         string? orderBy = null,
         bool descending = true,
-        bool onlyHallOfFamers = false)
+        bool onlyHallOfFamers = false,
+        int? primaryPositionId = null)
     {
         PageNumber = pageNumber;
         Limit = limit;
         OrderBy = orderBy;
         Descending = descending;
         OnlyHallOfFamers = onlyHallOfFamers;
+        PrimaryPositionId = primaryPositionId;
     }
 
     private int? PageNumber { get; }
@@ -26,6 +28,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
     private string? OrderBy { get; }
     private bool Descending { get; }
     private bool OnlyHallOfFamers { get; }
+    private int? PrimaryPositionId { get; }
 
     private static ImmutableArray<string> ValidOrderByProperties { get; } = ImmutableArray.Create(
         nameof(PlayerCareerBattingDto.TotalSalary),
@@ -70,6 +73,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
                 orderBy: request.OrderBy,
                 descending: request.Descending,
                 onlyHallOfFamers: request.OnlyHallOfFamers,
+                primaryPositionId: request.PrimaryPositionId,
                 cancellationToken: cancellationToken);
         }
     }

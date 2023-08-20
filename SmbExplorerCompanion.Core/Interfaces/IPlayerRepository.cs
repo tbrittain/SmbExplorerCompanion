@@ -16,6 +16,7 @@ public interface IPlayerRepository
         bool descending = true,
         int? playerId = null,
         bool onlyHallOfFamers = false,
+        int? primaryPositionId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
@@ -25,6 +26,7 @@ public interface IPlayerRepository
         bool descending = true,
         int? playerId = null,
         bool onlyHallOfFamers = false,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetBattingSeasons(
