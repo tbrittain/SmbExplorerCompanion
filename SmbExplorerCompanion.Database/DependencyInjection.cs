@@ -22,6 +22,7 @@ public static class DependencyInjection
             .AddScoped<IRepository<SeasonDto>, SeasonRepository>()
             .AddScoped<IRepository<PositionDto>, PositionRepository>()
             .AddScoped<IRepository<PlayerAwardDto>, PlayerAwardRepository>()
+            .AddScoped<IRepository<PitcherRoleDto>, PitcherRoleRepository>()
             .AddScoped<ITeamRepository, TeamRepository>()
             .AddScoped<IPlayerRepository, PlayerRepository>()
             .AddScoped<IAwardDelegationRepository, AwardDelegationRepository>()
