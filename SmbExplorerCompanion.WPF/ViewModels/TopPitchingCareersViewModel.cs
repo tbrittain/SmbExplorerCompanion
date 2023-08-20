@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Players;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -22,6 +25,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private bool _onlyHallOfFamers;
     private int _pageNumber = 1;
     private PlayerPitchingCareer? _selectedPlayer;
+    private PitcherRole? _selectedPitcherRole;
 
     public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService)
     {
@@ -29,6 +33,24 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         _navigationService = navigationService;
 
         PropertyChanged += OnPropertyChanged;
+        
+        var pitcherRolesResponse = _mediator.Send(new GetAllPitcherRolesRequest()).Result;
+        if (pitcherRolesResponse.TryPickT1(out var exception, out var pitcherRoles))
+        {
+            MessageBox.Show(exception.Message);
+            return;
+        }
+
+        var allPitcherRole = new PitcherRole
+        {
+            Id = 0,
+            Name = "All"
+        };
+        PitcherRoles.Add(allPitcherRole);
+        var pitcherRoleMapper = new PitcherRoleMapping();
+        PitcherRoles.AddRange(pitcherRoles.Select(p => pitcherRoleMapper.FromDto(p)));
+        
+        SelectedPitcherRole = allPitcherRole;
 
         GetTopPitchingCareers().Wait();
     }
@@ -61,6 +83,13 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     public string SortColumn { get; set; } = nameof(PlayerCareerPitchingDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
+    public ObservableCollection<PitcherRole> PitcherRoles { get; } = new();
+
+    public PitcherRole? SelectedPitcherRole
+    {
+        get => _selectedPitcherRole;
+        set => SetField(ref _selectedPitcherRole, value);
+    }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -72,6 +101,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
                     NavigateToPlayerOverview(SelectedPlayer);
                 break;
             }
+            case nameof(SelectedPitcherRole):
             case nameof(OnlyHallOfFamers):
             {
                 ShortCircuitPageNumberRefresh = true;
@@ -122,7 +152,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             pageNumber: PageNumber,
             limit: ResultsPerPage,
             orderBy: SortColumn,
-            onlyHallOfFamers: OnlyHallOfFamers
+            onlyHallOfFamers: OnlyHallOfFamers,
+            pitcherRoleId: SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id
         ));
 
         if (topPitchersResult.TryPickT1(out var exception, out var topPlayers))
