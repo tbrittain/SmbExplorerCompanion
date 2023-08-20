@@ -41,10 +41,18 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             return;
         }
 
+        var allPosition = new Position
+        {
+            Id = 0,
+            Name = "All"
+        };
+        Positions.Add(allPosition);
         var positionMapper = new PositionMapping();
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
             .Select(p => positionMapper.FromPositionDto(p)));
+        
+        SelectedPosition = allPosition;
 
         GetTopBattingCareers().Wait();
     }
@@ -147,7 +155,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             limit: ResultsPerPage,
             orderBy: SortColumn,
             onlyHallOfFamers: OnlyHallOfFamers,
-            primaryPositionId: SelectedPosition?.Id
+            primaryPositionId: SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id
         ));
 
         if (topBattersResult.TryPickT1(out var exception, out var topPlayers))

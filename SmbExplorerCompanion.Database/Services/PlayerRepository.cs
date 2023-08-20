@@ -1106,6 +1106,7 @@ public class PlayerRepository : IPlayerRepository
                 BatHandedness = x.BatHandedness.Name,
                 ThrowHandedness = x.ThrowHandedness.Name,
                 PrimaryPosition = x.PrimaryPosition.Name,
+                PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
                 Chemistry = x.Chemistry!.Name,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
