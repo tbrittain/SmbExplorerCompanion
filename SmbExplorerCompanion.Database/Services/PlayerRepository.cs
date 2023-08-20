@@ -211,6 +211,17 @@ public class PlayerRepository : IPlayerRepository
                             OmitFromGroupings = false
                         });
                     }
+
+                if (battingDto.IsHallOfFamer)
+                {
+                    battingDto.Awards.Add(new PlayerAwardBaseDto
+                    {
+                        Id = -1,
+                        Name = "Hall of Fame",
+                        Importance = 0,
+                        OmitFromGroupings = false
+                    });
+                }
             }
 
             return playerBattingDtos;
@@ -296,6 +307,17 @@ public class PlayerRepository : IPlayerRepository
                             OmitFromGroupings = false
                         });
                     }
+
+                if (pitchingDto.IsHallOfFamer)
+                {
+                    pitchingDto.Awards.Add(new PlayerAwardBaseDto
+                    {
+                        Id = -1,
+                        Name = "Hall of Fame",
+                        Importance = 0,
+                        OmitFromGroupings = false
+                    });
+                }
             }
 
             return playerPitchingDtos;

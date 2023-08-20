@@ -30,7 +30,7 @@ public static class AwardsExtensions
         var lastGrouping = groupings.Last();
         foreach (var grouping in groupings)
         {
-            if (!isSeason)
+            if (!isSeason && grouping.First().Name != "Hall of Fame")
             {
                 sb.Append($"{grouping.Count()}x ");
             }
