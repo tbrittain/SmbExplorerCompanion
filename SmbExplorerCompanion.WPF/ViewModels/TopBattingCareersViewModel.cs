@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Players;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -22,6 +25,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private bool _onlyHallOfFamers;
     private int _pageNumber = 1;
     private PlayerBattingCareer? _selectedPlayer;
+    private Position? _selectedPosition;
 
     public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator)
     {
@@ -29,6 +33,18 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         _mediator = mediator;
 
         PropertyChanged += OnPropertyChanged;
+        
+        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+        if (positionsResponse.TryPickT1(out var exception, out var positions))
+        {
+            MessageBox.Show(exception.Message);
+            return;
+        }
+
+        var positionMapper = new PositionMapping();
+        Positions.AddRange(positions
+            .Where(x => x.IsPrimaryPosition)
+            .Select(p => positionMapper.FromPositionDto(p)));
 
         GetTopBattingCareers().Wait();
     }
@@ -61,6 +77,13 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     }
 
     public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
+    public ObservableCollection<Position> Positions { get; } = new();
+
+    public Position? SelectedPosition
+    {
+        get => _selectedPosition;
+        set => SetField(ref _selectedPosition, value);
+    }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -72,6 +95,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
                     NavigateToPlayerOverview(SelectedPlayer);
                 break;
             }
+            case nameof(SelectedPosition):
             case nameof(OnlyHallOfFamers):
             {
                 ShortCircuitPageNumberRefresh = true;
@@ -122,7 +146,8 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             pageNumber: PageNumber,
             limit: ResultsPerPage,
             orderBy: SortColumn,
-            onlyHallOfFamers: OnlyHallOfFamers
+            onlyHallOfFamers: OnlyHallOfFamers,
+            primaryPositionId: SelectedPosition?.Id
         ));
 
         if (topBattersResult.TryPickT1(out var exception, out var topPlayers))
