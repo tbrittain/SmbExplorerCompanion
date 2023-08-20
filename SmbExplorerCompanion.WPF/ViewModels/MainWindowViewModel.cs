@@ -120,6 +120,13 @@ public partial class MainWindowViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    [RelayCommand]
+    private Task NavigateToDelegateHallOfFamers()
+    {
+        NavigationService.NavigateTo<DelegateHallOfFamersViewModel>();
+        return Task.CompletedTask;
+    }
+
     override public void Dispose()
     {
         _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;

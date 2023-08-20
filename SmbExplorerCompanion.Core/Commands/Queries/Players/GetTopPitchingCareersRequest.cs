@@ -53,7 +53,7 @@ public class GetTopPitchingCareersRequest : IRequest<OneOf<List<PlayerCareerPitc
             if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
                 return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
 
-            return await _playerRepository.GetTopPitchingCareers(
+            return await _playerRepository.GetPitchingCareers(
                 pageNumber: request.PageNumber, 
                 orderBy: request.OrderBy, 
                 descending: request.Descending, 

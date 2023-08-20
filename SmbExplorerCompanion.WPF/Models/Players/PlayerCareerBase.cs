@@ -7,6 +7,7 @@ public abstract class PlayerCareerBase : PlayerDetailBase
     public int StartSeasonNumber { get; set; }
     public int EndSeasonNumber { get; set; }
     public bool IsRetired { get; set; }
+    public bool IsHallOfFamer { get; set; }
     public string DisplaySeasons
     {
         get

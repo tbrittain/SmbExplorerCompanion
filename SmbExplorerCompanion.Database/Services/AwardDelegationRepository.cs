@@ -313,4 +313,31 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             return e;
         }
     }
+
+    public async Task<OneOf<Success, Exception>> AddHallOfFameAwards(List<PlayerHallOfFameRequestDto> players,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var playerIds = players.Select(x => x.PlayerId).ToList();
+
+            var playerEntities = await _dbContext.Players
+                .Where(x => playerIds.Contains(x.Id))
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            foreach (var player in players)
+            {
+                var playerEntity = playerEntities.Single(x => x.Id == player.PlayerId);
+                playerEntity.IsHallOfFamer = player.IsHallOfFamer;
+            }
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return new Success();
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
 }

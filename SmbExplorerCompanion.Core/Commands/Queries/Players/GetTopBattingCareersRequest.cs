@@ -55,7 +55,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
             if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
                 return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
 
-            return await _playerRepository.GetTopBattingCareers(
+            return await _playerRepository.GetBattingCareers(
                 pageNumber: request.PageNumber, 
                 orderBy: request.OrderBy, 
                 descending: request.Descending, 

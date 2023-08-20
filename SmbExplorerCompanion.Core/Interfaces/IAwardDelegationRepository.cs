@@ -9,4 +9,7 @@ public interface IAwardDelegationRepository
     public Task<OneOf<Success, Exception>> AddRegularSeasonPlayerAwards(int seasonId,
         List<PlayerAwardRequestDto> playerAwardRequestDtos,
         CancellationToken cancellationToken = default);
+
+    public Task<OneOf<Success, Exception>> AddHallOfFameAwards(List<PlayerHallOfFameRequestDto> players, 
+        CancellationToken cancellationToken = default);
 }
