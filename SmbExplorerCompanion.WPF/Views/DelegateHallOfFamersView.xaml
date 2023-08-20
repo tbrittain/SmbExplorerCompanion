@@ -27,12 +27,11 @@
 
         <ScrollViewer Grid.Row="1">
             <StackPanel Orientation="Vertical">
-                <GroupBox Header="Top Batting Overall">
+                <GroupBox Header="Eligible Position Players">
                     <DataGrid
                         Name="TopBattingCareersDataGrid"
-                        IsReadOnly="True"
+                        IsReadOnly="False"
                         ItemsSource="{Binding TopBattingCareers}"
-                        SelectedItem="{Binding SelectedPlayer}"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
@@ -42,14 +41,17 @@
                         SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="Player Name"
                                 Binding="{Binding PlayerName}" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="# Seasons"
                                 Binding="{Binding NumSeasons}" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="Seasons"
                                 Binding="{Binding DisplaySeasons}" />
@@ -58,6 +60,7 @@
                                 Binding="{Binding IsHallOfFamer}"
                                 IsReadOnly="False" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="Career Earnings"
                                 SortMemberPath="TotalSalary">
@@ -68,34 +71,42 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="AB"
                                 Binding="{Binding AtBats}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="H"
                                 Binding="{Binding Hits}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="1B"
                                 Binding="{Binding Singles}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="2B"
                                 Binding="{Binding Doubles}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="3B"
                                 Binding="{Binding Triples}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="HR"
                                 Binding="{Binding HomeRuns}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="BB"
                                 Binding="{Binding Walks}"
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="BA">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -105,30 +116,37 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="R"
                                 Binding="{Binding Runs}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="RBI"
                                 Binding="{Binding RunsBattedIn}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="SB"
                                 Binding="{Binding StolenBases}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="HBP"
                                 Binding="{Binding HitByPitch}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="SH"
                                 Binding="{Binding SacrificeHits}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="SF"
                                 Binding="{Binding SacrificeFlies}"
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="OBP">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -138,6 +156,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="SLG">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -147,6 +166,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="OPS">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -156,6 +176,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="OPS+">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -165,14 +186,17 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="E"
                                 Binding="{Binding Errors}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="K"
                                 Binding="{Binding Strikeouts}"
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="Cumulative OPS+"
                                 SortMemberPath="WeightedOpsPlusOrEraMinus">
@@ -183,6 +207,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="Awards"
                                 Binding="{Binding DisplayAwards}"
                                 CanUserSort="False" />
@@ -190,12 +215,11 @@
                     </DataGrid>
                 </GroupBox>
 
-                <GroupBox Header="Top Pitching Overall">
+                <GroupBox Header="Eligible Pitchers">
                     <DataGrid
                         Name="TopPitchingCareersDataGrid"
-                        IsReadOnly="True"
+                        IsReadOnly="False"
                         ItemsSource="{Binding TopPitchingCareers}"
-                        SelectedItem="{Binding SelectedPlayer}"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
@@ -205,14 +229,17 @@
                         SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="Player Name"
                                 Binding="{Binding PlayerName}" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="# Seasons"
                                 Binding="{Binding NumSeasons}" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="Seasons"
                                 Binding="{Binding DisplaySeasons}" />
@@ -221,6 +248,7 @@
                                 Binding="{Binding IsHallOfFamer}"
                                 IsReadOnly="False" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="Career Earnings"
                                 SortMemberPath="TotalSalary">
@@ -231,14 +259,17 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="W"
                                 Binding="{Binding Wins}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="L"
                                 Binding="{Binding Losses}"
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="ERA">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -248,6 +279,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="FIP">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -257,6 +289,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="WHIP">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -266,14 +299,17 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="GS"
                                 Binding="{Binding GamesStarted}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="SV"
                                 Binding="{Binding Saves}"
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="IP"
                                 SortMemberPath="InningsPitched">
@@ -284,42 +320,52 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="K"
                                 Binding="{Binding Strikeouts}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="CG"
                                 Binding="{Binding CompleteGames}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="CGSO"
                                 Binding="{Binding Shutouts}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="BB"
                                 Binding="{Binding Walks}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="H"
                                 Binding="{Binding Hits}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="HR"
                                 Binding="{Binding HomeRuns}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="ER"
                                 Binding="{Binding EarnedRuns}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="TP"
                                 Binding="{Binding TotalPitches}"
                                 CanUserSort="True" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="HBP"
                                 Binding="{Binding HitByPitch}"
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="ERA-">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -329,6 +375,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="False"
                                 Header="FIP-">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -338,6 +385,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="Cumulative ERA-"
                                 SortMemberPath="WeightedOpsPlusOrEraMinus">
@@ -348,6 +396,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Header="Awards"
                                 Binding="{Binding DisplayAwards}"
                                 CanUserSort="False" />

@@ -776,6 +776,7 @@ public class PlayerRepository : IPlayerRepository
                 .ToListAsync(cancellationToken: cancellationToken);
 
             var battingQueryable = GetCareerBattingIQueryable()
+                .Where(x => x.PitcherRoleId == null)
                 .Where(x => retiredPlayers.Contains(x.Id));
 
             var battingDtos = await GetCareerBattingDtos(battingQueryable)

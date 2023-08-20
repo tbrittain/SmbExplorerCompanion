@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -17,23 +16,18 @@ using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
-using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class DelegateHallOfFamersViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
-    private readonly INavigationService _navigationService;
-    private PlayerBase? _selectedPlayer;
     private Season? _selectedSeason;
 
     public DelegateHallOfFamersViewModel(IMediator mediator,
-        IApplicationContext applicationContext,
-        INavigationService navigationService)
+        IApplicationContext applicationContext)
     {
         _mediator = mediator;
-        _navigationService = navigationService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
             applicationContext.SelectedFranchiseId!.Value)).Result;
@@ -67,12 +61,6 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
     public ObservableCollection<PlayerBattingCareer> TopBattingCareers { get; } = new();
     public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
 
-    public PlayerBase? SelectedPlayer
-    {
-        get => _selectedPlayer;
-        set => SetField(ref _selectedPlayer, value);
-    }
-
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -80,22 +68,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             case nameof(SelectedSeason):
                 GetHallOfFamers().Wait();
                 break;
-            case nameof(SelectedPlayer):
-            {
-                if (SelectedPlayer is not null)
-                    NavigateToPlayerOverview(SelectedPlayer);
-                break;
-            }
         }
-    }
-
-    private void NavigateToPlayerOverview(PlayerBase player)
-    {
-        var parameters = new Tuple<string, object>[]
-        {
-            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
-        };
-        _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }
 
     private async Task GetHallOfFamers()
