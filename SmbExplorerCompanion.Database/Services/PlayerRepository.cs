@@ -138,10 +138,14 @@ public class PlayerRepository : IPlayerRepository
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
+        bool onlyHallOfFamers = false,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
+        
+        if (playerId is not null && onlyHallOfFamers)
+            throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
@@ -166,7 +170,8 @@ public class PlayerRepository : IPlayerRepository
 
             var queryable = GetCareerBattingIQueryable()
                 .Where(x => x.FranchiseId == franchiseId)
-                .Where(x => playerId == null || x.Id == playerId);
+                .Where(x => playerId == null || x.Id == playerId)
+                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer);
 
             var playerBattingDtos = await GetCareerBattingDtos(queryable)
                 .OrderBy(orderBy)
@@ -218,10 +223,14 @@ public class PlayerRepository : IPlayerRepository
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
+        bool onlyHallOfFamers = false,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
+        
+        if (playerId is not null && onlyHallOfFamers)
+            throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
@@ -247,7 +256,8 @@ public class PlayerRepository : IPlayerRepository
             var queryable = GetCareerPitchingIQueryable()
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PitcherRole != null)
-                .Where(x => playerId == null || x.Id == playerId);
+                .Where(x => playerId == null || x.Id == playerId)
+                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer);
 
             var playerPitchingDtos = await GetCareerPitchingDtos(queryable)
                 .OrderBy(orderBy)
