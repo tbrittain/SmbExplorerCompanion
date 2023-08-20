@@ -145,7 +145,7 @@ public class SmbExplorerCompanionDbContext : DbContext
             new PitcherRole {Name = "SP"},
             new PitcherRole {Name = "RP"},
             new PitcherRole {Name = "SP/RP"},
-            new PitcherRole {Name = "CP"}
+            new PitcherRole {Name = "CL"}
         );
 
         dbContext.Positions.AddRange(
