@@ -42,8 +42,7 @@
                 materialDesign:HintAssist.Hint="Position"
                 ItemsSource="{Binding Positions}"
                 DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPosition}">
-            </ComboBox>
+                SelectedItem="{Binding SelectedPosition}"/>
         </DockPanel>
 
         <DataGrid
