@@ -4,25 +4,33 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TopPitchingSeasonsViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
             <RowDefinition />
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0">
-            <StackPanel
+            <ComboBox
                 DockPanel.Dock="Left"
-                Orientation="Horizontal">
-                <Label Content="Select a season:" Margin="0, 0, 10, 0" />
-                <ComboBox
-                    Width="200"
-                    ItemsSource="{Binding Seasons}"
-                    SelectedItem="{Binding SelectedSeason}"
-                    DisplayMemberPath="DisplaySeasonNumber" />
-            </StackPanel>
+                Width="200"
+                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                materialDesign:HintAssist.Hint="Season"
+                ItemsSource="{Binding Seasons}"
+                SelectedItem="{Binding SelectedSeason}"
+                DisplayMemberPath="DisplaySeasonNumber" />
+            
+            <ComboBox
+                Margin="2"
+                Width="200"
+                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                materialDesign:HintAssist.Hint="Pitcher Role"
+                ItemsSource="{Binding PitcherRoles}"
+                DisplayMemberPath="Name"
+                SelectedItem="{Binding SelectedPitcherRole}" />
 
             <StackPanel
                 DockPanel.Dock="Right"

@@ -546,6 +546,7 @@ public class PlayerRepository : IPlayerRepository
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
         int? playerId = null,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default)
     {
         if (onlyRookies && seasonId is null)
@@ -622,6 +623,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => playerId == null || x.PlayerSeason.PlayerId == playerId)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
+                .Where(x => pitcherRoleId == null || x.PlayerSeason.Player.PitcherRoleId == pitcherRoleId)
                 .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
                 .Select(x => new PlayerPitchingSeasonDto
                 {

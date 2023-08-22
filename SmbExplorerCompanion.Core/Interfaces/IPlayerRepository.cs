@@ -56,6 +56,7 @@ public interface IPlayerRepository
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
         int? playerId = null,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,

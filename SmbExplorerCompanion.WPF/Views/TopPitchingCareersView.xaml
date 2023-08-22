@@ -42,8 +42,7 @@
                 materialDesign:HintAssist.Hint="Pitcher Role"
                 ItemsSource="{Binding PitcherRoles}"
                 DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPitcherRole}">
-            </ComboBox>
+                SelectedItem="{Binding SelectedPitcherRole}" />
         </DockPanel>
 
         <DataGrid

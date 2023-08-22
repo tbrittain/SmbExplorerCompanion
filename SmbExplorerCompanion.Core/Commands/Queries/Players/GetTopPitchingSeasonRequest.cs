@@ -17,7 +17,8 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
         int? teamId = null,
         bool onlyRookies = false,
         bool includeChampionAwards = true,
-        bool onlyUserAssignableAwards = false)
+        bool onlyUserAssignableAwards = false,
+        int? pitcherRoleId = null)
     {
         OnlyUserAssignableAwards = onlyUserAssignableAwards;
         SeasonId = seasonId;
@@ -29,6 +30,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
         OnlyRookies = onlyRookies;
         TeamId = teamId;
         IncludeChampionAwards = includeChampionAwards;
+        PitherRoleId = pitcherRoleId;
     }
 
     private int? SeasonId { get; }
@@ -41,6 +43,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
     private bool OnlyRookies { get; }
     private bool IncludeChampionAwards { get; }
     private bool OnlyUserAssignableAwards { get; }
+    private int? PitherRoleId { get; }
 
     // ReSharper disable once UnusedType.Global
     internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
@@ -66,6 +69,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
                 onlyRookies: request.OnlyRookies,
                 includeChampionAwards: request.IncludeChampionAwards,
                 onlyUserAssignableAwards: request.OnlyUserAssignableAwards,
+                pitcherRoleId: request.PitherRoleId,
                 cancellationToken: cancellationToken);
         }
     }
