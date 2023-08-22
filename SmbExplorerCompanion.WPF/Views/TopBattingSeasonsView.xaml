@@ -89,6 +89,10 @@
                     Header="Season #"
                     Binding="{Binding SeasonNumber}" />
                 <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Age"
+                    Binding="{Binding Age}" />
+                <DataGridTextColumn
                     CanUserSort="False"
                     Header="Teams"
                     Binding="{Binding TeamNames}" />
