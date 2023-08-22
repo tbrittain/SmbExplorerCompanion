@@ -227,6 +227,7 @@ public class SmbExplorerCompanionDbContext : DbContext
                 Importance = 1,
                 IsBuiltIn = true,
                 IsBattingAward = true,
+                IsPitchingAward = true,
                 IsUserAssignable = true
             },
             new()
