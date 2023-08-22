@@ -46,7 +46,7 @@ public class PositionRepository : IRepository<PositionDto>
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-            if (position == null)
+            if (position is null)
             {
                 return new None();
             }

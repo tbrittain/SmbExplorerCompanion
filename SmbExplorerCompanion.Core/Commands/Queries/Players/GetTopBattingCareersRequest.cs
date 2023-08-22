@@ -8,16 +8,27 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBattingDto>, Exception>>
 {
-    public GetTopBattingCareersRequest(int? pageNumber = null, string? orderBy = null, bool descending = true)
+    public GetTopBattingCareersRequest(int? pageNumber = null,
+        int? limit = null,
+        string? orderBy = null,
+        bool descending = true,
+        bool onlyHallOfFamers = false,
+        int? primaryPositionId = null)
     {
         PageNumber = pageNumber;
+        Limit = limit;
         OrderBy = orderBy;
         Descending = descending;
+        OnlyHallOfFamers = onlyHallOfFamers;
+        PrimaryPositionId = primaryPositionId;
     }
 
     private int? PageNumber { get; }
+    private int? Limit { get; }
     private string? OrderBy { get; }
     private bool Descending { get; }
+    private bool OnlyHallOfFamers { get; }
+    private int? PrimaryPositionId { get; }
 
     private static ImmutableArray<string> ValidOrderByProperties { get; } = ImmutableArray.Create(
         nameof(PlayerCareerBattingDto.TotalSalary),
@@ -50,15 +61,19 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
             _playerRepository = playerRepository;
         }
 
-        public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> Handle(GetTopBattingCareersRequest request, CancellationToken cancellationToken)
+        public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> Handle(GetTopBattingCareersRequest request,
+            CancellationToken cancellationToken)
         {
             if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
                 return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
 
             return await _playerRepository.GetBattingCareers(
-                pageNumber: request.PageNumber, 
-                orderBy: request.OrderBy, 
-                descending: request.Descending, 
+                pageNumber: request.PageNumber,
+                limit: request.Limit,
+                orderBy: request.OrderBy,
+                descending: request.Descending,
+                onlyHallOfFamers: request.OnlyHallOfFamers,
+                primaryPositionId: request.PrimaryPositionId,
                 cancellationToken: cancellationToken);
         }
     }

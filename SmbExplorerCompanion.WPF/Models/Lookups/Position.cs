@@ -1,8 +1,6 @@
 ﻿namespace SmbExplorerCompanion.WPF.Models.Lookups;
 
-public class Position
+public record Position : LookupBase
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = default!;
     public bool IsPrimaryPosition { get; set; }
 }

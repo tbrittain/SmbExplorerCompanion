@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Services;
@@ -28,6 +31,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     private PlayerBase? _selectedPlayer;
     private Season? _selectedSeason;
     private bool _onlyRookies;
+    private Position? _selectedPosition;
 
     public TopBattingSeasonsViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
@@ -53,6 +57,26 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         {
             Id = default
         });
+        
+        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+        if (positionsResponse.TryPickT1(out exception, out var positions))
+        {
+            MessageBox.Show(exception.Message);
+            return;
+        }
+
+        var allPosition = new Position
+        {
+            Id = 0,
+            Name = "All"
+        };
+        Positions.Add(allPosition);
+        var positionMapper = new PositionMapping();
+        Positions.AddRange(positions
+            .Where(x => x.IsPrimaryPosition)
+            .Select(p => positionMapper.FromPositionDto(p)));
+        
+        SelectedPosition = allPosition;
 
         GetTopBattingSeason().Wait();
 
@@ -111,6 +135,14 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
+    
+    public ObservableCollection<Position> Positions { get; } = new();
+
+    public Position? SelectedPosition
+    {
+        get => _selectedPosition;
+        set => SetField(ref _selectedPosition, value);
+    }
 
     public bool IsPlayoffs
     {
@@ -155,6 +187,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             case nameof(OnlyRookies):
             case nameof(IsPlayoffs):
             case nameof(SelectedSeason):
+            case nameof(SelectedPosition):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -187,6 +220,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             orderBy: SortColumn,
             onlyRookies: OnlyRookies,
             limit: ResultsPerPage,
+            primaryPositionId: SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
             descending: true));
 
         if (topBattersResult.TryPickT1(out var exception, out var topBatters))

@@ -1,9 +1,7 @@
 ﻿namespace SmbExplorerCompanion.WPF.Models.Lookups;
 
-public record PlayerAwardBase
+public record PlayerAwardBase : LookupBase
 {
-    public int Id { get; init; }
-    public string Name { get; init; } = default!;
     public int Importance { get; init; }
     public bool OmitFromGroupings { get; init; }
 

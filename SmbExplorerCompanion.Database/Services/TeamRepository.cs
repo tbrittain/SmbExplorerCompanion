@@ -308,23 +308,19 @@ public class TeamRepository : ITeamRepository
                     {
                         dto.AverageEraMinus = seasonsWithTeam
                             .SelectMany(y => y.PitchingStats)
-                            .Where(y => y.IsRegularSeason)
                             .Average(y => y.EraMinus ?? 0);
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.PitchingStats)
-                            .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.EraMinus ?? 0) * y.InningsPitched * PitchingScalingFactor ?? 0);
+                            .Sum(y => ((y.EraMinus ?? 0) - 100) * y.InningsPitched * PitchingScalingFactor ?? 0);
                     }
                     else
                     {
                         dto.AverageOpsPlus = seasonsWithTeam
                             .SelectMany(y => y.BattingStats)
-                            .Where(y => y.IsRegularSeason)
                             .Average(y => y.OpsPlus ?? 0);
                         dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
                             .SelectMany(y => y.BattingStats)
-                            .Where(y => y.IsRegularSeason)
-                            .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances * BattingScalingFactor);
+                            .Sum(y => ((y.OpsPlus ?? 0) - 100) * y.PlateAppearances * BattingScalingFactor);
                     }
 
                     return dto;

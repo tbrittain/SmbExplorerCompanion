@@ -11,16 +11,22 @@ public interface IPlayerRepository
 
     public Task<OneOf<List<PlayerCareerBattingDto>, Exception>> GetBattingCareers(
         int? pageNumber = null,
+        int? limit = null,
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
+        bool onlyHallOfFamers = false,
+        int? primaryPositionId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
         int? pageNumber = null,
+        int? limit = null,
         string? orderBy = null,
         bool descending = true,
         int? playerId = null,
+        bool onlyHallOfFamers = false,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetBattingSeasons(
@@ -50,6 +56,7 @@ public interface IPlayerRepository
         bool includeChampionAwards = true,
         bool onlyUserAssignableAwards = false,
         int? playerId = null,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
