@@ -45,6 +45,7 @@ public class GetTopPitchingCareersRequest : IRequest<OneOf<List<PlayerCareerPitc
         nameof(PlayerCareerPitchingDto.Walks),
         nameof(PlayerCareerPitchingDto.Strikeouts),
         nameof(PlayerCareerPitchingDto.EarnedRuns),
+        nameof(PlayerCareerPitchingDto.TotalPitches),
         nameof(PlayerCareerPitchingDto.WeightedOpsPlusOrEraMinus)
     );
 
