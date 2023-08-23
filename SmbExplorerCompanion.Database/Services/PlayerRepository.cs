@@ -201,6 +201,11 @@ public class PlayerRepository : IPlayerRepository
             foreach (var battingDto in playerBattingDtos)
             {
                 battingDto.IsRetired = battingDto.EndSeasonNumber < mostRecentSeason.Number;
+                if (battingDto.IsRetired)
+                {
+                    battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
+                }
+                
                 battingDto.BattingAverage = battingDto.AtBats == 0
                     ? 0
                     : battingDto.Hits / (double) battingDto.AtBats;
@@ -314,6 +319,10 @@ public class PlayerRepository : IPlayerRepository
             foreach (var pitchingDto in playerPitchingDtos)
             {
                 pitchingDto.IsRetired = pitchingDto.EndSeasonNumber < mostRecentSeason.Number;
+                {
+                    pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
+                }
+
                 pitchingDto.Era = pitchingDto.InningsPitched == 0
                     ? 0
                     : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
@@ -833,6 +842,10 @@ public class PlayerRepository : IPlayerRepository
                 .OrderByDescending(x => x.Id)
                 .First();
 
+            var mostRecentSeason = allFranchiseSeasons
+                .OrderByDescending(x => x.Id)
+                .First();
+
             // Here, we are going to get all of the player IDs that have a player season in the previous season,
             // but lack one in the season queried
 
@@ -855,6 +868,7 @@ public class PlayerRepository : IPlayerRepository
             foreach (var battingDto in battingDtos)
             {
                 battingDto.IsRetired = true;
+                battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
                 battingDto.BattingAverage = battingDto.AtBats == 0
                     ? 0
                     : battingDto.Hits / (double) battingDto.AtBats;
@@ -892,6 +906,7 @@ public class PlayerRepository : IPlayerRepository
             foreach (var pitchingDto in pitchingDtos)
             {
                 pitchingDto.IsRetired = true;
+                pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
                 pitchingDto.Era = pitchingDto.InningsPitched == 0
                     ? 0
                     : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
@@ -1111,6 +1126,7 @@ public class PlayerRepository : IPlayerRepository
                 Chemistry = x.Chemistry!.Name,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
+                Age = x.PlayerSeasons.Max(y => y.Age),
                 NumSeasons = x.PlayerSeasons.Count,
                 AtBats = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)),
                 Hits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)),
@@ -1172,6 +1188,7 @@ public class PlayerRepository : IPlayerRepository
                 Chemistry = x.Chemistry!.Name,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
+                Age = x.PlayerSeasons.Max(y => y.Age),
                 NumSeasons = x.PlayerSeasons.Count,
                 Wins = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)),
                 Losses = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)),
