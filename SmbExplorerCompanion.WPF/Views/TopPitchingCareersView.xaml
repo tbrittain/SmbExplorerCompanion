@@ -74,6 +74,11 @@
                     Binding="{Binding DisplaySeasons}" />
                 <DataGridTextColumn
                     CanUserSort="False"
+                    Header="Age"
+                    SortMemberPath="Age"
+                    Binding="{Binding DisplayAge}" />
+                <DataGridTextColumn
+                    CanUserSort="False"
                     Header="Pitcher Role"
                     Binding="{Binding PitcherRole}" />
                 <DataGridTemplateColumn

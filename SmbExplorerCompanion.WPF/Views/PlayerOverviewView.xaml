@@ -179,6 +179,10 @@
                                 CanUserSort="False"
                                 Header="OPS+"
                                 Binding="{Binding OpsPlus, StringFormat={}{0:F1}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="Age"
+                                Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -234,6 +238,10 @@
                                 CanUserSort="False"
                                 Header="WHIP"
                                 Binding="{Binding Whip, StringFormat={}{0:F2}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="Age"
+                                Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -273,6 +281,10 @@
                                         Header="Season #"
                                         SortDirection="Descending"
                                         Binding="{Binding SeasonNumber}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="Age"
+                                        Binding="{Binding Age}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
                                         Header="Team"
@@ -437,6 +449,10 @@
                                         Header="Season #"
                                         SortDirection="Descending"
                                         Binding="{Binding SeasonNumber}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="Age"
+                                        Binding="{Binding Age}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
                                         Header="Team"
@@ -611,6 +627,10 @@
                                         SortDirection="Descending"
                                         Binding="{Binding SeasonNumber}" />
                                     <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="Age"
+                                        Binding="{Binding Age}" />
+                                    <DataGridTextColumn
                                         CanUserSort="False"
                                         Header="Team"
                                         Binding="{Binding TeamNames}" />
@@ -775,6 +795,10 @@
                                         CanUserSort="True"
                                         Header="Season #"
                                         Binding="{Binding SeasonNumber}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="Age"
+                                        Binding="{Binding Age}" />
                                     <DataGridTextColumn
                                         CanUserSort="False"
                                         Header="Team"

@@ -427,7 +427,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         MessageBox.Show($"Player awards for Season {SelectedSeason.Number} added successfully!");
     }
 
-    public ObservableCollection<SimpleTeam> SeasonTeams { get; } = new();
+    private ObservableCollection<SimpleTeam> SeasonTeams { get; } = new();
     private ObservableCollection<PlayerAward> AllAwards { get; } = new();
     private List<Position> Positions { get; } = new();
     public ObservableCollection<PlayerAward> BattingAwards { get; } = new();

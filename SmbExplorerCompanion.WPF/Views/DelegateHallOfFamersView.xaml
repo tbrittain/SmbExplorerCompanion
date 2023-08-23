@@ -55,6 +55,11 @@
                                 CanUserSort="False"
                                 Header="Seasons"
                                 Binding="{Binding DisplaySeasons}" />
+                            <DataGridTextColumn
+                                CanUserSort="True"
+                                Header="Age"
+                                SortMemberPath="Age"
+                                Binding="{Binding DisplayAge}" />
                             <DataGridCheckBoxColumn
                                 Header="Hall of Famer"
                                 Binding="{Binding IsHallOfFamer}"
@@ -243,6 +248,11 @@
                                 CanUserSort="False"
                                 Header="Seasons"
                                 Binding="{Binding DisplaySeasons}" />
+                            <DataGridTextColumn
+                                CanUserSort="True"
+                                Header="Age"
+                                SortMemberPath="Age"
+                                Binding="{Binding DisplayAge}" />
                             <DataGridCheckBoxColumn
                                 Header="Hall of Famer"
                                 Binding="{Binding IsHallOfFamer}"
