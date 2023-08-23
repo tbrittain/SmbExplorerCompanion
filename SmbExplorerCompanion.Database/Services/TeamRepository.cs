@@ -92,9 +92,9 @@ public class TeamRepository : ITeamRepository
                     CurrentTeamName = x.SeasonTeamHistory
                         .OrderByDescending(y => y.SeasonId)
                         .First().TeamNameHistory.Name,
-                    NumGames = x.SeasonTeamHistory.Sum(y => y.Wins + y.Losses),
-                    NumWins = x.SeasonTeamHistory.Sum(y => y.Wins),
-                    NumLosses = x.SeasonTeamHistory.Sum(y => y.Losses),
+                    NumGames = x.SeasonTeamHistory.Sum(y => y.Wins + y.Losses + (y.PlayoffWins ?? 0) + (y.PlayoffLosses ?? 0)),
+                    NumWins = x.SeasonTeamHistory.Sum(y => y.Wins + (y.PlayoffWins ?? 0)),
+                    NumLosses = x.SeasonTeamHistory.Sum(y => y.Losses + (y.PlayoffLosses ?? 0)),
                     NumDivisionsWon = x.SeasonTeamHistory.Count(y => y.GamesBehind == 0),
                     NumChampionships = x.SeasonTeamHistory
                         .Count(y => y.ChampionshipWinner != null),
