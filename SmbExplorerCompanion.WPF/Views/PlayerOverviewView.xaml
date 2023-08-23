@@ -179,6 +179,10 @@
                                 CanUserSort="False"
                                 Header="OPS+"
                                 Binding="{Binding OpsPlus, StringFormat={}{0:F1}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="Age"
+                                Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -234,6 +238,10 @@
                                 CanUserSort="False"
                                 Header="WHIP"
                                 Binding="{Binding Whip, StringFormat={}{0:F2}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="Age"
+                                Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
