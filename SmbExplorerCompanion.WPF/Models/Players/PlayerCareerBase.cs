@@ -7,6 +7,8 @@ public abstract class PlayerCareerBase : PlayerDetailBase
     public int StartSeasonNumber { get; set; }
     public int EndSeasonNumber { get; set; }
     public bool IsRetired { get; set; }
+    public int Age { get; set; }
+    public int? RetiredCurrentAge { get; set; }
     public bool IsHallOfFamer { get; set; }
     public string DisplaySeasons
     {
@@ -26,5 +28,8 @@ public abstract class PlayerCareerBase : PlayerDetailBase
             return sb.ToString();
         }
     }
+
+    public string DisplayAge => !IsRetired ? $"{Age}" : $"{RetiredCurrentAge} ({Age} at retirement)";
+
     public int NumSeasons { get; set; }
 }
