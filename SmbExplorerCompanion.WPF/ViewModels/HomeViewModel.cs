@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -38,14 +39,27 @@ public partial class HomeViewModel : ViewModelBase
             return;
         }
 
-        if (rest.TryPickT1(out _, out var franchiseSummaryDto))
+        if (rest.TryPickT0(out var franchiseSummaryDto, out _))
         {
+            var franchiseSummaryMapper = new FranchiseSummaryMapping();
+            FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
+        }
+        
+        var conferenceSummaryResult = _mediator.Send(new GetLeagueSummaryRequest()).Result;
+        if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
+        {
+            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
-
-        var franchiseSummaryMapper = new FranchiseSummaryMapping();
-        FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
+        
+        if (rest2.TryPickT0(out var leagueSummaryDto, out _))
+        {
+            var conferenceSummaryMapper = new ConferenceSummaryMapping();
+            Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
+        }
     }
+
+    public ObservableCollection<ConferenceSummary> Conferences { get; } = new();
 
     public ObservableGroupedCollection<SearchResultType, SearchResult> SearchResults { get; } = new();
 
