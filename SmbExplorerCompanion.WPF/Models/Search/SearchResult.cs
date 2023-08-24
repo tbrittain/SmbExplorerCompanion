@@ -1,6 +1,8 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Search;
+﻿using SmbExplorerCompanion.Core.Entities.Search;
 
-public class SearchResultDto
+namespace SmbExplorerCompanion.WPF.Models.Search;
+
+public class SearchResult
 {
     public SearchResultType Type { get; init; }
     public string Name { get; init; } = default!;
