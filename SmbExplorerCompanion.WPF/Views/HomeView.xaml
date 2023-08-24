@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="2*" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -134,6 +134,28 @@
                     <TextBlock FontSize="14" Text="Most recent champion:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button Command="{Binding NavigateToChampionPageCommand}">
                         <TextBlock Text="{Binding FranchiseSummary.MostRecentChampionTeamName}" FontSize="14" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal"
+                    Visibility="{Binding FranchiseSummary.MostRecentSeasonMvpVisibility}">
+                    <TextBlock FontSize="14" Text="Most recent MVP:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <Button
+                        Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                        CommandParameter="{Binding FranchiseSummary.MostRecentMvpPlayerId}">
+                        <TextBlock Text="{Binding FranchiseSummary.MostRecentMvpPlayerName}" FontSize="14" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal"
+                    Visibility="{Binding FranchiseSummary.MostRecentSeasonCyYoungVisibility}">
+                    <TextBlock FontSize="14" Text="Most recent Cy Young:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <Button
+                        Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                        CommandParameter="{Binding FranchiseSummary.MostRecentCyYoungPlayerId}">
+                        <TextBlock Text="{Binding FranchiseSummary.MostRecentCyYoungPlayerName}" FontSize="14" />
                     </Button>
                 </StackPanel>
 

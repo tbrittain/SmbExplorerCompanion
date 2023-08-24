@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Players;
@@ -71,6 +72,39 @@ public class SummaryRepository : ISummaryRepository
             {
                 franchiseSummaryDto.MostRecentChampionTeamId = mostRecentChampionTeam.Team.Id;
                 franchiseSummaryDto.MostRecentChampionTeamName = mostRecentChampionTeam.TeamNameHistory.Name;
+            }
+            
+            var mostRecentSeasonAwardees = _context.PlayerSeasons
+                .Include(x => x.Awards)
+                .Include(x => x.Player)
+                .Where(x => x.SeasonId == mostRecentSeason.Id);
+
+            var mvpAward = await _context.PlayerAwards
+                .Where(x => x.OriginalName == "MVP")
+                .SingleAsync(cancellationToken: cancellationToken);
+
+            var mostRecentSeasonMvp = await mostRecentSeasonAwardees
+                .Where(x => x.Awards.Any(y => y.Id == mvpAward.Id))
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+            if (mostRecentSeasonMvp is not null)
+            {
+                franchiseSummaryDto.MostRecentMvpPlayerId = mostRecentSeasonMvp.PlayerId;
+                franchiseSummaryDto.MostRecentMvpPlayerName = $"{mostRecentSeasonMvp.Player.FirstName} {mostRecentSeasonMvp.Player.LastName}";
+            }
+            
+            var cyYoungAward = await _context.PlayerAwards
+                .Where(x => x.OriginalName == "Cy Young")
+                .SingleAsync(cancellationToken: cancellationToken);
+            
+            var mostRecentSeasonCyYoung = await mostRecentSeasonAwardees
+                .Where(x => x.Awards.Any(y => y.Id == cyYoungAward.Id))
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+            if (mostRecentSeasonCyYoung is not null)
+            {
+                franchiseSummaryDto.MostRecentCyYoungPlayerId = mostRecentSeasonCyYoung.PlayerId;
+                franchiseSummaryDto.MostRecentCyYoungPlayerName = $"{mostRecentSeasonCyYoung.Player.FirstName} {mostRecentSeasonCyYoung.Player.LastName}";
             }
 
             // Get some top player leaders

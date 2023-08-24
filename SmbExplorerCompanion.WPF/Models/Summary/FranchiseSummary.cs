@@ -13,8 +13,18 @@ public class FranchiseSummary
 
     public int? MostRecentChampionTeamId { get; set; }
     public string? MostRecentChampionTeamName { get; set; }
-    
+
+    public int? MostRecentMvpPlayerId { get; set; }
+    public string? MostRecentMvpPlayerName { get; set; }
+
+    public int? MostRecentCyYoungPlayerId { get; set; }
+    public string? MostRecentCyYoungPlayerName { get; set; }
+
     public Visibility MostRecentChampionVisibility => MostRecentChampionTeamId.HasValue ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility MostRecentSeasonMvpVisibility => MostRecentMvpPlayerId.HasValue ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility MostRecentSeasonCyYoungVisibility => MostRecentCyYoungPlayerId.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
     public PlayerLeaderSummary TopHomeRuns { get; set; } = new();
     public PlayerLeaderSummary TopHits { get; set; } = new();
@@ -24,5 +34,4 @@ public class FranchiseSummary
     public PlayerLeaderSummary TopStrikeouts { get; set; } = new();
 
     public ObservableCollection<PlayerCareerBase> CurrentGreats { get; set; } = new();
-
 }
