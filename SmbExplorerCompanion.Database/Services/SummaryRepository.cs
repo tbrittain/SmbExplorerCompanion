@@ -73,7 +73,7 @@ public class SummaryRepository : ISummaryRepository
                 franchiseSummaryDto.MostRecentChampionTeamId = mostRecentChampionTeam.Team.Id;
                 franchiseSummaryDto.MostRecentChampionTeamName = mostRecentChampionTeam.TeamNameHistory.Name;
             }
-            
+
             var mostRecentSeasonAwardees = _context.PlayerSeasons
                 .Include(x => x.Awards)
                 .Include(x => x.Player)
@@ -92,11 +92,11 @@ public class SummaryRepository : ISummaryRepository
                 franchiseSummaryDto.MostRecentMvpPlayerId = mostRecentSeasonMvp.PlayerId;
                 franchiseSummaryDto.MostRecentMvpPlayerName = $"{mostRecentSeasonMvp.Player.FirstName} {mostRecentSeasonMvp.Player.LastName}";
             }
-            
+
             var cyYoungAward = await _context.PlayerAwards
                 .Where(x => x.OriginalName == "Cy Young")
                 .SingleAsync(cancellationToken: cancellationToken);
-            
+
             var mostRecentSeasonCyYoung = await mostRecentSeasonAwardees
                 .Where(x => x.Awards.Any(y => y.Id == cyYoungAward.Id))
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
@@ -104,7 +104,8 @@ public class SummaryRepository : ISummaryRepository
             if (mostRecentSeasonCyYoung is not null)
             {
                 franchiseSummaryDto.MostRecentCyYoungPlayerId = mostRecentSeasonCyYoung.PlayerId;
-                franchiseSummaryDto.MostRecentCyYoungPlayerName = $"{mostRecentSeasonCyYoung.Player.FirstName} {mostRecentSeasonCyYoung.Player.LastName}";
+                franchiseSummaryDto.MostRecentCyYoungPlayerName =
+                    $"{mostRecentSeasonCyYoung.Player.FirstName} {mostRecentSeasonCyYoung.Player.LastName}";
             }
 
             // Get some top player leaders
@@ -232,6 +233,93 @@ public class SummaryRepository : ISummaryRepository
             franchiseSummaryDto.CurrentGreats = currentGreats;
 
             return franchiseSummaryDto;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    public async Task<OneOf<List<ConferenceSummaryDto>, None, Exception>> GetLeagueSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+        try
+        {
+            var mostRecentSeason = await _context.Seasons
+                .Where(x => x.FranchiseId == franchiseId)
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+            if (mostRecentSeason is null) return new None();
+            
+            var maxPlayoffSeries = await _context.TeamPlayoffSchedules
+                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+
+            var conferences = await _context.Conferences
+                .Where(x => x.FranchiseId == franchiseId)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            var conferenceSummaryDtos = conferences
+                .Select(x => new ConferenceSummaryDto
+                {
+                    Id = x.Id,
+                    ConferenceName = x.Name,
+                })
+                .ToList();
+
+            foreach (var conferenceSummaryDto in conferenceSummaryDtos)
+            {
+                var divisions = await _context.Divisions
+                    .Where(x => x.ConferenceId == conferenceSummaryDto.Id)
+                    .ToListAsync(cancellationToken: cancellationToken);
+
+                var divisionSummaryDtos = divisions
+                    .Select(x => new DivisionSummaryDto
+                    {
+                        Id = x.Id,
+                        DivisionName = x.Name,
+                    })
+                    .ToList();
+
+                foreach (var divisionSummaryDto in divisionSummaryDtos)
+                {
+                    var mostRecentSeasonTeamHistory = await _context.SeasonTeamHistory
+                        .Include(x => x.TeamNameHistory)
+                        .Include(x => x.ChampionshipWinner)
+                        .Include(x => x.HomePlayoffSchedule)
+                        .Include(x => x.AwayPlayoffSchedule)
+                        .Where(x => x.SeasonId == mostRecentSeason.Id)
+                        .Where(x => x.DivisionId == divisionSummaryDto.Id)
+                        .ToListAsync(cancellationToken: cancellationToken);
+
+                    var mostRecentSeasonTeamHistoryDtos = mostRecentSeasonTeamHistory
+                        .Select(x => new TeamSummaryDto
+                        {
+                            Id = x.TeamId,
+                            TeamName = x.TeamNameHistory.Name,
+                            Wins = x.Wins,
+                            Losses = x.Losses,
+                            PlayoffSeed = x.PlayoffSeed,
+                            PlayoffWins = x.PlayoffWins,
+                            PlayoffLosses = x.PlayoffLosses,
+                            IsDivisionChampion = x.GamesBehind == 0,
+                            IsConferenceChampion =
+                                x.HomePlayoffSchedule
+                                    .Any(y => y.SeriesNumber == maxPlayoffSeries) ||
+                                x.AwayPlayoffSchedule
+                                    .Any(y => y.SeriesNumber == maxPlayoffSeries),
+                            IsChampion = x.ChampionshipWinner is not null,
+                        })
+                        .ToList();
+
+                    divisionSummaryDto.Teams = mostRecentSeasonTeamHistoryDtos;
+                }
+
+                conferenceSummaryDto.Divisions = divisionSummaryDtos;
+            }
+
+            return conferenceSummaryDtos;
         }
         catch (Exception e)
         {
