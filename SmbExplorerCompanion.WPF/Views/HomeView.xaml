@@ -11,6 +11,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
             <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
         
         <Grid.ColumnDefinitions>
@@ -101,7 +102,71 @@
             </Grid>
         </StackPanel>
         
-        <StackPanel Grid.Row="1" Grid.Column="1">
+        <StackPanel
+            Orientation="Vertical"
+            Visibility="{Binding FranchiseSummaryVisibility}"
+            Grid.Column="0"
+            Grid.Row="2">
+            <TextBlock FontSize="16" FontWeight="SemiBold">Franchise Summary</TextBlock>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="14" Text="# Players:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                <TextBlock Text="{Binding FranchiseSummary.NumPlayers}" FontSize="14" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="14" Text="# Seasons:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                <TextBlock Text="{Binding FranchiseSummary.NumSeasons}" FontSize="14" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="14" Text="Most recent season:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                <TextBlock Text="{Binding FranchiseSummary.MostRecentSeasonNumber}" FontSize="14" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="14" Text="# HoFers:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                <TextBlock Text="{Binding FranchiseSummary.NumHallOfFamers}" FontSize="14" />
+            </StackPanel>
+            
+            <StackPanel 
+                Orientation="Horizontal" 
+                Visibility="{Binding FranchiseSummary.MostRecentChampionVisibility}">
+                <TextBlock FontSize="14" Text="Most recent champion:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                <Button Command="{Binding NavigateToChampionPageCommand}">
+                    <TextBlock Text="{Binding FranchiseSummary.MostRecentChampionTeamName}" FontSize="14" />
+                </Button>
+            </StackPanel>
+
+            <TextBlock FontSize="16" FontWeight="SemiBold">Random Players</TextBlock>
+            <ItemsControl
+                ItemsSource="{Binding FranchiseSummary.RandomPlayers}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button
+                            Margin="5"
+                            Height="60"
+                            CommandParameter="{Binding PlayerId}">
+                            <Button.Command>
+                                <Binding Path="DataContext.NavigateToPlayerOverviewPageCommand"
+                                         ElementName="Page" />
+                            </Button.Command>
+                            <StackPanel Orientation="Vertical">
+                                <Label Content="{Binding PlayerName}" />
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            
+        </StackPanel>
+        
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
             <TreeView>
                 <TreeViewItem Header="Employee1" IsSelected="True" IsExpanded="True">
                     <TreeViewItem Header="Jesper Aaberg"/>

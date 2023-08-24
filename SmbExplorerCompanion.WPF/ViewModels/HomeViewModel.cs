@@ -6,11 +6,14 @@ using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Search;
+using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Search;
+using SmbExplorerCompanion.WPF.Mappings.Summary;
 using SmbExplorerCompanion.WPF.Models.Search;
+using SmbExplorerCompanion.WPF.Models.Summary;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -27,9 +30,27 @@ public partial class HomeViewModel : ViewModelBase
         _applicationContext = applicationContext;
         _mediator = mediator;
         _navigationService = navigationService;
+
+        var franchiseSummaryResult = _mediator.Send(new GetFranchiseSummaryRequest()).Result;
+        if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
+        {
+            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        if (rest.TryPickT1(out _, out var franchiseSummaryDto))
+        {
+            return;
+        }
+
+        var franchiseSummaryMapper = new FranchiseSummaryMapping();
+        FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
     }
 
     public ObservableGroupedCollection<SearchResultType, SearchResult> SearchResults { get; } = new();
+
+    public FranchiseSummary FranchiseSummary { get; }
+    public Visibility FranchiseSummaryVisibility => FranchiseSummary.NumPlayers > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     public string SearchQuery
     {
@@ -86,22 +107,41 @@ public partial class HomeViewModel : ViewModelBase
         {
             case SearchResultType.Players:
             {
-                var playerParams = new Tuple<string, object>[]
-                {
-                    new(PlayerOverviewViewModel.PlayerIdProp, searchResult.Id)
-                };
-                _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+                NavigateToPlayerOverviewPage(searchResult.Id);
                 break;
             }
             case SearchResultType.Teams:
-                var teamParams = new Tuple<string, object>[]
-                {
-                    new(TeamOverviewViewModel.TeamIdProp, searchResult.Id)
-                };
-                _navigationService.NavigateTo<TeamOverviewViewModel>(teamParams);
+                NavigateToTeamOverviewPage(searchResult.Id);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    [RelayCommand]
+    private void NavigateToChampionPage()
+    {
+        if (FranchiseSummary.MostRecentChampionTeamId is null) return;
+        
+        NavigateToTeamOverviewPage(FranchiseSummary.MostRecentChampionTeamId.Value);
+    }
+
+    [RelayCommand]
+    private void NavigateToPlayerOverviewPage(int playerId)
+    {
+        var playerParams = new Tuple<string, object>[]
+        {
+            new(PlayerOverviewViewModel.PlayerIdProp, playerId)
+        };
+        _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+    }
+    
+    private void NavigateToTeamOverviewPage(int teamId)
+    {
+        var teamParams = new Tuple<string, object>[]
+        {
+            new(TeamOverviewViewModel.TeamIdProp, teamId)
+        };
+        _navigationService.NavigateTo<TeamOverviewViewModel>(teamParams);
     }
 }

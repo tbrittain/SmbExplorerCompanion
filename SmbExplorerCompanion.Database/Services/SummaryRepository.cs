@@ -168,9 +168,8 @@ public class SummaryRepository : ISummaryRepository
                 franchiseSummaryDto.TopStrikeouts = topStrikeouts;
             }
 
-            var rand = new Random();
             var randomPlayers = await playersIQueryable
-                .OrderBy(x => rand.Next())
+                .OrderBy(x => EF.Functions.Random())
                 .Take(6)
                 .Select(x => new PlayerBaseDto
                 {

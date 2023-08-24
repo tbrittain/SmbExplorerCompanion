@@ -497,7 +497,7 @@ public class PlayerRepository : IPlayerRepository
                     OpsPlus = x.OpsPlus ?? 0,
                     Errors = x.Errors,
                     Strikeouts = x.Strikeouts,
-                    WeightedOpsPlusOrEraMinus = ((x.OpsPlus ?? 0) - 100) * x.PlateAppearances * BattingScalingFactor,
+                    WeightedOpsPlusOrEraMinus = ((x.OpsPlus ?? 0) - 90) * x.PlateAppearances * BattingScalingFactor,
                     Awards = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
@@ -673,7 +673,7 @@ public class PlayerRepository : IPlayerRepository
                     FipMinus = x.FipMinus ?? 0,
                     CompleteGames = x.CompleteGames,
                     Shutouts = x.Shutouts,
-                    WeightedOpsPlusOrEraMinus = ((x.EraMinus ?? 0) - 100) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
+                    WeightedOpsPlusOrEraMinus = ((x.EraMinus ?? 0) - 90) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
                     Awards = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
@@ -1057,12 +1057,12 @@ public class PlayerRepository : IPlayerRepository
         var weightedOpsPlus = player.PlayerSeasons
             .SelectMany(y => y.BattingStats)
             .Where(y => y.OpsPlus is not null)
-            .Sum(y => ((y.OpsPlus ?? 0) - 100) * y.PlateAppearances * BattingScalingFactor);
+            .Sum(y => ((y.OpsPlus ?? 0) - 90) * y.PlateAppearances * BattingScalingFactor);
 
         var weightedEraMinus = player.PlayerSeasons
             .SelectMany(y => y.PitchingStats)
             .Where(y => y is {EraMinus: not null, InningsPitched: not null})
-            .Sum(y => ((y.EraMinus ?? 0) - 100) * (y.InningsPitched ?? 0) * PitchingScalingFactor);
+            .Sum(y => ((y.EraMinus ?? 0) - 90) * (y.InningsPitched ?? 0) * PitchingScalingFactor);
 
         var weightedOpsPlusOrEraMinus = weightedOpsPlus + weightedEraMinus;
         playerOverview.WeightedOpsPlusOrEraMinus = weightedOpsPlusOrEraMinus;
@@ -1137,7 +1137,7 @@ public class PlayerRepository : IPlayerRepository
                 StolenBases = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)),
                 WeightedOpsPlusOrEraMinus = x.PlayerSeasons
                     .SelectMany(y => y.BattingStats)
-                    .Sum(y => ((y.OpsPlus ?? 0) - 100) * y.PlateAppearances * BattingScalingFactor),
+                    .Sum(y => ((y.OpsPlus ?? 0) - 90) * y.PlateAppearances * BattingScalingFactor),
                 // Simply average the OPS+ values
                 OpsPlus = x.PlayerSeasons
                     .SelectMany(y => y.BattingStats)
@@ -1206,7 +1206,7 @@ public class PlayerRepository : IPlayerRepository
                 HitByPitch = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.HitByPitch)),
                 WeightedOpsPlusOrEraMinus = x.PlayerSeasons
                     .SelectMany(y => y.PitchingStats)
-                    .Sum(y => ((y.EraMinus ?? 0) - 100) * (y.InningsPitched ?? 0) * PitchingScalingFactor),
+                    .Sum(y => ((y.EraMinus ?? 0) - 90) * (y.InningsPitched ?? 0) * PitchingScalingFactor),
                 // Simply average the ERA- values, only taking into account regular season games for this calculation
                 EraMinus = x.PlayerSeasons
                     .SelectMany(y => y.PitchingStats)
