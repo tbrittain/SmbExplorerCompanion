@@ -297,7 +297,7 @@
 
 
         <ScrollViewer Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
-            <StackPanel >
+            <StackPanel>
                 <TreeView ItemsSource="{Binding Conferences}">
                     <TreeView.Resources>
                         <Style TargetType="{x:Type TreeViewItem}">
@@ -315,15 +315,21 @@
                         </HierarchicalDataTemplate>
 
                         <DataTemplate DataType="{x:Type summary:TeamSummary}">
-                            <StackPanel Orientation="Vertical" Margin="2">
-                                <TextBlock Text="{Binding TeamName}" FontWeight="SemiBold" />
+                            <StackPanel Orientation="Vertical" Margin="5">
+                                <Button
+                                    HorizontalAlignment="Left"
+                                    Width="125"
+                                    Margin="3"
+                                    Command="{Binding DataContext.NavigateToTeamSeasonDetailPageCommand, ElementName=Page}"
+                                    CommandParameter="{Binding SeasonTeamId}">
+                                    <TextBlock Text="{Binding TeamName}" FontWeight="SemiBold" />
+                                </Button>
                                 <TextBlock Text="{Binding RegularSeasonRecordText}" />
                                 <TextBlock
                                     Text="{Binding PlayoffResultsText}"
                                     Visibility="{Binding PlayoffResultsVisibility}" />
                             </StackPanel>
                         </DataTemplate>
-
                     </TreeView.Resources>
                 </TreeView>
             </StackPanel>

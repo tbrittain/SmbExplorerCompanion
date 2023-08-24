@@ -158,4 +158,14 @@ public partial class HomeViewModel : ViewModelBase
         };
         _navigationService.NavigateTo<TeamOverviewViewModel>(teamParams);
     }
+
+    [RelayCommand]
+    private void NavigateToTeamSeasonDetailPage(int seasonTeamId)
+    {
+        var teamSeasonParams = new Tuple<string, object>[]
+        {
+            new(TeamSeasonDetailViewModel.SeasonTeamIdProp, seasonTeamId)
+        };
+        _navigationService.NavigateTo<TeamSeasonDetailViewModel>(teamSeasonParams);
+    }
 }

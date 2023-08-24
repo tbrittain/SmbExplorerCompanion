@@ -3,6 +3,7 @@
 public class TeamSummaryDto
 {
     public int Id { get; set; }
+    public int SeasonTeamId { get; set; }
     public string TeamName { get; set; } = string.Empty;
     public int Wins { get; set; }
     public int Losses { get; set; }

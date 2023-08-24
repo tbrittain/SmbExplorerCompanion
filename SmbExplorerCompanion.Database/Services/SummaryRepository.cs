@@ -297,6 +297,7 @@ public class SummaryRepository : ISummaryRepository
                         .Select(x => new TeamSummaryDto
                         {
                             Id = x.TeamId,
+                            SeasonTeamId = x.Id,
                             TeamName = x.TeamNameHistory.Name,
                             Wins = x.Wins,
                             Losses = x.Losses,
