@@ -9,23 +9,32 @@
              Name="Page">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
             <RowDefinition />
         </Grid.RowDefinitions>
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="2">
+        <StackPanel 
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Margin="2">
             <TextBlock FontSize="20" FontWeight="SemiBold">
                 Welcome to SMB Explorer Companion!
             </TextBlock>
         </StackPanel>
 
-        <Grid Grid.Row="1" Margin="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
+        <StackPanel 
+            Grid.Column="0"
+            Grid.Row="1"
+            Orientation="Vertical"
+            Margin="2">
 
-            <StackPanel Grid.Row="0" Orientation="Vertical">
+            <StackPanel Orientation="Vertical">
                 <Label Content="Search for a player/team:" />
                 <StackPanel Orientation="Horizontal">
                     <TextBox
@@ -39,7 +48,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <Grid Grid.Row="1">
+            <Grid>
                 <ItemsControl ItemsSource="{Binding SearchResults}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -90,6 +99,34 @@
 
                 <TextBlock Visibility="{Binding NoSearchResultsVisibility}">No results found</TextBlock>
             </Grid>
-        </Grid>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <TreeView>
+                <TreeViewItem Header="Employee1" IsSelected="True" IsExpanded="True">
+                    <TreeViewItem Header="Jesper Aaberg"/>
+                    <TreeViewItem Header="Employee Number" IsExpanded="True">
+                        <TreeViewItem Header="12345"/>
+                    </TreeViewItem>
+                    <TreeViewItem Header="Work Days" IsExpanded="True">
+                        <TreeViewItem Header="Monday"/>
+                        <TreeViewItem Header="Tuesday"/>
+                        <TreeViewItem Header="Thursday"/>
+                    </TreeViewItem>
+                </TreeViewItem>
+                <TreeViewItem Header="Employee2" IsExpanded="True">
+                    <TreeViewItem Header="Dominik Paiha"/>
+                    <TreeViewItem Header="Employee Number" IsExpanded="True">
+                        <TreeViewItem Header="98765"/>
+                    </TreeViewItem>
+                    <TreeViewItem Header="Work Days" IsExpanded="True">
+                        <TreeViewItem Header="Tuesday"/>
+                        <TreeViewItem Header="Wednesday"/>
+                        <TreeViewItem Header="Friday"/>
+                    </TreeViewItem>
+                </TreeViewItem>
+            </TreeView>
+
+        </StackPanel>
     </Grid>
 </UserControl>
