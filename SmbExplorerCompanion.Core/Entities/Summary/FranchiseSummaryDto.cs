@@ -6,7 +6,7 @@ public class FranchiseSummaryDto
 {
     public int NumPlayers { get; set; }
     public int NumSeasons { get; set; }
-    public int? MostRecentSeasonNumber { get; set; }
+    public int MostRecentSeasonNumber { get; set; }
     public int NumHallOfFamers { get; set; }
 
     public int? MostRecentChampionTeamId { get; set; }
