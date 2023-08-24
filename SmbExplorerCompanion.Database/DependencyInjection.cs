@@ -26,6 +26,7 @@ public static class DependencyInjection
             .AddScoped<ITeamRepository, TeamRepository>()
             .AddScoped<IPlayerRepository, PlayerRepository>()
             .AddScoped<IAwardDelegationRepository, AwardDelegationRepository>()
+            .AddScoped<ISearchRepository, SearchRepository>()
             .AddTransient<CsvReaderService>()
             .AddTransient<CsvMappingRepository>()
             .AddTransient<ICsvImportRepository, CsvImportRepository>();
