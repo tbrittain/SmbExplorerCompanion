@@ -1,6 +1,6 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Search;
 
-public class SearchResultDto
+public record SearchResultDto
 {
     public SearchResultType Type { get; init; }
     public string Name { get; init; } = default!;

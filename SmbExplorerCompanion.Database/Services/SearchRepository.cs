@@ -22,7 +22,7 @@ public class SearchRepository : ISearchRepository
         try
         {
             var lowerQuery = query.ToLower();
-            
+
             var matchingPlayers = await _context.Players
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Season)
@@ -33,6 +33,14 @@ public class SearchRepository : ISearchRepository
                 .Take(10)
                 .ToListAsync(cancellationToken: cancellationToken);
 
+            var matchingTeams = await _context.TeamNameHistory
+                .Include(x => x.SeasonTeamHistory)
+                .ThenInclude(x => x.Team)
+                .Where(x => x.Name.ToLower().Contains(lowerQuery))
+                .OrderBy(x => x.Name)
+                .Take(10)
+                .ToListAsync(cancellationToken: cancellationToken);
+
             var playerResults = matchingPlayers
                 .Select(x =>
                 {
@@ -40,7 +48,7 @@ public class SearchRepository : ISearchRepository
                     var lastSeason = x.PlayerSeasons.OrderBy(y => y.Id).Last().Season.Number;
 
                     var seasonRange = firstSeason == lastSeason ? firstSeason.ToString() : $"{firstSeason}-{lastSeason}";
-                
+
                     var sb = new StringBuilder();
                     sb.Append(x.PlayerSeasons.Count);
                     sb.Append(" season");
@@ -59,7 +67,17 @@ public class SearchRepository : ISearchRepository
                 })
                 .ToList();
 
-            return playerResults;
+            var teamResults = matchingTeams
+                .Select(x => new SearchResultDto
+                {
+                    Type = SearchResultType.Teams,
+                    Name = x.Name,
+                    Id = x.SeasonTeamHistory.First().TeamId
+                })
+                .Distinct()
+                .ToList();
+
+            return playerResults.Concat(teamResults).ToList();
         }
         catch (Exception e)
         {

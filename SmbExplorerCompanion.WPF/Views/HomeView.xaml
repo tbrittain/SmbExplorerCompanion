@@ -26,7 +26,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Vertical">
-                <Label Content="Search for a player:" />
+                <Label Content="Search for a player/team:" />
                 <StackPanel Orientation="Horizontal">
                     <TextBox
                         Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
