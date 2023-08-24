@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -6,11 +7,14 @@ using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Search;
+using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Search;
+using SmbExplorerCompanion.WPF.Mappings.Summary;
 using SmbExplorerCompanion.WPF.Models.Search;
+using SmbExplorerCompanion.WPF.Models.Summary;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -27,9 +31,40 @@ public partial class HomeViewModel : ViewModelBase
         _applicationContext = applicationContext;
         _mediator = mediator;
         _navigationService = navigationService;
+
+        var franchiseSummaryResult = _mediator.Send(new GetFranchiseSummaryRequest()).Result;
+        if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
+        {
+            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        if (rest.TryPickT0(out var franchiseSummaryDto, out _))
+        {
+            var franchiseSummaryMapper = new FranchiseSummaryMapping();
+            FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
+        }
+        
+        var conferenceSummaryResult = _mediator.Send(new GetLeagueSummaryRequest()).Result;
+        if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
+        {
+            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+        
+        if (rest2.TryPickT0(out var leagueSummaryDto, out _))
+        {
+            var conferenceSummaryMapper = new ConferenceSummaryMapping();
+            Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
+        }
     }
 
+    public ObservableCollection<ConferenceSummary> Conferences { get; } = new();
+
     public ObservableGroupedCollection<SearchResultType, SearchResult> SearchResults { get; } = new();
+
+    public FranchiseSummary FranchiseSummary { get; }
+    public Visibility FranchiseSummaryVisibility => FranchiseSummary.NumPlayers > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     public string SearchQuery
     {
@@ -86,22 +121,51 @@ public partial class HomeViewModel : ViewModelBase
         {
             case SearchResultType.Players:
             {
-                var playerParams = new Tuple<string, object>[]
-                {
-                    new(PlayerOverviewViewModel.PlayerIdProp, searchResult.Id)
-                };
-                _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+                NavigateToPlayerOverviewPage(searchResult.Id);
                 break;
             }
             case SearchResultType.Teams:
-                var teamParams = new Tuple<string, object>[]
-                {
-                    new(TeamOverviewViewModel.TeamIdProp, searchResult.Id)
-                };
-                _navigationService.NavigateTo<TeamOverviewViewModel>(teamParams);
+                NavigateToTeamOverviewPage(searchResult.Id);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    [RelayCommand]
+    private void NavigateToChampionPage()
+    {
+        if (FranchiseSummary.MostRecentChampionTeamId is null) return;
+        
+        NavigateToTeamOverviewPage(FranchiseSummary.MostRecentChampionTeamId.Value);
+    }
+
+    [RelayCommand]
+    private void NavigateToPlayerOverviewPage(int playerId)
+    {
+        var playerParams = new Tuple<string, object>[]
+        {
+            new(PlayerOverviewViewModel.PlayerIdProp, playerId)
+        };
+        _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+    }
+    
+    private void NavigateToTeamOverviewPage(int teamId)
+    {
+        var teamParams = new Tuple<string, object>[]
+        {
+            new(TeamOverviewViewModel.TeamIdProp, teamId)
+        };
+        _navigationService.NavigateTo<TeamOverviewViewModel>(teamParams);
+    }
+
+    [RelayCommand]
+    private void NavigateToTeamSeasonDetailPage(int seasonTeamId)
+    {
+        var teamSeasonParams = new Tuple<string, object>[]
+        {
+            new(TeamSeasonDetailViewModel.SeasonTeamIdProp, seasonTeamId)
+        };
+        _navigationService.NavigateTo<TeamSeasonDetailViewModel>(teamSeasonParams);
     }
 }

@@ -4,92 +4,335 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+             xmlns:summary="clr-namespace:SmbExplorerCompanion.WPF.Models.Summary"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HomeViewModel}"
              Name="Page">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="2*" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="2">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Margin="2">
             <TextBlock FontSize="20" FontWeight="SemiBold">
                 Welcome to SMB Explorer Companion!
             </TextBlock>
         </StackPanel>
 
-        <Grid Grid.Row="1" Margin="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
+        <ScrollViewer Grid.Column="0" Grid.Row="2">
+            <StackPanel
+                Orientation="Vertical"
+                Margin="2">
 
-            <StackPanel Grid.Row="0" Orientation="Vertical">
-                <Label Content="Search for a player/team:" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBox
-                        Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
-                        MaxLength="20"
-                        Width="300" />
-                    <Button
-                        Width="100"
-                        Content="Search"
-                        Command="{Binding GetSearchResultsCommand}" />
+                <StackPanel Orientation="Vertical">
+                    <Label Content="Search for a player/team:" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox
+                            Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                            MaxLength="20"
+                            Width="300" />
+                        <Button
+                            Width="100"
+                            Content="Search"
+                            Command="{Binding GetSearchResultsCommand}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
 
-            <Grid Grid.Row="1">
-                <ItemsControl ItemsSource="{Binding SearchResults}">
+                <Grid>
+                    <ItemsControl ItemsSource="{Binding SearchResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Text="{Binding Key}"
+                                        FontWeight="SemiBold"
+                                        FontSize="16"
+                                        Margin="5" />
+
+                                    <ItemsControl
+                                        Grid.Row="1"
+                                        ItemsSource="{Binding}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Margin="5"
+                                                    Height="60"
+                                                    CommandParameter="{Binding}">
+                                                    <Button.Command>
+                                                        <Binding Path="DataContext.NavigateToSearchResultPageCommand"
+                                                                 ElementName="Page" />
+                                                    </Button.Command>
+                                                    <StackPanel Orientation="Vertical">
+                                                        <Label Content="{Binding Name}" />
+                                                        <Label Content="{Binding Description}" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Visibility="{Binding NoSearchResultsVisibility}">No results found</TextBlock>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer Grid.Column="0" Grid.Row="1">
+            <StackPanel
+                Orientation="Vertical"
+                Visibility="{Binding FranchiseSummaryVisibility}">
+                <TextBlock FontSize="16" FontWeight="SemiBold">Franchise Summary</TextBlock>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="# Players:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding FranchiseSummary.NumPlayers}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="# Seasons:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding FranchiseSummary.NumSeasons}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="Most recent season:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding FranchiseSummary.MostRecentSeasonNumber}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="14" Text="# HoFers:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <TextBlock Text="{Binding FranchiseSummary.NumHallOfFamers}" FontSize="14" />
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal"
+                    Visibility="{Binding FranchiseSummary.MostRecentChampionVisibility}">
+                    <TextBlock FontSize="14" Text="Most recent champion:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <Button Command="{Binding NavigateToChampionPageCommand}">
+                        <TextBlock Text="{Binding FranchiseSummary.MostRecentChampionTeamName}" FontSize="14" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal"
+                    Visibility="{Binding FranchiseSummary.MostRecentSeasonMvpVisibility}">
+                    <TextBlock FontSize="14" Text="Most recent MVP:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <Button
+                        Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                        CommandParameter="{Binding FranchiseSummary.MostRecentMvpPlayerId}">
+                        <TextBlock Text="{Binding FranchiseSummary.MostRecentMvpPlayerName}" FontSize="14" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal"
+                    Visibility="{Binding FranchiseSummary.MostRecentSeasonCyYoungVisibility}">
+                    <TextBlock FontSize="14" Text="Most recent Cy Young:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                    <Button
+                        Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                        CommandParameter="{Binding FranchiseSummary.MostRecentCyYoungPlayerId}">
+                        <TextBlock Text="{Binding FranchiseSummary.MostRecentCyYoungPlayerName}" FontSize="14" />
+                    </Button>
+                </StackPanel>
+
+                <TextBlock FontSize="16" Text="Career Leaders" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                <WrapPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock FontSize="14" Text="{Binding FranchiseSummary.TopHomeRuns.StatName}"
+                                   FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <Button
+                            Height="40"
+                            Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                            CommandParameter="{Binding FranchiseSummary.TopHomeRuns.PlayerId}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    Text="{Binding FranchiseSummary.TopHomeRuns.PlayerName, StringFormat={}{0:N0}}"
+                                    FontSize="14" />
+                                <TextBlock
+                                    Text="{Binding FranchiseSummary.TopHomeRuns.StatValue, StringFormat={}{0:N0}}"
+                                    FontSize="14" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock FontSize="14" Text="{Binding FranchiseSummary.TopHits.StatName}" FontWeight="Bold"
+                                   Padding="0 ,0 , 5, 0" />
+                        <Button
+                            Height="40"
+                            Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                            CommandParameter="{Binding FranchiseSummary.TopHits.PlayerId}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding FranchiseSummary.TopHits.PlayerName, StringFormat={}{0:N0}}"
+                                           FontSize="14" />
+                                <TextBlock Text="{Binding FranchiseSummary.TopHits.StatValue, StringFormat={}{0:N0}}"
+                                           FontSize="14" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock FontSize="14" Text="{Binding FranchiseSummary.TopRunsBattedIn.StatName}"
+                                   FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <Button
+                            Height="40"
+                            Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                            CommandParameter="{Binding FranchiseSummary.TopRunsBattedIn.PlayerId}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    Text="{Binding FranchiseSummary.TopRunsBattedIn.PlayerName, StringFormat={}{0:N0}}"
+                                    FontSize="14" />
+                                <TextBlock
+                                    Text="{Binding FranchiseSummary.TopRunsBattedIn.StatValue, StringFormat={}{0:N0}}"
+                                    FontSize="14" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock FontSize="14" Text="{Binding FranchiseSummary.TopWins.StatName}" FontWeight="Bold"
+                                   Padding="0 ,0 , 5, 0" />
+                        <Button
+                            Height="40"
+                            Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                            CommandParameter="{Binding FranchiseSummary.TopWins.PlayerId}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding FranchiseSummary.TopWins.PlayerName, StringFormat={}{0:N0}}"
+                                           FontSize="14" />
+                                <TextBlock Text="{Binding FranchiseSummary.TopWins.StatValue, StringFormat={}{0:N0}}"
+                                           FontSize="14" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock FontSize="14" Text="{Binding FranchiseSummary.TopStrikeouts.StatName}"
+                                   FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <Button
+                            Height="40"
+                            Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                            CommandParameter="{Binding FranchiseSummary.TopStrikeouts.PlayerId}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    Text="{Binding FranchiseSummary.TopStrikeouts.PlayerName, StringFormat={}{0:N0}}"
+                                    FontSize="14" />
+                                <TextBlock
+                                    Text="{Binding FranchiseSummary.TopStrikeouts.StatValue, StringFormat={}{0:N0}}"
+                                    FontSize="14" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock FontSize="14" Text="{Binding FranchiseSummary.TopSaves.StatName}" FontWeight="Bold"
+                                   Padding="0 ,0 , 5, 0" />
+                        <Button
+                            Height="40"
+                            Command="{Binding NavigateToPlayerOverviewPageCommand}"
+                            CommandParameter="{Binding FranchiseSummary.TopSaves.PlayerId}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding FranchiseSummary.TopSaves.PlayerName, StringFormat={}{0:N0}}"
+                                           FontSize="14" />
+                                <TextBlock Text="{Binding FranchiseSummary.TopSaves.StatValue, StringFormat={}{0:N0}}"
+                                           FontSize="14" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </WrapPanel>
+
+                <TextBlock FontSize="16" FontWeight="SemiBold">Current Greats</TextBlock>
+                <ItemsControl
+                    ItemsSource="{Binding FranchiseSummary.CurrentGreats}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-
-                                <TextBlock
-                                    Grid.Row="0"
-                                    Text="{Binding Key}"
-                                    FontWeight="SemiBold"
-                                    FontSize="16"
-                                    Margin="5" />
-
-                                <ItemsControl
-                                    Grid.Row="1"
-                                    ItemsSource="{Binding}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Button
-                                                Margin="5"
-                                                Height="60"
-                                                CommandParameter="{Binding}">
-                                                <Button.Command>
-                                                    <Binding Path="DataContext.NavigateToSearchResultPageCommand"
-                                                             ElementName="Page" />
-                                                </Button.Command>
-                                                <StackPanel Orientation="Vertical">
-                                                    <Label Content="{Binding Name}" />
-                                                    <Label Content="{Binding Description}" />
-                                                </StackPanel>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                            </Grid>
+                            <Button
+                                Margin="5"
+                                Height="60"
+                                CommandParameter="{Binding PlayerId}">
+                                <Button.Command>
+                                    <Binding Path="DataContext.NavigateToPlayerOverviewPageCommand"
+                                             ElementName="Page" />
+                                </Button.Command>
+                                <StackPanel Orientation="Vertical">
+                                    <Label Content="{Binding PlayerName}" />
+                                    <Label Content="{Binding DisplayDescription}" />
+                                </StackPanel>
+                            </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <TextBlock Visibility="{Binding NoSearchResultsVisibility}">No results found</TextBlock>
-            </Grid>
-        </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+
+        <ScrollViewer Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
+            <StackPanel>
+                <TreeView ItemsSource="{Binding Conferences}">
+                    <TreeView.Resources>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True" />
+                        </Style>
+
+                        <HierarchicalDataTemplate DataType="{x:Type summary:ConferenceSummary}"
+                                                  ItemsSource="{Binding Divisions}">
+                            <TextBlock Text="{Binding ConferenceName}" FontWeight="SemiBold" />
+                        </HierarchicalDataTemplate>
+
+                        <HierarchicalDataTemplate DataType="{x:Type summary:DivisionSummary}"
+                                                  ItemsSource="{Binding Teams}">
+                            <TextBlock Text="{Binding DivisionName}" FontWeight="SemiBold" />
+                        </HierarchicalDataTemplate>
+
+                        <DataTemplate DataType="{x:Type summary:TeamSummary}">
+                            <StackPanel Orientation="Vertical" Margin="5">
+                                <Button
+                                    HorizontalAlignment="Left"
+                                    Width="125"
+                                    Margin="3"
+                                    Command="{Binding DataContext.NavigateToTeamSeasonDetailPageCommand, ElementName=Page}"
+                                    CommandParameter="{Binding SeasonTeamId}">
+                                    <TextBlock Text="{Binding TeamName}" FontWeight="SemiBold" />
+                                </Button>
+                                <TextBlock Text="{Binding RegularSeasonRecordText}" />
+                                <TextBlock
+                                    Text="{Binding PlayoffResultsText}"
+                                    Visibility="{Binding PlayoffResultsVisibility}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>
