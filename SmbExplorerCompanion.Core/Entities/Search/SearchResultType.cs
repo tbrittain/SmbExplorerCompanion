@@ -2,6 +2,6 @@
 
 public enum SearchResultType
 {
-    Player,
-    Team, // May only support players for now
+    Players,
+    Teams, // May only support players for now
 }

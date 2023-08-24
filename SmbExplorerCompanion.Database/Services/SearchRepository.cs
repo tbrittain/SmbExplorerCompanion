@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
 using SmbExplorerCompanion.Core.Entities.Search;
 using SmbExplorerCompanion.Core.Interfaces;
@@ -37,13 +38,22 @@ public class SearchRepository : ISearchRepository
                 {
                     var firstSeason = x.PlayerSeasons.OrderBy(y => y.Id).First().Season.Number;
                     var lastSeason = x.PlayerSeasons.OrderBy(y => y.Id).Last().Season.Number;
+
                     var seasonRange = firstSeason == lastSeason ? firstSeason.ToString() : $"{firstSeason}-{lastSeason}";
+                
+                    var sb = new StringBuilder();
+                    sb.Append(x.PlayerSeasons.Count);
+                    sb.Append(" season");
+                    if (x.PlayerSeasons.Count > 1) sb.Append('s');
+                    sb.Append(" (");
+                    sb.Append(seasonRange);
+                    sb.Append(')');
 
                     return new SearchResultDto
                     {
-                        Type = SearchResultType.Player,
+                        Type = SearchResultType.Players,
                         Name = $"{x.FirstName} {x.LastName}",
-                        Description = $"{seasonRange} - {x.PlayerSeasons.Count} seasons",
+                        Description = sb.ToString(),
                         Id = x.Id
                     };
                 })

@@ -5,31 +5,91 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance viewModels:HomeViewModel}">
+             d:DataContext="{d:DesignInstance viewModels:HomeViewModel}"
+             Name="Page">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        
+
         <StackPanel Grid.Row="0" Margin="2">
             <TextBlock FontSize="20" FontWeight="SemiBold">
                 Welcome to SMB Explorer Companion!
             </TextBlock>
         </StackPanel>
-        
-        <StackPanel Grid.Row="1" Margin="2">
-            <Label Content="Search for a player:"/>
-            <StackPanel Orientation="Horizontal">
-                <TextBox 
-                    Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
-                    MaxLength="20" 
-                    Width="300" />
-                <Button
-                    Width="100"
-                    Content="Search"
-                    Command="{Binding GetSearchResultsCommand}"/>
+
+        <Grid Grid.Row="1" Margin="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Vertical">
+                <Label Content="Search for a player:" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox
+                        Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                        MaxLength="20"
+                        Width="300" />
+                    <Button
+                        Width="100"
+                        Content="Search"
+                        Command="{Binding GetSearchResultsCommand}" />
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+
+            <Grid Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding SearchResults}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Text="{Binding Key}"
+                                    FontWeight="SemiBold"
+                                    FontSize="16"
+                                    Margin="5" />
+
+                                <ItemsControl
+                                    Grid.Row="1"
+                                    ItemsSource="{Binding}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button
+                                                Margin="5"
+                                                Height="60"
+                                                CommandParameter="{Binding}">
+                                                <Button.Command>
+                                                    <Binding Path="DataContext.NavigateToSearchResultPageCommand"
+                                                             ElementName="Page" />
+                                                </Button.Command>
+                                                <StackPanel Orientation="Vertical">
+                                                    <Label Content="{Binding Name}" />
+                                                    <Label Content="{Binding Description}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Visibility="{Binding NoSearchResultsVisibility}">No results found</TextBlock>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>
