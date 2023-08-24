@@ -141,6 +141,7 @@ public class PlayerRepository : IPlayerRepository
         int? playerId = null,
         bool onlyHallOfFamers = false,
         int? primaryPositionId = null,
+        bool onlyActivePlayers = false,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -189,6 +190,9 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => playerId == null || x.Id == playerId)
                 .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
+                .Where(x => !onlyActivePlayers || x.PlayerSeasons
+                    .OrderByDescending(y => y.Id)
+                    .First().SeasonId == mostRecentSeason.Id)
                 .Where(x => primaryPositionId == null || x.PrimaryPositionId == primaryPositionId);
 
             var playerBattingDtos = await GetCareerBattingDtos(queryable)
@@ -260,6 +264,7 @@ public class PlayerRepository : IPlayerRepository
         int? playerId = null,
         bool onlyHallOfFamers = false,
         int? pitcherRoleId = null,
+        bool onlyActivePlayers = false,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -308,6 +313,9 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.PitcherRole != null)
                 .Where(x => playerId == null || x.Id == playerId)
                 .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
+                .Where(x => !onlyActivePlayers || x.PlayerSeasons
+                    .OrderByDescending(y => y.Id)
+                    .First().SeasonId == mostRecentSeason.Id)
                 .Where(x => pitcherRoleId == null || x.PitcherRoleId == pitcherRoleId);
 
             var playerPitchingDtos = await GetCareerPitchingDtos(queryable)

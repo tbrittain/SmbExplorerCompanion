@@ -22,8 +22,7 @@ public class FranchiseSummary
     public PlayerLeaderSummary TopWins { get; set; } = new();
     public PlayerLeaderSummary TopSaves { get; set; } = new();
     public PlayerLeaderSummary TopStrikeouts { get; set; } = new();
-    
-    // We will use this in a similar way to how BBREF shows a random selection of players on their home page
-    public ObservableCollection<PlayerBase> RandomPlayers { get; set; } = new();
+
+    public ObservableCollection<PlayerCareerBase> CurrentGreats { get; set; } = new();
 
 }

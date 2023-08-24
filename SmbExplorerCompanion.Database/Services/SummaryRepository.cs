@@ -11,11 +11,13 @@ public class SummaryRepository : ISummaryRepository
 {
     private readonly SmbExplorerCompanionDbContext _context;
     private readonly IApplicationContext _applicationContext;
+    private readonly IPlayerRepository _playerRepository;
 
-    public SummaryRepository(SmbExplorerCompanionDbContext context, IApplicationContext applicationContext)
+    public SummaryRepository(SmbExplorerCompanionDbContext context, IApplicationContext applicationContext, IPlayerRepository playerRepository)
     {
         _context = context;
         _applicationContext = applicationContext;
+        _playerRepository = playerRepository;
     }
 
     public async Task<OneOf<FranchiseSummaryDto, None, Exception>> GetFranchiseSummaryAsync(CancellationToken cancellationToken = default)
@@ -168,17 +170,32 @@ public class SummaryRepository : ISummaryRepository
                 franchiseSummaryDto.TopStrikeouts = topStrikeouts;
             }
 
-            var randomPlayers = await playersIQueryable
-                .OrderBy(x => EF.Functions.Random())
-                .Take(6)
-                .Select(x => new PlayerBaseDto
-                {
-                    PlayerId = x.Id,
-                    PlayerName = $"{x.FirstName} {x.LastName}",
-                })
-                .ToListAsync(cancellationToken: cancellationToken);
-            
-            franchiseSummaryDto.RandomPlayers = randomPlayers;
+            var currentBattingGreatsResponse = await _playerRepository.GetBattingCareers(
+                limit: 5,
+                onlyActivePlayers: true,
+                cancellationToken: cancellationToken);
+
+            if (currentBattingGreatsResponse.TryPickT1(out var exception, out var currentBattingGreats))
+            {
+                return exception;
+            }
+
+            var currentPitchingGreatsResponse = await _playerRepository.GetPitchingCareers(
+                limit: 5,
+                onlyActivePlayers: true,
+                cancellationToken: cancellationToken);
+
+            if (currentPitchingGreatsResponse.TryPickT1(out exception, out var currentPitchingGreats))
+            {
+                return exception;
+            }
+
+            var currentGreats = currentBattingGreats
+                .Concat(currentPitchingGreats.Cast<PlayerCareerBaseDto>())
+                .OrderByDescending(x => x.WeightedOpsPlusOrEraMinus)
+                .ToList();
+
+            franchiseSummaryDto.CurrentGreats = currentGreats;
 
             return franchiseSummaryDto;
         }

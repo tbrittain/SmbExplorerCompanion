@@ -2,7 +2,7 @@
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
-public abstract class PlayerCareerBase : PlayerDetailBase
+public class PlayerCareerBase : PlayerDetailBase
 {
     public int StartSeasonNumber { get; set; }
     public int EndSeasonNumber { get; set; }
@@ -32,4 +32,6 @@ public abstract class PlayerCareerBase : PlayerDetailBase
     public string DisplayAge => !IsRetired ? $"{Age}" : $"{RetiredCurrentAge} ({Age} at retirement)";
 
     public int NumSeasons { get; set; }
+
+    public string DisplayDescription => $"{NumSeasons} season{(NumSeasons == 1 ? "" : "s")} - {WeightedOpsPlusOrEraMinus:N1} Cumulative OPS+/ERA-";
 }

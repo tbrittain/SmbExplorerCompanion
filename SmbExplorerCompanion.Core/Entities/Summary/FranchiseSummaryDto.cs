@@ -18,7 +18,6 @@ public class FranchiseSummaryDto
     public PlayerLeaderSummaryDto TopWins { get; set; } = new();
     public PlayerLeaderSummaryDto TopSaves { get; set; } = new();
     public PlayerLeaderSummaryDto TopStrikeouts { get; set; } = new();
-    
-    // We will use this in a similar way to how BBREF shows a random selection of players on their home page
-    public List<PlayerBaseDto> RandomPlayers { get; set; } = new();
+
+    public List<PlayerCareerBaseDto> CurrentGreats { get; set; } = new();
 }
