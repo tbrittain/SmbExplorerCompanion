@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+             xmlns:summary="clr-namespace:SmbExplorerCompanion.WPF.Models.Summary"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HomeViewModel}"
              Name="Page">
@@ -295,32 +296,37 @@
         </ScrollViewer>
 
 
-        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
-            <TreeView>
-                <TreeViewItem Header="Employee1" IsSelected="True" IsExpanded="True">
-                    <TreeViewItem Header="Jesper Aaberg" />
-                    <TreeViewItem Header="Employee Number" IsExpanded="True">
-                        <TreeViewItem Header="12345" />
-                    </TreeViewItem>
-                    <TreeViewItem Header="Work Days" IsExpanded="True">
-                        <TreeViewItem Header="Monday" />
-                        <TreeViewItem Header="Tuesday" />
-                        <TreeViewItem Header="Thursday" />
-                    </TreeViewItem>
-                </TreeViewItem>
-                <TreeViewItem Header="Employee2" IsExpanded="True">
-                    <TreeViewItem Header="Dominik Paiha" />
-                    <TreeViewItem Header="Employee Number" IsExpanded="True">
-                        <TreeViewItem Header="98765" />
-                    </TreeViewItem>
-                    <TreeViewItem Header="Work Days" IsExpanded="True">
-                        <TreeViewItem Header="Tuesday" />
-                        <TreeViewItem Header="Wednesday" />
-                        <TreeViewItem Header="Friday" />
-                    </TreeViewItem>
-                </TreeViewItem>
-            </TreeView>
+        <ScrollViewer Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
+            <StackPanel >
+                <TreeView ItemsSource="{Binding Conferences}">
+                    <TreeView.Resources>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True" />
+                        </Style>
 
-        </StackPanel>
+                        <HierarchicalDataTemplate DataType="{x:Type summary:ConferenceSummary}"
+                                                  ItemsSource="{Binding Divisions}">
+                            <TextBlock Text="{Binding ConferenceName}" FontWeight="SemiBold" />
+                        </HierarchicalDataTemplate>
+
+                        <HierarchicalDataTemplate DataType="{x:Type summary:DivisionSummary}"
+                                                  ItemsSource="{Binding Teams}">
+                            <TextBlock Text="{Binding DivisionName}" FontWeight="SemiBold" />
+                        </HierarchicalDataTemplate>
+
+                        <DataTemplate DataType="{x:Type summary:TeamSummary}">
+                            <StackPanel Orientation="Vertical" Margin="2">
+                                <TextBlock Text="{Binding TeamName}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding RegularSeasonRecordText}" />
+                                <TextBlock
+                                    Text="{Binding PlayoffResultsText}"
+                                    Visibility="{Binding PlayoffResultsVisibility}" />
+                            </StackPanel>
+                        </DataTemplate>
+
+                    </TreeView.Resources>
+                </TreeView>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>
