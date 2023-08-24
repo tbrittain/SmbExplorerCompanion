@@ -20,12 +20,14 @@ public class SearchRepository : ISearchRepository
 
         try
         {
+            var lowerQuery = query.ToLower();
+            
             var matchingPlayers = await _context.Players
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Season)
-                .Where(x => x.FirstName.Contains(query) ||
-                            x.LastName.Contains(query) ||
-                            (x.FirstName + " " + x.LastName).Contains(query))
+                .Where(x => x.FirstName.ToLower().Contains(lowerQuery) ||
+                            x.LastName.ToLower().Contains(lowerQuery) ||
+                            (x.FirstName.ToLower() + " " + x.LastName.ToLower()).Contains(lowerQuery))
                 .OrderBy(x => x.LastName)
                 .Take(10)
                 .ToListAsync(cancellationToken: cancellationToken);

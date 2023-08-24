@@ -7,6 +7,29 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HomeViewModel}">
     <Grid>
-        <Label>This is the home screen after franchise submission</Label>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Grid.Row="0" Margin="2">
+            <TextBlock FontSize="20" FontWeight="SemiBold">
+                Welcome to SMB Explorer Companion!
+            </TextBlock>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="1" Margin="2">
+            <Label Content="Search for a player:"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox 
+                    Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
+                    MaxLength="20" 
+                    Width="300" />
+                <Button
+                    Width="100"
+                    Content="Search"
+                    Command="{Binding GetSearchResultsCommand}"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </UserControl>
