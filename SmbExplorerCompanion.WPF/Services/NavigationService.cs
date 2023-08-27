@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Input;
 using SmbExplorerCompanion.WPF.ViewModels;
 
 namespace SmbExplorerCompanion.WPF.Services;
@@ -30,16 +32,21 @@ public sealed class NavigationService : INavigationService
     {
         if (typeof(T) == CurrentView?.GetType()) return;
 
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+
         var viewModelBase = _viewModelFactory.Invoke(typeof(T));
         RemoveExistingViewModelIfPresent(viewModelBase);
         if (viewModelBase is not FranchiseSelectViewModel) _navigationStack.AddLast(viewModelBase);
 
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
+
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public void NavigateTo<T>(params Tuple<string, object>[] parameters) where T : ViewModelBase
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         foreach (var (parameterName, parameterValue) in parameters)
         {
             _parameters.Add(parameterName, parameterValue);
@@ -51,6 +58,8 @@ public sealed class NavigationService : INavigationService
 
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public void NavigateBack()

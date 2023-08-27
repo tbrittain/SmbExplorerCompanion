@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using MediatR;
@@ -25,6 +26,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
 
     public FranchiseSelectViewModel(IMediator mediator, IApplicationContext applicationContext, INavigationService navigationService)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _applicationContext = applicationContext;
         _navigationService = navigationService;
@@ -33,6 +35,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
         if (franchiseResponse.TryPickT1(out var exception, out var franchises))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             Franchises = new ObservableCollection<Franchise>();
         }
         else
@@ -42,6 +45,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
                 .Select(x => mapper
                     .FromDto(x))
                 .ToObservableCollection();
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         }
     }
 
@@ -71,6 +75,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddFranchise()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var addFranchiseViewModel = new DialogViewModel();
         var result =
             await DialogHost.Show(addFranchiseViewModel, LandingViewModelDialogIdentifier);
@@ -93,5 +98,8 @@ public partial class FranchiseSelectViewModel : ViewModelBase
 
         var mapper = new FranchiseMapping();
         Franchises.Add(mapper.FromDto(franchise));
+        SelectedFranchise = Franchises.First(x => x.Id == franchise.Id);
+
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 }

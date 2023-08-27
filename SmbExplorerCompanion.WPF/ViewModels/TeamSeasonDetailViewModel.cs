@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.WPF.Mappings.Teams;
@@ -18,6 +19,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 
     public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
 
         var ok = _navigationService.TryGetParameter<int>(SeasonTeamIdProp, out var teamSeasonId);
@@ -47,6 +49,8 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
 
         PropertyChanged += OnPropertyChanged;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)

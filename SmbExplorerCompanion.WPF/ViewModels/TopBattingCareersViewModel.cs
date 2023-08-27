@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
@@ -29,6 +30,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
 
     public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         _mediator = mediator;
 
@@ -150,6 +152,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
 
     public async Task GetTopBattingCareers()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var topBattersResult = await _mediator.Send(new GetTopBattingCareersRequest(
             pageNumber: PageNumber,
             limit: ResultsPerPage,
@@ -171,6 +174,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     protected override void Dispose(bool disposing)

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
@@ -28,6 +29,7 @@ public partial class HomeViewModel : ViewModelBase
 
     public HomeViewModel(IApplicationContext applicationContext, IMediator mediator, INavigationService navigationService)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _applicationContext = applicationContext;
         _mediator = mediator;
         _navigationService = navigationService;
@@ -36,6 +38,7 @@ public partial class HomeViewModel : ViewModelBase
         if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
         {
             MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -49,6 +52,7 @@ public partial class HomeViewModel : ViewModelBase
         if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
         {
             MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
         
@@ -57,6 +61,8 @@ public partial class HomeViewModel : ViewModelBase
             var conferenceSummaryMapper = new ConferenceSummaryMapping();
             Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
         }
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public ObservableCollection<ConferenceSummary> Conferences { get; } = new();

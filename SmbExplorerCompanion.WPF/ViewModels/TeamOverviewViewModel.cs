@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.WPF.Mappings.Teams;
@@ -18,6 +19,7 @@ public class TeamOverviewViewModel : ViewModelBase
 
     public TeamOverviewViewModel(INavigationService navigationService, ISender mediator)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
 
         var ok = _navigationService.TryGetParameter<int>(TeamIdProp, out var teamId);
@@ -44,6 +46,8 @@ public class TeamOverviewViewModel : ViewModelBase
         }
 
         PropertyChanged += OnPropertyChanged;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     private int TeamId { get; }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using Microsoft.Win32;
@@ -27,7 +28,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string TeamsCsvPath
     {
         get => _teamsCsvPath;
-        set
+        private set
         {
             SetField(ref _teamsCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -37,7 +38,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string OverallPlayersCsvPath
     {
         get => _overallPlayersCsvPath;
-        set
+        private set
         {
             SetField(ref _overallPlayersCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -47,7 +48,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string SeasonBattingCsvPath
     {
         get => _seasonBattingCsvPath;
-        set
+        private set
         {
             SetField(ref _seasonBattingCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -57,7 +58,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string SeasonPitchingCsvPath
     {
         get => _seasonPitchingCsvPath;
-        set
+        private set
         {
             SetField(ref _seasonPitchingCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -67,7 +68,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string SeasonScheduleCsvPath
     {
         get => _seasonScheduleCsvPath;
-        set
+        private set
         {
             SetField(ref _seasonScheduleCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -83,7 +84,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string PlayoffPitchingCsvPath
     {
         get => _playoffPitchingCsvPath;
-        set
+        private set
         {
             SetField(ref _playoffPitchingCsvPath, value);
             ImportPlayoffDataCommand.NotifyCanExecuteChanged();
@@ -93,7 +94,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string PlayoffBattingCsvPath
     {
         get => _playoffBattingCsvPath;
-        set
+        private set
         {
             SetField(ref _playoffBattingCsvPath, value);
             ImportPlayoffDataCommand.NotifyCanExecuteChanged();
@@ -103,7 +104,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string PlayoffScheduleCsvPath
     {
         get => _playoffScheduleCsvPath;
-        set
+        private set
         {
             SetField(ref _playoffScheduleCsvPath, value);
             ImportPlayoffDataCommand.NotifyCanExecuteChanged();
@@ -117,6 +118,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanImportSeasonCsvs))]
     private async Task ImportSeasonData()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var response = await _mediator.Send(new ImportSeasonDataRequest(
             TeamsCsvPath,
             OverallPlayersCsvPath,
@@ -124,6 +126,7 @@ public partial class ImportCsvViewModel : ViewModelBase
             SeasonBattingCsvPath,
             SeasonScheduleCsvPath));
 
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         else MessageBox.Show("Successfully imported season data!");
     }
@@ -131,11 +134,13 @@ public partial class ImportCsvViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanImportPlayoffCsvs))]
     private async Task ImportPlayoffData()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var response = await _mediator.Send(new ImportPlayoffDataRequest(
             PlayoffPitchingCsvPath,
             PlayoffBattingCsvPath,
             PlayoffScheduleCsvPath));
 
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         else MessageBox.Show("Successfully imported playoff data!");
     }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
@@ -29,6 +30,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
 
     public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
 
@@ -38,6 +40,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         if (pitcherRolesResponse.TryPickT1(out var exception, out var pitcherRoles))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -53,6 +56,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         SelectedPitcherRole = allPitcherRole;
 
         GetTopPitchingCareers().Wait();
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public int PageNumber
@@ -148,6 +153,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
 
     public async Task GetTopPitchingCareers()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var topPitchersResult = await _mediator.Send(new GetTopPitchingCareersRequest(
             pageNumber: PageNumber,
             limit: ResultsPerPage,
@@ -169,6 +175,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     protected override void Dispose(bool disposing)
