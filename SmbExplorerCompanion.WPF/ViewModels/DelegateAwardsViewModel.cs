@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
@@ -34,6 +35,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
     public DelegateAwardsViewModel(IMediator mediator, IApplicationContext applicationContext)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
@@ -42,6 +44,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -57,6 +60,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         if (regularSeasonAwards.TryPickT1(out exception, out var awards))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -70,6 +74,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         if (positionsResponse.TryPickT1(out exception, out var positions))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -81,6 +86,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         GetAwardNomineesForSeason().Wait();
 
         PropertyChanged += OnPropertyChanged;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)

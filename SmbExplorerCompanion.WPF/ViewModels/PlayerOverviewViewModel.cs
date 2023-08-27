@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.WPF.Mappings.Players;
@@ -16,6 +17,7 @@ public class PlayerOverviewViewModel : ViewModelBase
 
     public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
 
         var ok = _navigationService.TryGetParameter<int>(PlayerIdProp, out var playerId);
@@ -34,12 +36,15 @@ public class PlayerOverviewViewModel : ViewModelBase
         {
             MessageBox.Show(exception.Message);
             PlayerOverview = new PlayerOverview();
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
         var mapper = new PlayerOverviewMapping();
         var overview = mapper.FromDto(playerOverview);
         PlayerOverview = overview;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     // TODO: replace these with bool properties and use a converter to return Visibility.Collapsed if false

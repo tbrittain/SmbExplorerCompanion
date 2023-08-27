@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Awards;
@@ -27,6 +28,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
     public DelegateHallOfFamersViewModel(IMediator mediator,
         IApplicationContext applicationContext)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
@@ -35,6 +37,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -46,6 +49,8 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         GetHallOfFamers().Wait();
 
         PropertyChanged += OnPropertyChanged;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();

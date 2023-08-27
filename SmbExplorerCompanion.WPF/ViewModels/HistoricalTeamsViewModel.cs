@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.WPF.Extensions;
@@ -19,11 +20,13 @@ public class HistoricalTeamsViewModel : ViewModelBase
 
     public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         var historicalTeamsResponse = mediator.Send(new GetHistoricalTeamsRequest()).Result;
         if (historicalTeamsResponse.TryPickT1(out var exception, out var historicalTeams))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             HistoricalTeams = new ObservableCollection<HistoricalTeam>();
         }
         else
@@ -35,6 +38,8 @@ public class HistoricalTeamsViewModel : ViewModelBase
         }
 
         PropertyChanged += OnPropertyChanged;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public ObservableCollection<HistoricalTeam> HistoricalTeams { get; }

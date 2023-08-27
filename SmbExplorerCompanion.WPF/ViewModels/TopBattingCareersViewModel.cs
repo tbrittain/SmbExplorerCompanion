@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
@@ -29,6 +30,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
 
     public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         _mediator = mediator;
 

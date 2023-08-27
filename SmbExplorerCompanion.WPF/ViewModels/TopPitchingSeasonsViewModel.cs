@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
@@ -35,6 +36,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
 
@@ -44,6 +46,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -62,6 +65,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         if (pitcherRolesResponse.TryPickT1(out exception, out var pitcherRoles))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
@@ -79,6 +83,8 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         GetTopPitchingSeason().Wait();
 
         PropertyChanged += OnPropertyChanged;
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();

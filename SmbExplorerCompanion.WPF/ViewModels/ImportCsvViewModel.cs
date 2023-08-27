@@ -27,7 +27,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string TeamsCsvPath
     {
         get => _teamsCsvPath;
-        set
+        private set
         {
             SetField(ref _teamsCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -37,7 +37,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string OverallPlayersCsvPath
     {
         get => _overallPlayersCsvPath;
-        set
+        private set
         {
             SetField(ref _overallPlayersCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -47,7 +47,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string SeasonBattingCsvPath
     {
         get => _seasonBattingCsvPath;
-        set
+        private set
         {
             SetField(ref _seasonBattingCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -57,7 +57,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string SeasonPitchingCsvPath
     {
         get => _seasonPitchingCsvPath;
-        set
+        private set
         {
             SetField(ref _seasonPitchingCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -67,7 +67,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string SeasonScheduleCsvPath
     {
         get => _seasonScheduleCsvPath;
-        set
+        private set
         {
             SetField(ref _seasonScheduleCsvPath, value);
             ImportSeasonDataCommand.NotifyCanExecuteChanged();
@@ -83,7 +83,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string PlayoffPitchingCsvPath
     {
         get => _playoffPitchingCsvPath;
-        set
+        private set
         {
             SetField(ref _playoffPitchingCsvPath, value);
             ImportPlayoffDataCommand.NotifyCanExecuteChanged();
@@ -93,7 +93,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string PlayoffBattingCsvPath
     {
         get => _playoffBattingCsvPath;
-        set
+        private set
         {
             SetField(ref _playoffBattingCsvPath, value);
             ImportPlayoffDataCommand.NotifyCanExecuteChanged();
@@ -103,7 +103,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     public string PlayoffScheduleCsvPath
     {
         get => _playoffScheduleCsvPath;
-        set
+        private set
         {
             SetField(ref _playoffScheduleCsvPath, value);
             ImportPlayoffDataCommand.NotifyCanExecuteChanged();
