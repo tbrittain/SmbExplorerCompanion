@@ -153,6 +153,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
 
     public async Task GetTopPitchingCareers()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var topPitchersResult = await _mediator.Send(new GetTopPitchingCareersRequest(
             pageNumber: PageNumber,
             limit: ResultsPerPage,
@@ -174,6 +175,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     protected override void Dispose(bool disposing)

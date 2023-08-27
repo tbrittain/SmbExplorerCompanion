@@ -219,6 +219,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
     public async Task GetTopBattingSeason()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var topBattersResult = await _mediator.Send(new GetTopBattingSeasonRequest(
             seasonId: SelectedSeason!.Id == default ? null : SelectedSeason!.Id,
             isPlayoffs: IsPlayoffs,
@@ -242,6 +243,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     private void NavigateToPlayerOverview(PlayerBase player)

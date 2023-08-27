@@ -318,6 +318,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show("No season selected.");
             return;
         }
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
 
         List<PlayerAwardRequestDto> playerAwardRequestDtos = new();
 
@@ -424,6 +426,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var request = new AddPlayerAwardsRequest(playerAwardRequestDtos.Distinct().ToList(), SelectedSeason.Id);
         var response = await _mediator.Send(request);
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
 
         if (response.TryPickT1(out var exception, out _))
         {

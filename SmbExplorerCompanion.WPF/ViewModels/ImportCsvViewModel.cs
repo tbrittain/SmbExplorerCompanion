@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using Microsoft.Win32;
@@ -117,6 +118,7 @@ public partial class ImportCsvViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanImportSeasonCsvs))]
     private async Task ImportSeasonData()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var response = await _mediator.Send(new ImportSeasonDataRequest(
             TeamsCsvPath,
             OverallPlayersCsvPath,
@@ -124,6 +126,7 @@ public partial class ImportCsvViewModel : ViewModelBase
             SeasonBattingCsvPath,
             SeasonScheduleCsvPath));
 
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         else MessageBox.Show("Successfully imported season data!");
     }
@@ -131,11 +134,13 @@ public partial class ImportCsvViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanImportPlayoffCsvs))]
     private async Task ImportPlayoffData()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var response = await _mediator.Send(new ImportPlayoffDataRequest(
             PlayoffPitchingCsvPath,
             PlayoffBattingCsvPath,
             PlayoffScheduleCsvPath));
 
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         else MessageBox.Show("Successfully imported playoff data!");
     }

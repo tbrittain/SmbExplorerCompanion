@@ -75,6 +75,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddFranchise()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var addFranchiseViewModel = new DialogViewModel();
         var result =
             await DialogHost.Show(addFranchiseViewModel, LandingViewModelDialogIdentifier);
@@ -97,5 +98,8 @@ public partial class FranchiseSelectViewModel : ViewModelBase
 
         var mapper = new FranchiseMapping();
         Franchises.Add(mapper.FromDto(franchise));
+        SelectedFranchise = Franchises.First(x => x.Id == franchise.Id);
+
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 }

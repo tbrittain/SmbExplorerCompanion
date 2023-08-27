@@ -115,6 +115,8 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             MessageBox.Show("No season selected.");
             return;
         }
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
 
         List<PlayerHallOfFameRequestDto> hallOfFamers = new();
 
@@ -137,6 +139,8 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         }
 
         var response = await _mediator.Send(new AddHallOfFamersRequest(hallOfFamers));
+        
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _))
         {
             MessageBox.Show("Unable to add player awards. Please try again. " + exception.Message);
