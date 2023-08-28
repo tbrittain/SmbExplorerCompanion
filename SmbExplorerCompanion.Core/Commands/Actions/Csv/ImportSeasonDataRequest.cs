@@ -1,8 +1,10 @@
-﻿using MediatR;
+﻿using System.Threading.Channels;
+using MediatR;
 using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects;
+using SmbExplorerCompanion.Core.ValueObjects.Progress;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Csv;
 
@@ -13,13 +15,15 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
         string overallPlayersCsvFilePath,
         string seasonStatsPitchingCsvFilePath,
         string seasonStatsBattingCsvFilePath,
-        string seasonScheduleCsvFilePath)
+        string seasonScheduleCsvFilePath,
+        ChannelWriter<ImportProgress> channel)
     {
         TeamsCsvFilePath = teamsCsvFilePath;
         OverallPlayersCsvFilePath = overallPlayersCsvFilePath;
         SeasonStatsPitchingCsvFilePath = seasonStatsPitchingCsvFilePath;
         SeasonStatsBattingCsvFilePath = seasonStatsBattingCsvFilePath;
         SeasonScheduleCsvFilePath = seasonScheduleCsvFilePath;
+        Channel = channel;
     }
 
     private string TeamsCsvFilePath { get; }
@@ -27,6 +31,7 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
     private string SeasonStatsPitchingCsvFilePath { get; }
     private string SeasonStatsBattingCsvFilePath { get; }
     private string SeasonScheduleCsvFilePath { get; }
+    private ChannelWriter<ImportProgress> Channel { get;}
 
     // ReSharper disable once UnusedType.Global
     internal class ImportSeasonDataHandler : IRequestHandler<ImportSeasonDataRequest, OneOf<Success, Exception>>
@@ -49,7 +54,7 @@ public class ImportSeasonDataRequest : IRequest<OneOf<Success, Exception>>
 
             try
             {
-                await _csvImportRepository.ImportSeason(filePaths, cancellationToken);
+                await _csvImportRepository.ImportSeason(filePaths, request.Channel, cancellationToken);
             }
             catch (Exception e)
             {

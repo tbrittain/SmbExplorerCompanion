@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading.Channels;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using Microsoft.Win32;
 using SmbExplorerCompanion.Core.Commands.Actions.Csv;
+using SmbExplorerCompanion.Core.ValueObjects.Progress;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
@@ -119,12 +121,15 @@ public partial class ImportCsvViewModel : ViewModelBase
     private async Task ImportSeasonData()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+        
+        var progressChannel = Channel.CreateUnbounded<ImportProgress>();
         var response = await _mediator.Send(new ImportSeasonDataRequest(
             TeamsCsvPath,
             OverallPlayersCsvPath,
             SeasonPitchingCsvPath,
             SeasonBattingCsvPath,
-            SeasonScheduleCsvPath));
+            SeasonScheduleCsvPath,
+            progressChannel.Writer));
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -135,10 +140,13 @@ public partial class ImportCsvViewModel : ViewModelBase
     private async Task ImportPlayoffData()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+        
+        var progressChannel = Channel.CreateUnbounded<ImportProgress>();
         var response = await _mediator.Send(new ImportPlayoffDataRequest(
             PlayoffPitchingCsvPath,
             PlayoffBattingCsvPath,
-            PlayoffScheduleCsvPath));
+            PlayoffScheduleCsvPath,
+            progressChannel.Writer));
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
