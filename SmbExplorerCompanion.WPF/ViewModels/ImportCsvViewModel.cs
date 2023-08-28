@@ -137,7 +137,7 @@ public partial class ImportCsvViewModel : ViewModelBase
 
         try
         {
-            _ = _csvImportRepository.ImportSeason(filePaths, progressChannel.Writer, default);
+            _ = Task.Run(() => _csvImportRepository.ImportSeason(filePaths, progressChannel.Writer, default));
             
             await foreach (var progress in progressChannel.Reader.ReadAllAsync())
             {
@@ -171,12 +171,14 @@ public partial class ImportCsvViewModel : ViewModelBase
 
         try
         {
-            _ = _csvImportRepository.ImportPlayoffs(filePaths, progressChannel.Writer, default);
-            
+            _ = Task.Run(() => _csvImportRepository.ImportPlayoffs(filePaths, progressChannel.Writer, default));
+
             await foreach (var progress in progressChannel.Reader.ReadAllAsync())
             {
                 ImportProgress.Add(progress);
             }
+
+            MessageBox.Show("Successfully imported playoff data!");
         }
         catch (Exception e)
         {

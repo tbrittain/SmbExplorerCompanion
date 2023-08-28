@@ -10,7 +10,6 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Search;
 using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Search;
 using SmbExplorerCompanion.WPF.Mappings.Summary;
@@ -22,15 +21,13 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class HomeViewModel : ViewModelBase
 {
-    private readonly IApplicationContext _applicationContext;
     private readonly IMediator _mediator;
     private string _searchQuery;
     private readonly INavigationService _navigationService;
 
-    public HomeViewModel(IApplicationContext applicationContext, IMediator mediator, INavigationService navigationService)
+    public HomeViewModel(IMediator mediator, INavigationService navigationService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        _applicationContext = applicationContext;
         _mediator = mediator;
         _navigationService = navigationService;
 
@@ -69,9 +66,11 @@ public partial class HomeViewModel : ViewModelBase
 
     public ObservableGroupedCollection<SearchResultType, SearchResult> SearchResults { get; } = new();
 
-    public FranchiseSummary FranchiseSummary { get; }
-    public Visibility FranchiseSummaryVisibility => FranchiseSummary.NumPlayers > 0 ? Visibility.Visible : Visibility.Collapsed;
+    public FranchiseSummary? FranchiseSummary { get; }
+    public Visibility FranchiseSummaryVisibility => FranchiseSummary?.NumPlayers > 0 ? Visibility.Visible : Visibility.Collapsed;
 
+    public int SearchRow => FranchiseSummary is null ? 1 : 2;
+    
     public string SearchQuery
     {
         get => _searchQuery;
@@ -141,7 +140,7 @@ public partial class HomeViewModel : ViewModelBase
     [RelayCommand]
     private void NavigateToChampionPage()
     {
-        if (FranchiseSummary.MostRecentChampionTeamId is null) return;
+        if (FranchiseSummary?.MostRecentChampionTeamId is null) return;
         
         NavigateToTeamOverviewPage(FranchiseSummary.MostRecentChampionTeamId.Value);
     }

@@ -48,6 +48,10 @@ public class CsvImportRepository : ICsvImportRepository
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
+        finally
+        {
+            channel.Complete();
+        }
     }
 
     public async Task ImportPlayoffs(ImportPlayoffFilePaths filePaths, ChannelWriter<ImportProgress> channel, CancellationToken cancellationToken)
@@ -77,6 +81,10 @@ public class CsvImportRepository : ICsvImportRepository
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
+        }
+        finally
+        {
+            channel.Complete();
         }
     }
 

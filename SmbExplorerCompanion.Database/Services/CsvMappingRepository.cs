@@ -22,8 +22,9 @@ public class CsvMappingRepository
     public async Task AddTeamsAsync(List<CsvTeam> teams, ChannelWriter<ImportProgress> channelWriter, CancellationToken cancellationToken)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-        foreach (var csvTeam in teams)
+        for (var i = 0; i < teams.Count; i++)
         {
+            var csvTeam = teams[i];
             var season = await _dbContext.Seasons
                 .SingleOrDefaultAsync(x => x.Id == csvTeam.SeasonId, cancellationToken);
             if (season is null)
@@ -183,13 +184,14 @@ public class CsvMappingRepository
             }
 
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+
             await channelWriter.WriteAsync(new ImportProgress
-            {
-                CsvFileName = "Teams",
-                TotalRecords = teams.Count,
-                RecordNumber = teams.IndexOf(csvTeam) + 1
-            }, cancellationToken);
+                {
+                    CsvFileName = "Teams",
+                    TotalRecords = teams.Count,
+                    RecordNumber = i + 1
+                },
+                cancellationToken);
         }
     }
 
@@ -208,8 +210,9 @@ public class CsvMappingRepository
         var traits = await _dbContext.Traits.ToListAsync(cancellationToken: cancellationToken);
         var pitchTypes = await _dbContext.PitchTypes.ToListAsync(cancellationToken: cancellationToken);
 
-        foreach (var csvOverallPlayer in players)
+        for (var i = 0; i < players.Count; i++)
         {
+            var csvOverallPlayer = players[i];
             Player? player;
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                 .Include(x => x.Player)
@@ -351,13 +354,14 @@ public class CsvMappingRepository
             if (playerSeason.Id == default)
                 _dbContext.PlayerSeasons.Add(playerSeason);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+
             await channelWriter.WriteAsync(new ImportProgress
-            {
-                CsvFileName = "Overall Players",
-                TotalRecords = players.Count,
-                RecordNumber = players.IndexOf(csvOverallPlayer) + 1
-            }, cancellationToken);
+                {
+                    CsvFileName = "Overall Players",
+                    TotalRecords = players.Count,
+                    RecordNumber = i + 1
+                },
+                cancellationToken);
         }
     }
 
@@ -377,8 +381,9 @@ public class CsvMappingRepository
             .Where(x => x.SeasonId == currentSeason.Id)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        foreach (var csvPitchingStat in pitchingStats)
+        for (var i = 0; i < pitchingStats.Count; i++)
         {
+            var csvPitchingStat = pitchingStats[i];
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
@@ -538,13 +543,14 @@ public class CsvMappingRepository
                 playerSeason.PitchingStats.Add(playerSeasonPitchingStat);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+
             await channelWriter.WriteAsync(new ImportProgress
-            {
-                CsvFileName = "Pitching Stats",
-                TotalRecords = pitchingStats.Count,
-                RecordNumber = pitchingStats.IndexOf(csvPitchingStat) + 1
-            }, cancellationToken);
+                {
+                    CsvFileName = "Pitching Stats",
+                    TotalRecords = pitchingStats.Count,
+                    RecordNumber = i + 1
+                },
+                cancellationToken);
         }
     }
 
@@ -564,8 +570,9 @@ public class CsvMappingRepository
             .Where(x => x.SeasonId == currentSeason.Id)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        foreach (var csvBattingStat in battingStats)
+        for (var i = 0; i < battingStats.Count; i++)
         {
+            var csvBattingStat = battingStats[i];
             var playerGameIdHistory = await _dbContext.PlayerGameIdHistory
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
@@ -727,13 +734,14 @@ public class CsvMappingRepository
                 playerSeason.BattingStats.Add(playerSeasonBattingStat);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+
             await channelWriter.WriteAsync(new ImportProgress
-            {
-                CsvFileName = "Batting Stats",
-                TotalRecords = battingStats.Count,
-                RecordNumber = battingStats.IndexOf(csvBattingStat) + 1
-            }, cancellationToken);
+                {
+                    CsvFileName = "Batting Stats",
+                    TotalRecords = battingStats.Count,
+                    RecordNumber = i + 1
+                },
+                cancellationToken);
         }
     }
 
@@ -784,8 +792,9 @@ public class CsvMappingRepository
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var csvGameSchedule in schedule)
+        for (var i = 0; i < schedule.Count; i++)
         {
+            var csvGameSchedule = schedule[i];
             var homeTeam =
                 seasonTeamHistories
                     .SingleOrDefault(x => x.Team.TeamGameIdHistory
@@ -833,13 +842,14 @@ public class CsvMappingRepository
             }
 
             _dbContext.TeamSeasonSchedules.Add(newScheduleEntry);
-            
+
             await channelWriter.WriteAsync(new ImportProgress
-            {
-                CsvFileName = "Season Schedule",
-                TotalRecords = schedule.Count,
-                RecordNumber = schedule.IndexOf(csvGameSchedule) + 1
-            }, cancellationToken);
+                {
+                    CsvFileName = "Season Schedule",
+                    TotalRecords = schedule.Count,
+                    RecordNumber = i + 1
+                },
+                cancellationToken);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -931,8 +941,9 @@ public class CsvMappingRepository
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var csvPlayoffSchedule in schedule)
+        for (var i = 0; i < schedule.Count; i++)
         {
+            var csvPlayoffSchedule = schedule[i];
             var homeTeam =
                 seasonTeamHistories
                     .SingleOrDefault(x => x.Team.TeamGameIdHistory
@@ -980,13 +991,14 @@ public class CsvMappingRepository
             }
 
             _dbContext.TeamPlayoffSchedules.Add(newScheduleEntry);
-            
+
             await channelWriter.WriteAsync(new ImportProgress
-            {
-                CsvFileName = "Playoff Schedule",
-                TotalRecords = schedule.Count,
-                RecordNumber = schedule.IndexOf(csvPlayoffSchedule) + 1
-            }, cancellationToken);
+                {
+                    CsvFileName = "Playoff Schedule",
+                    TotalRecords = schedule.Count,
+                    RecordNumber = i + 1
+                },
+                cancellationToken);
         }
 
         var isAnyGameNotPlayed = schedule.Any(x => x.HomeScore is null || x.AwayScore is null);
