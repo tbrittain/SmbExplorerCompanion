@@ -1,18 +1,19 @@
-﻿using System.Threading.Channels;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using MediatR;
 using Microsoft.Win32;
-using SmbExplorerCompanion.Core.Commands.Actions.Csv;
+using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects;
 using SmbExplorerCompanion.Core.ValueObjects.Progress;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class ImportCsvViewModel : ViewModelBase
 {
-    private readonly IMediator _mediator;
     private string _overallPlayersCsvPath = string.Empty;
     private string _playoffBattingCsvPath = string.Empty;
     private string _playoffPitchingCsvPath = string.Empty;
@@ -21,10 +22,11 @@ public partial class ImportCsvViewModel : ViewModelBase
     private string _seasonPitchingCsvPath = string.Empty;
     private string _seasonScheduleCsvPath = string.Empty;
     private string _teamsCsvPath = string.Empty;
+    private readonly ICsvImportRepository _csvImportRepository;
 
-    public ImportCsvViewModel(IMediator mediator)
+    public ImportCsvViewModel(ICsvImportRepository csvImportRepository)
     {
-        _mediator = mediator;
+        _csvImportRepository = csvImportRepository;
     }
 
     public string TeamsCsvPath
@@ -116,41 +118,74 @@ public partial class ImportCsvViewModel : ViewModelBase
     public bool CanImportPlayoffCsvs => !string.IsNullOrWhiteSpace(PlayoffPitchingCsvPath) &&
                                         !string.IsNullOrWhiteSpace(PlayoffBattingCsvPath) &&
                                         !string.IsNullOrWhiteSpace(PlayoffScheduleCsvPath);
+    
+    public ObservableCollection<ImportProgress> ImportProgress { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanImportSeasonCsvs))]
     private async Task ImportSeasonData()
     {
+        ImportProgress.Clear();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         
         var progressChannel = Channel.CreateUnbounded<ImportProgress>();
-        var response = await _mediator.Send(new ImportSeasonDataRequest(
+        var filePaths = new ImportSeasonFilePaths(
             TeamsCsvPath,
             OverallPlayersCsvPath,
             SeasonPitchingCsvPath,
             SeasonBattingCsvPath,
-            SeasonScheduleCsvPath,
-            progressChannel.Writer));
+            SeasonScheduleCsvPath);
 
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-        if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        else MessageBox.Show("Successfully imported season data!");
+        try
+        {
+            _ = _csvImportRepository.ImportSeason(filePaths, progressChannel.Writer, default);
+            
+            await foreach (var progress in progressChannel.Reader.ReadAllAsync())
+            {
+                ImportProgress.Add(progress);
+            }
+
+            MessageBox.Show("Successfully imported season data!");
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanImportPlayoffCsvs))]
     private async Task ImportPlayoffData()
     {
+        ImportProgress.Clear();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         
         var progressChannel = Channel.CreateUnbounded<ImportProgress>();
-        var response = await _mediator.Send(new ImportPlayoffDataRequest(
+        
+        var filePaths = new ImportPlayoffFilePaths(
             PlayoffPitchingCsvPath,
             PlayoffBattingCsvPath,
-            PlayoffScheduleCsvPath,
-            progressChannel.Writer));
+            PlayoffScheduleCsvPath);
 
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-        if (response.TryPickT1(out var exception, out _)) MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        else MessageBox.Show("Successfully imported playoff data!");
+        try
+        {
+            _ = _csvImportRepository.ImportPlayoffs(filePaths, progressChannel.Writer, default);
+            
+            await foreach (var progress in progressChannel.Reader.ReadAllAsync())
+            {
+                ImportProgress.Add(progress);
+            }
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+        }
     }
 
     [RelayCommand]

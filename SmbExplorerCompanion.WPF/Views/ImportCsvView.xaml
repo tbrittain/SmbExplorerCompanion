@@ -19,6 +19,7 @@
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
+                    <RowDefinition />
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -78,6 +79,27 @@
                     Grid.ColumnSpan="3">
                     <Label>Import Season Data</Label>
                 </Button>
+                
+                <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="400"/>
+                    </Grid.RowDefinitions>
+                    
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding ImportProgress}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CsvFileName}" />
+                                        <TextBlock Text="{Binding TotalRecords}" />
+                                        <TextBlock Text=" out of " />
+                                        <TextBlock Text="{Binding TotalRecords}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
 
             </Grid>
         </GroupBox>
