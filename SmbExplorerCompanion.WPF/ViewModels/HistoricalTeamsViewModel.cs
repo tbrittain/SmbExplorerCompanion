@@ -76,7 +76,8 @@ public class HistoricalTeamsViewModel : ViewModelBase
         HistoricalTeams.Clear();
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var historicalTeamsResponse = await _mediator.Send(new GetHistoricalTeamsRequest(SelectedSeason.Id));
+        var historicalTeamsResponse =
+            await _mediator.Send(new GetHistoricalTeamsRequest(SelectedSeason!.Id == default ? null : SelectedSeason!.Id));
         if (historicalTeamsResponse.TryPickT1(out var exception, out var historicalTeams))
         {
             MessageBox.Show(exception.Message);
@@ -100,7 +101,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
         set => SetField(ref _selectedHistoricalTeam, value);
     }
 
-    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
         {
@@ -108,6 +109,12 @@ public class HistoricalTeamsViewModel : ViewModelBase
             {
                 if (SelectedHistoricalTeam is not null)
                     NavigateToTeamOverview(SelectedHistoricalTeam);
+                break;
+            }
+            case nameof(SelectedSeason):
+            {
+                if (SelectedSeason is not null)
+                    await GetHistoricalTeams();
                 break;
             }
         }
