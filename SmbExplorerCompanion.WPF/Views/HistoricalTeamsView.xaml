@@ -4,97 +4,131 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HistoricalTeamsViewModel}">
-    <DataGrid
-        Name="TeamsDataGrid"
-        IsReadOnly="True"
-        ItemsSource="{Binding HistoricalTeams}"
-        SelectedItem="{Binding SelectedHistoricalTeam}"
-        AutoGenerateColumns="False"
-        CanUserAddRows="False"
-        CanUserDeleteRows="False"
-        CanUserReorderColumns="False"
-        CanUserSortColumns="True"
-        CanUserResizeColumns="True"
-        SelectionMode="Single">
-        <DataGrid.Columns>
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Team"
-                Binding="{Binding CurrentTeamName}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="# Games"
-                Binding="{Binding NumGames, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="W"
-                Binding="{Binding NumWins, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="L"
-                Binding="{Binding NumLosses, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="W/L%"
-                Binding="{Binding WinLossPct, StringFormat={}{0:F3}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Games >.500"
-                Binding="{Binding GamesOver500, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Playoff Appearances"
-                Binding="{Binding NumPlayoffAppearances, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Division Titles"
-                Binding="{Binding NumDivisionsWon, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Conference Titles"
-                Binding="{Binding NumConferenceTitles, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Championships"
-                Binding="{Binding NumChampionships, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="# Players"
-                Binding="{Binding NumPlayers, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="# HoF Players"
-                Binding="{Binding NumHallOfFamers, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Runs Scored"
-                Binding="{Binding NumRunsScored, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="Runs Allowed"
-                Binding="{Binding NumRunsAllowed, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="# AB"
-                Binding="{Binding NumAtBats, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="# H"
-                Binding="{Binding NumHits, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="# HR"
-                Binding="{Binding NumHomeRuns, StringFormat={}{0:N0}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="BA"
-                Binding="{Binding BattingAverage, StringFormat={}{0:F3}}" />
-            <DataGridTextColumn
-                CanUserSort="True"
-                Header="ERA"
-                Binding="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
-        </DataGrid.Columns>
-    </DataGrid>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0">
+            <ComboBox
+                DockPanel.Dock="Left"
+                Width="200"
+                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                materialDesign:HintAssist.Hint="Season"
+                ItemsSource="{Binding Seasons}"
+                SelectedItem="{Binding SelectedSeason}"
+                DisplayMemberPath="DisplaySeasonNumber" />
+        </DockPanel>
+
+        <DataGrid
+            Grid.Row="1"
+            Name="TeamsDataGrid"
+            IsReadOnly="True"
+            ItemsSource="{Binding HistoricalTeams}"
+            SelectedItem="{Binding SelectedHistoricalTeam}"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            CanUserReorderColumns="False"
+            CanUserSortColumns="True"
+            CanUserResizeColumns="True"
+            SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Team"
+                    Binding="{Binding CurrentTeamName}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Total Games"
+                    Binding="{Binding NumGames, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="W"
+                    Binding="{Binding NumRegularSeasonWins, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="L"
+                    Binding="{Binding NumRegularSeasonLosses, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="W/L%"
+                    Binding="{Binding WinLossPct, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Win Diff From Prev Season"
+                    SortMemberPath="WinDiffFromPrevSeason"
+                    Binding="{Binding DisplayWinDiffFromPrevSeason}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Games >.500"
+                    Binding="{Binding GamesOver500, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Playoff Appearances"
+                    Binding="{Binding NumPlayoffAppearances, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Playoff W"
+                    Binding="{Binding NumPlayoffWins, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Playoff L"
+                    Binding="{Binding NumPlayoffLosses, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Division Titles"
+                    Binding="{Binding NumDivisionsWon, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Conference Titles"
+                    Binding="{Binding NumConferenceTitles, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Championships"
+                    Binding="{Binding NumChampionships, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="# Players"
+                    Binding="{Binding NumPlayers, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="# HoF Players"
+                    Binding="{Binding NumHallOfFamers, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Runs Scored"
+                    Binding="{Binding NumRunsScored, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Runs Allowed"
+                    Binding="{Binding NumRunsAllowed, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="# AB"
+                    Binding="{Binding NumAtBats, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="# H"
+                    Binding="{Binding NumHits, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="# HR"
+                    Binding="{Binding NumHomeRuns, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="BA"
+                    Binding="{Binding BattingAverage, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="ERA"
+                    Binding="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </Grid>
 </UserControl>
