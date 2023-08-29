@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OneOf;
+using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
@@ -74,11 +75,11 @@ public class TeamRepository : ITeamRepository
 
                 if (seasons.All(x => x.Id != seasonId))
                     return new Exception($"Season ID {seasonId} is not valid for franchise ID {franchiseId}");
-    
+
                 var previousSeason = seasons
                     .OrderByDescending(x => x.Number)
                     .FirstOrDefault(x => x.Number < seasonId);
-                
+
                 previousSeasonId = previousSeason?.Id;
             }
 
@@ -106,8 +107,10 @@ public class TeamRepository : ITeamRepository
                 .Select(x => new
                 {
                     x.Id,
-                    SeasonTeamId = seasonId == null ? (int?)null : x.SeasonTeamHistory
-                        .First(y => y.SeasonId == seasonId).Id,
+                    SeasonTeamId = seasonId == null
+                        ? (int?) null
+                        : x.SeasonTeamHistory
+                            .First(y => y.SeasonId == seasonId).Id,
                     CurrentTeamName = x.SeasonTeamHistory
                         .OrderByDescending(y => y.SeasonId)
                         .First().TeamNameHistory.Name,
@@ -117,11 +120,13 @@ public class TeamRepository : ITeamRepository
                     NumRegularSeasonWins = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
                         .Sum(y => y.Wins),
-                    WinDiffFromPrevSeason = seasonId != null && previousSeasonId != null ? (x.SeasonTeamHistory
-                        .Where(y => y.SeasonId == seasonId)
-                        .Sum(y => y.Wins)) - (x.SeasonTeamHistory
-                        .Where(y => y.SeasonId == previousSeasonId)
-                        .Sum(y => y.Wins)) : 0,
+                    WinDiffFromPrevSeason = seasonId != null && previousSeasonId != null
+                        ? (x.SeasonTeamHistory
+                            .Where(y => y.SeasonId == seasonId)
+                            .Sum(y => y.Wins)) - (x.SeasonTeamHistory
+                            .Where(y => y.SeasonId == previousSeasonId)
+                            .Sum(y => y.Wins))
+                        : 0,
                     NumRegularSeasonLosses = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
                         .Sum(y => y.Losses),
@@ -321,6 +326,10 @@ public class TeamRepository : ITeamRepository
             // TODO: This will likely pull back more data the more seasons there are,
             // so we will want to do some sort of ordering and limiting here in the future
             var topPlayers = await _dbContext.Players
+                .Include(x => x.PlayerSeasons
+                    .Where(y => y.PlayerTeamHistory
+                        .Any(z => z.SeasonTeamHistory != null && z.SeasonTeamHistory.TeamId == teamId)))
+                .ThenInclude(x => x.Awards)
                 .Include(x => x.PrimaryPosition)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PlayerTeamHistory)
@@ -329,6 +338,8 @@ public class TeamRepository : ITeamRepository
                 .ThenInclude(x => x.BattingStats)
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PitchingStats)
+                .Include(player => player.PlayerSeasons)
+                .ThenInclude(playerSeason => playerSeason.ChampionshipWinner)
                 .Where(x => x.PlayerSeasons
                     .Any(y => y.PlayerTeamHistory
                         .Any(z => z.SeasonTeamHistory != null && z.SeasonTeamHistory.TeamId == teamId)))
@@ -350,6 +361,44 @@ public class TeamRepository : ITeamRepository
 
                     var isPitcher = x.PitcherRoleId is not null;
                     dto.IsPitcher = isPitcher;
+
+                    dto.Awards = seasonsWithTeam
+                        .SelectMany(y => y.Awards)
+                        .Select(y => new PlayerAwardBaseDto
+                        {
+                            Id = y.Id,
+                            Name = y.Name,
+                            Importance = y.Importance,
+                            OmitFromGroupings = y.OmitFromGroupings
+                        })
+                        .ToList();
+
+                    if (x.IsHallOfFamer)
+                    {
+                        dto.Awards.Add(new PlayerAwardDto
+                        {
+                            Id = -1,
+                            Importance = -1,
+                            Name = "Hall of Fame",
+                            OriginalName = "Hall of Fame",
+                            OmitFromGroupings = false
+                        });
+                    }
+
+                    var numChampionships = seasonsWithTeam
+                        .Count(y => y.ChampionshipWinner is not null);
+
+                    if (numChampionships > 0)
+                        foreach (var _ in Enumerable.Range(1, numChampionships))
+                        {
+                            dto.Awards.Add(new PlayerAwardDto
+                            {
+                                Id = 0,
+                                Name = "Champion",
+                                Importance = 10,
+                                OmitFromGroupings = false
+                            });
+                        }
 
                     if (isPitcher)
                     {

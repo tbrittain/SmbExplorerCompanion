@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.Core.Entities.Teams;
+﻿using SmbExplorerCompanion.Core.Entities.Lookups;
+
+namespace SmbExplorerCompanion.Core.Entities.Teams;
 
 public class TeamTopPlayerHistoryDto
 {
@@ -16,4 +18,5 @@ public class TeamTopPlayerHistoryDto
     /// In bRef, this ordering on the Team page is by bWAR
     /// </summary>
     public double WeightedOpsPlusOrEraMinus { get; set; }
+    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
 }
