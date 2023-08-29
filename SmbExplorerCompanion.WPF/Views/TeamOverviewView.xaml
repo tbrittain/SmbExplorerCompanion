@@ -59,7 +59,6 @@
             <ScrollViewer>
                 <StackPanel Orientation="Vertical">
                     <Grid>
-
                         <DataGrid
                             Name="TeamSeasonsDataGrid"
                             IsReadOnly="True"
@@ -125,7 +124,6 @@
                     </Grid>
 
                     <Grid>
-
                         <DataGrid
                             Name="TopPlayersDataGrid"
                             ItemsSource="{Binding TeamOverview.TopPlayers}"
@@ -158,12 +156,13 @@
                                     Binding="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:N1}}" />
                                 <DataGridTextColumn
                                     CanUserSort="True"
-                                    Header="Avg OPS+"
-                                    Binding="{Binding AverageOpsPlus, StringFormat={}{0:F1}}" />
+                                    Header="Avg OPS+/ERA-"
+                                    Binding="{Binding AverageOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
                                 <DataGridTextColumn
-                                    CanUserSort="True"
-                                    Header="Avg ERA-"
-                                    Binding="{Binding AverageEraMinus, StringFormat={}{0:F1}}" />
+                                    IsReadOnly="True"
+                                    Header="Awards"
+                                    Binding="{Binding DisplayAwards}"
+                                    CanUserSort="False" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

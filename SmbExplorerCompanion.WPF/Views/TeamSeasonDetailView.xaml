@@ -221,6 +221,10 @@
                                     Header="E"
                                     Binding="{Binding Errors}"
                                     CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="Awards"
+                                    Binding="{Binding DisplayAwards}"
+                                    CanUserSort="False" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -388,6 +392,10 @@
                                     Header="HBP"
                                     Binding="{Binding HitByPitch}"
                                     CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="Awards"
+                                    Binding="{Binding DisplayAwards}"
+                                    CanUserSort="False" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -566,6 +574,10 @@
                                     Header="E"
                                     Binding="{Binding Errors}"
                                     CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="Awards"
+                                    Binding="{Binding DisplayAwards}"
+                                    CanUserSort="False" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -733,6 +745,10 @@
                                     Header="HBP"
                                     Binding="{Binding HitByPitch}"
                                     CanUserSort="True" />
+                                <DataGridTextColumn
+                                    Header="Awards"
+                                    Binding="{Binding DisplayAwards}"
+                                    CanUserSort="False" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

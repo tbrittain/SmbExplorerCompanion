@@ -1,4 +1,8 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Teams;
+﻿using System.Collections.ObjectModel;
+using SmbExplorerCompanion.WPF.Extensions;
+using SmbExplorerCompanion.WPF.Models.Lookups;
+
+namespace SmbExplorerCompanion.WPF.Models.Teams;
 
 public class TeamTopPlayerHistory
 {
@@ -9,5 +13,8 @@ public class TeamTopPlayerHistory
     public string PlayerPosition { get; set; } = string.Empty;
     public double AverageOpsPlus { get; set; }
     public double AverageEraMinus { get; set; }
+    public double AverageOpsPlusOrEraMinus => IsPitcher ? AverageEraMinus : AverageOpsPlus;
     public double WeightedOpsPlusOrEraMinus { get; set; }
+    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
+    public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: false);
 }
