@@ -12,6 +12,14 @@ public class HistoricalTeam
     public int GamesOver500 { get; set; }
     public int NumPlayoffWins { get; set; }
     public int NumPlayoffLosses { get; set; }
+    public int? WinDiffFromPrevSeason { get; set; }
+    // if positive, prepend a plus sign
+    public string? DisplayWinDiffFromPrevSeason => WinDiffFromPrevSeason switch
+    {
+        null => null,
+        < 0 => WinDiffFromPrevSeason.ToString(),
+        _ => $"+{WinDiffFromPrevSeason}"
+    };
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }
     public int NumChampionships { get; set; }

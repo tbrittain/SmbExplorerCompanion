@@ -11,6 +11,7 @@ public class HistoricalTeamDto : TeamBaseDto
     private int NumPlayoffGames => NumPlayoffWins + NumPlayoffLosses;
     public int NumPlayoffWins { get; set; }
     public int NumPlayoffLosses { get; set; }
+    public int? WinDiffFromPrevSeason { get; set; }
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }
     public int NumChampionships { get; set; }

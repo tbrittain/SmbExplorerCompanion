@@ -60,6 +60,11 @@
                     Binding="{Binding WinLossPct, StringFormat={}{0:F3}}" />
                 <DataGridTextColumn
                     CanUserSort="True"
+                    Header="Win Diff From Prev Season"
+                    SortMemberPath="WinDiffFromPrevSeason"
+                    Binding="{Binding DisplayWinDiffFromPrevSeason}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
                     Header="Games >.500"
                     Binding="{Binding GamesOver500, StringFormat={}{0:N0}}" />
                 <DataGridTextColumn

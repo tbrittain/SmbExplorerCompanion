@@ -65,6 +65,23 @@ public class TeamRepository : ITeamRepository
             var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
                 .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
 
+            int? previousSeasonId = null;
+            if (seasonId is not null)
+            {
+                var seasons = await _dbContext.Seasons
+                    .Where(x => x.FranchiseId == franchiseId)
+                    .ToListAsync(cancellationToken: cancellationToken);
+
+                if (seasons.All(x => x.Id != seasonId))
+                    return new Exception($"Season ID {seasonId} is not valid for franchise ID {franchiseId}");
+    
+                var previousSeason = seasons
+                    .OrderByDescending(x => x.Number)
+                    .FirstOrDefault(x => x.Number < seasonId);
+                
+                previousSeasonId = previousSeason?.Id;
+            }
+
             var teams = await teamsQueryable
                 .Include(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.TeamNameHistory)
@@ -100,6 +117,11 @@ public class TeamRepository : ITeamRepository
                     NumRegularSeasonWins = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
                         .Sum(y => y.Wins),
+                    WinDiffFromPrevSeason = seasonId != null && previousSeasonId != null ? (x.SeasonTeamHistory
+                        .Where(y => y.SeasonId == seasonId)
+                        .Sum(y => y.Wins)) - (x.SeasonTeamHistory
+                        .Where(y => y.SeasonId == previousSeasonId)
+                        .Sum(y => y.Wins)) : 0,
                     NumRegularSeasonLosses = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
                         .Sum(y => y.Losses),
@@ -164,6 +186,7 @@ public class TeamRepository : ITeamRepository
                         SeasonTeamId = x.SeasonTeamId,
                         CurrentTeamName = x.CurrentTeamName,
                         NumGames = x.NumGames,
+                        WinDiffFromPrevSeason = x.WinDiffFromPrevSeason,
                         NumRegularSeasonWins = x.NumRegularSeasonWins,
                         NumRegularSeasonLosses = x.NumRegularSeasonLosses,
                         NumPlayoffWins = x.NumPlayoffWins,
