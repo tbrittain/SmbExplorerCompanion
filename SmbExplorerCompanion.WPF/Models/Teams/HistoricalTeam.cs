@@ -3,6 +3,7 @@
 public class HistoricalTeam
 {
     public int TeamId { get; set; }
+    public int? SeasonTeamId { get; set; }
     public string CurrentTeamName { get; set; } = default!;
     public int NumGames { get; set; }
     public int NumWins { get; set; }

@@ -89,6 +89,8 @@ public class TeamRepository : ITeamRepository
                 .Select(x => new
                 {
                     x.Id,
+                    SeasonTeamId = seasonId == null ? (int?)null : x.SeasonTeamHistory
+                        .First(y => y.SeasonId == seasonId).Id,
                     CurrentTeamName = x.SeasonTeamHistory
                         .OrderByDescending(y => y.SeasonId)
                         .First().TeamNameHistory.Name,
@@ -153,6 +155,7 @@ public class TeamRepository : ITeamRepository
                     var team = new HistoricalTeamDto
                     {
                         TeamId = x.Id,
+                        SeasonTeamId = x.SeasonTeamId,
                         CurrentTeamName = x.CurrentTeamName,
                         NumGames = x.NumGames,
                         NumWins = x.NumWins,

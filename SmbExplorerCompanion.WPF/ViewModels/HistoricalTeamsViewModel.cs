@@ -108,7 +108,13 @@ public class HistoricalTeamsViewModel : ViewModelBase
             case nameof(SelectedHistoricalTeam):
             {
                 if (SelectedHistoricalTeam is not null)
-                    NavigateToTeamOverview(SelectedHistoricalTeam);
+                {
+                    if (SelectedSeason is not null && SelectedHistoricalTeam.SeasonTeamId is not null)
+                        NavigateToSeasonTeamDetail(SelectedHistoricalTeam);
+                    else
+                        NavigateToTeamOverview(SelectedHistoricalTeam);
+                }
+
                 break;
             }
             case nameof(SelectedSeason):
@@ -127,6 +133,17 @@ public class HistoricalTeamsViewModel : ViewModelBase
             new(TeamOverviewViewModel.TeamIdProp, team.TeamId)
         };
         _navigationService.NavigateTo<TeamOverviewViewModel>(parameters);
+    }
+
+    private void NavigateToSeasonTeamDetail(HistoricalTeam team)
+    {
+        if (team.SeasonTeamId is null)
+            throw new ArgumentException("SeasonTeamId cannot be null.");
+        var parameters = new Tuple<string, object>[]
+        {
+            new(TeamSeasonDetailViewModel.SeasonTeamIdProp, team.SeasonTeamId)
+        };
+        _navigationService.NavigateTo<TeamSeasonDetailViewModel>(parameters);
     }
 
     protected override void Dispose(bool disposing)

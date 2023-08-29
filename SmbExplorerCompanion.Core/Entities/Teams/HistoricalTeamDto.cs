@@ -2,6 +2,7 @@
 
 public class HistoricalTeamDto : TeamBaseDto
 {
+    public int? SeasonTeamId { get; set; }
     public int NumGames { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }
