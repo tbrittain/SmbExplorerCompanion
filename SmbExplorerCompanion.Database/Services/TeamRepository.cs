@@ -284,7 +284,7 @@ public class TeamRepository : ITeamRepository
                                     x.AwayPlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries),
                     WonChampionship = x.ChampionshipWinner != null,
                 })
-                .OrderBy(x => x.SeasonNumber)
+                .OrderByDescending(x => x.SeasonNumber)
                 .ToList();
 
             // TODO: This will likely pull back more data the more seasons there are,
