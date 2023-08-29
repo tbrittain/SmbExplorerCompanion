@@ -22,7 +22,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
-        var historicalTeamsResponse = mediator.Send(new GetHistoricalTeamsRequest()).Result;
+        var historicalTeamsResponse = mediator.Send(new GetHistoricalTeamsRequest(null)).Result;
         if (historicalTeamsResponse.TryPickT1(out var exception, out var historicalTeams))
         {
             MessageBox.Show(exception.Message);

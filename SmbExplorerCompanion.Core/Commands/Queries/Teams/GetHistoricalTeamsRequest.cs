@@ -7,6 +7,13 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Teams;
 
 public class GetHistoricalTeamsRequest : IRequest<OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
 {
+    public GetHistoricalTeamsRequest(int? seasonId)
+    {
+        SeasonId = seasonId;
+    }
+
+    private int? SeasonId { get; }
+
     // ReSharper disable once UnusedType.Global
     internal class GetHistoricalTeamsHandler : IRequestHandler<GetHistoricalTeamsRequest, OneOf<IEnumerable<HistoricalTeamDto>, Exception>>
     {
@@ -19,6 +26,6 @@ public class GetHistoricalTeamsRequest : IRequest<OneOf<IEnumerable<HistoricalTe
 
         public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> Handle(GetHistoricalTeamsRequest request,
             CancellationToken cancellationToken) =>
-            await _teamRepository.GetHistoricalTeams(cancellationToken);
+            await _teamRepository.GetHistoricalTeams(request.SeasonId, cancellationToken);
     }
 }

@@ -50,11 +50,11 @@ public class TeamRepository : ITeamRepository
         }
     }
 
-    public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(CancellationToken cancellationToken)
+    public async Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(int? seasonId,
+        CancellationToken cancellationToken)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-        var teamsQueryable = _dbContext
-            .Teams
+        var teamsQueryable = _dbContext.Teams
             .Include(x => x.SeasonTeamHistory)
             .ThenInclude(x => x.Division)
             .ThenInclude(x => x.Conference)
@@ -86,6 +86,7 @@ public class TeamRepository : ITeamRepository
                 .ThenInclude(x => x.AwayPlayoffSchedule)
                 .Include(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.ChampionshipWinner)
+                .Where(x => seasonId == null || x.SeasonTeamHistory.Any(y => y.SeasonId == seasonId))
                 .Select(x => new
                 {
                     x.Id,
@@ -116,7 +117,7 @@ public class TeamRepository : ITeamRepository
             foreach (var team in teams)
             {
                 // TODO: May want to do the same aggregations here as we did above, but for team-player-specific stats
-                var histories = await _dbContext.SeasonTeamHistory
+                var playerTeamHistory = await _dbContext.SeasonTeamHistory
                     .Include(x => x.PlayerTeamHistory)
                     .ThenInclude(x => x.PlayerSeason)
                     .ThenInclude(x => x.Player)
@@ -127,10 +128,11 @@ public class TeamRepository : ITeamRepository
                     .ThenInclude(x => x.PlayerSeason)
                     .ThenInclude(x => x.PitchingStats)
                     .Where(x => x.TeamId == team.Id)
+                    .Where(x => seasonId == null || x.SeasonId == seasonId)
                     .SelectMany(y => y.PlayerTeamHistory)
                     .ToListAsync(cancellationToken: cancellationToken);
 
-                playerTeamHistories.Add(team.Id, histories);
+                playerTeamHistories.Add(team.Id, playerTeamHistory);
             }
 
             var historicalTeams = teams
