@@ -44,16 +44,16 @@
                     Binding="{Binding CurrentTeamName}" />
                 <DataGridTextColumn
                     CanUserSort="True"
-                    Header="# Games"
+                    Header="Total Games"
                     Binding="{Binding NumGames, StringFormat={}{0:N0}}" />
                 <DataGridTextColumn
                     CanUserSort="True"
                     Header="W"
-                    Binding="{Binding NumWins, StringFormat={}{0:N0}}" />
+                    Binding="{Binding NumRegularSeasonWins, StringFormat={}{0:N0}}" />
                 <DataGridTextColumn
                     CanUserSort="True"
                     Header="L"
-                    Binding="{Binding NumLosses, StringFormat={}{0:N0}}" />
+                    Binding="{Binding NumRegularSeasonLosses, StringFormat={}{0:N0}}" />
                 <DataGridTextColumn
                     CanUserSort="True"
                     Header="W/L%"
@@ -66,6 +66,14 @@
                     CanUserSort="True"
                     Header="Playoff Appearances"
                     Binding="{Binding NumPlayoffAppearances, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Playoff W"
+                    Binding="{Binding NumPlayoffWins, StringFormat={}{0:N0}}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
+                    Header="Playoff L"
+                    Binding="{Binding NumPlayoffLosses, StringFormat={}{0:N0}}" />
                 <DataGridTextColumn
                     CanUserSort="True"
                     Header="Division Titles"

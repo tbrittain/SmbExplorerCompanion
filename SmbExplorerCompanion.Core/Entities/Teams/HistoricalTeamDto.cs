@@ -4,10 +4,13 @@ public class HistoricalTeamDto : TeamBaseDto
 {
     public int? SeasonTeamId { get; set; }
     public int NumGames { get; set; }
-    public int NumWins { get; set; }
-    public int NumLosses { get; set; }
-    public double WinLossPct => (double)NumWins / NumGames;
-    public int GamesOver500 => NumWins - NumLosses;
+    public int NumRegularSeasonWins { get; set; }
+    public int NumRegularSeasonLosses { get; set; }
+    public double WinLossPct => (double)NumRegularSeasonWins / (NumGames - NumPlayoffGames);
+    public int GamesOver500 => NumRegularSeasonWins - NumRegularSeasonLosses;
+    private int NumPlayoffGames => NumPlayoffWins + NumPlayoffLosses;
+    public int NumPlayoffWins { get; set; }
+    public int NumPlayoffLosses { get; set; }
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }
     public int NumChampionships { get; set; }

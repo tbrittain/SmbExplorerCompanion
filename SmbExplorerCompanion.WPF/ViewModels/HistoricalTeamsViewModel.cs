@@ -88,7 +88,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
         var mapper = new HistoricalTeamMapping();
         HistoricalTeams.AddRange(historicalTeams
             .Select(x => mapper.FromDto(x))
-            .OrderByDescending(x => x.NumWins));
+            .OrderByDescending(x => x.NumRegularSeasonWins));
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }

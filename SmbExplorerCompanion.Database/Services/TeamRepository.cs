@@ -97,12 +97,18 @@ public class TeamRepository : ITeamRepository
                     NumGames = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
                         .Sum(y => y.Wins + y.Losses + (y.PlayoffWins ?? 0) + (y.PlayoffLosses ?? 0)),
-                    NumWins = x.SeasonTeamHistory
+                    NumRegularSeasonWins = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
-                        .Sum(y => y.Wins + (y.PlayoffWins ?? 0)),
-                    NumLosses = x.SeasonTeamHistory
+                        .Sum(y => y.Wins),
+                    NumRegularSeasonLosses = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
-                        .Sum(y => y.Losses + (y.PlayoffLosses ?? 0)),
+                        .Sum(y => y.Losses),
+                    NumPlayoffWins = x.SeasonTeamHistory
+                        .Where(y => seasonId == null || y.SeasonId == seasonId)
+                        .Sum(y => y.PlayoffWins ?? 0),
+                    NumPlayoffLosses = x.SeasonTeamHistory
+                        .Where(y => seasonId == null || y.SeasonId == seasonId)
+                        .Sum(y => y.PlayoffLosses ?? 0),
                     NumDivisionsWon = x.SeasonTeamHistory
                         .Where(y => seasonId == null || y.SeasonId == seasonId)
                         .Count(y => y.GamesBehind == 0),
@@ -158,8 +164,10 @@ public class TeamRepository : ITeamRepository
                         SeasonTeamId = x.SeasonTeamId,
                         CurrentTeamName = x.CurrentTeamName,
                         NumGames = x.NumGames,
-                        NumWins = x.NumWins,
-                        NumLosses = x.NumLosses,
+                        NumRegularSeasonWins = x.NumRegularSeasonWins,
+                        NumRegularSeasonLosses = x.NumRegularSeasonLosses,
+                        NumPlayoffWins = x.NumPlayoffWins,
+                        NumPlayoffLosses = x.NumPlayoffLosses,
                         NumDivisionsWon = x.NumDivisionsWon,
                         NumChampionships = x.NumChampionships,
                         NumConferenceTitles = x.NumConferenceTitles,
