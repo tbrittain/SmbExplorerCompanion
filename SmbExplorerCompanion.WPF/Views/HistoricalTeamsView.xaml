@@ -65,6 +65,10 @@
                     Binding="{Binding DisplayWinDiffFromPrevSeason}" />
                 <DataGridTextColumn
                     CanUserSort="True"
+                    Header="Championship Drought"
+                    Binding="{Binding ChampionshipDroughtSeasons}" />
+                <DataGridTextColumn
+                    CanUserSort="True"
                     Header="Games >.500"
                     Binding="{Binding GamesOver500, StringFormat={}{0:N0}}" />
                 <DataGridTextColumn
