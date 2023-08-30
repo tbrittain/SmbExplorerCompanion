@@ -20,6 +20,7 @@ public class HistoricalTeam
         < 0 => WinDiffFromPrevSeason.ToString(),
         _ => $"+{WinDiffFromPrevSeason}"
     };
+    public int ChampionshipDroughtSeasons { get; set; }
     public int NumDivisionsWon { get; set; }
     public int NumConferenceTitles { get; set; }
     public int NumChampionships { get; set; }

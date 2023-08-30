@@ -247,6 +247,27 @@ public class TeamRepository : ITeamRepository
                     return team;
                 })
                 .ToList();
+            
+            var currentSeason = await _dbContext.Seasons
+                .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => seasonId == null || x.Id == seasonId)
+                .OrderByDescending(x => x.Number)
+                .FirstAsync(cancellationToken: cancellationToken);
+
+            foreach (var team in historicalTeams)
+            {
+                var lastChampionshipSeason = await _dbContext.SeasonTeamHistory
+                    .Include(x => x.Season)
+                    .Include(x => x.ChampionshipWinner)
+                    .Where(x => x.TeamId == team.TeamId)
+                    .Where(x => x.ChampionshipWinner != null)
+                    .Where(x => x.Season.Number <= currentSeason.Number)
+                    .OrderByDescending(x => x.SeasonId)
+                    .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+                var championshipDroughtSeasons = currentSeason.Number - (lastChampionshipSeason?.Season.Number ?? 0);
+                team.ChampionshipDroughtSeasons = championshipDroughtSeasons;
+            }
 
             if (cancellationToken.IsCancellationRequested)
                 return Array.Empty<HistoricalTeamDto>();
