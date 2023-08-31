@@ -113,7 +113,7 @@ public class PlayerRepository : IPlayerRepository
                     Junk = x.Junk,
                     Accuracy = x.Accuracy,
                     Salary = x.PlayerSeason.PlayerTeamHistory
-                        .SingleOrDefault(y => y.Order == 1) == null
+                        .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : x.PlayerSeason.Salary,
                     SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
@@ -476,7 +476,7 @@ public class PlayerRepository : IPlayerRepository
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
                     TotalSalary = x.PlayerSeason.PlayerTeamHistory
-                        .SingleOrDefault(y => y.Order == 1) == null
+                        .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : x.PlayerSeason.Salary,
                     BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
@@ -653,7 +653,7 @@ public class PlayerRepository : IPlayerRepository
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
                     IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
                     TotalSalary = x.PlayerSeason.PlayerTeamHistory
-                        .SingleOrDefault(y => y.Order == 1) == null
+                        .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : x.PlayerSeason.Salary,
                     BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
@@ -996,7 +996,7 @@ public class PlayerRepository : IPlayerRepository
         playerOverview.IsPitcher = player.PitcherRole is not null;
         playerOverview.TotalSalary = player.PlayerSeasons
             .Sum(x => x.PlayerTeamHistory
-                .SingleOrDefault(y => y.Order == 1) == null
+                .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                 ? 0
                 : x.Salary);
         playerOverview.BatHandedness = player.BatHandedness.Name;
@@ -1124,7 +1124,7 @@ public class PlayerRepository : IPlayerRepository
                 IsPitcher = x.PitcherRole != null,
                 TotalSalary = x.PlayerSeasons
                     .Sum(y => y.PlayerTeamHistory
-                        .SingleOrDefault(z => z.Order == 1) == null
+                        .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : y.Salary),
                 BatHandedness = x.BatHandedness.Name,
@@ -1186,7 +1186,7 @@ public class PlayerRepository : IPlayerRepository
                 IsPitcher = x.PitcherRole != null,
                 TotalSalary = x.PlayerSeasons
                     .Sum(y => y.PlayerTeamHistory
-                        .SingleOrDefault(z => z.Order == 1) == null
+                        .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : y.Salary),
                 PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
