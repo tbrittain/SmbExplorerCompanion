@@ -26,13 +26,18 @@ public class CsvMappingRepository
         {
             var csvTeam = teams[i];
             var season = await _dbContext.Seasons
+                .Where(x => x.FranchiseId == franchiseId)
                 .SingleOrDefaultAsync(x => x.Id == csvTeam.SeasonId, cancellationToken);
             if (season is null)
             {
+                var totalPreviousSeasons = await _dbContext.Seasons
+                    .Where(x => x.FranchiseId == franchiseId)
+                    .CountAsync(cancellationToken);
+
                 season = new Season
                 {
                     Id = csvTeam.SeasonId,
-                    Number = csvTeam.SeasonNum,
+                    Number = totalPreviousSeasons + 1,
                     FranchiseId = franchiseId
                 };
                 _dbContext.Seasons.Add(season);
@@ -40,6 +45,7 @@ public class CsvMappingRepository
             }
 
             var conference = await _dbContext.Conferences
+                .Where(x => x.FranchiseId == franchiseId)
                 .SingleOrDefaultAsync(x => x.Name == csvTeam.ConferenceName, cancellationToken);
             if (conference is null)
             {
@@ -53,6 +59,8 @@ public class CsvMappingRepository
             }
 
             var division = await _dbContext.Divisions
+                .Include(x => x.Conference)
+                .Where(x => x.Conference.FranchiseId == franchiseId)
                 .SingleOrDefaultAsync(x => x.Name == csvTeam.DivisionName, cancellationToken);
             if (division is null)
             {
@@ -82,6 +90,7 @@ public class CsvMappingRepository
                     .ThenInclude(x => x.Team)
                     .ThenInclude(x => x.SeasonTeamHistory)
                     .ThenInclude(seasonTeamHistory => seasonTeamHistory.TeamNameHistory)
+                    .Where(x => x.SeasonTeamHistory.Any(y => y.Team.FranchiseId == franchiseId))
                     .SingleOrDefaultAsync(x => x.Name == csvTeam.TeamName &&
                                                x.SeasonTeamHistory.Any(y => y.Team.FranchiseId == franchiseId),
                         cancellationToken);
@@ -224,6 +233,7 @@ public class CsvMappingRepository
                 .Include(x => x.Player)
                 .ThenInclude(x => x.PlayerSeasons)
                 .ThenInclude(x => x.Traits)
+                .Where(x => x.Player.FranchiseId == franchiseId)
                 .SingleOrDefaultAsync(x => x.GameId == csvOverallPlayer.PlayerId &&
                                            x.Player.FranchiseId == franchiseId,
                     cancellationToken);
