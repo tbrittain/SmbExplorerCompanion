@@ -12,9 +12,10 @@
         FontFamily="{materialDesign:MaterialDesignFont}"
         mc:Ignorable="d"
         Title="SMB Explorer Companion"
-        Height="1280"
-        Width="720"
+        Height="720"
+        Width="1280"
         ResizeMode="CanResize"
+        WindowState="Maximized"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
