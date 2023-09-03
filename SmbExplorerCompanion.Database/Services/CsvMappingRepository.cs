@@ -471,22 +471,26 @@ public class CsvMappingRepository
                     .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == season.Id)
                     .SelectMany(x => x.PlayerTeamHistory)
                     .ToListAsync(cancellationToken: cancellationToken);
+                
+                var mostRecentTeamHistory = playerTeamHistories
+                    .SingleOrDefault(x => x.Order == 1) ?? throw new Exception(
+                    $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
+                    $"and season ID {season.Id}");
 
                 // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
-                if (playerTeamHistories.First().SeasonTeamHistory is null)
+                if (mostRecentTeamHistory.SeasonTeamHistory is null)
                 {
                     // This means that the last team that was recorded for this player was them being a free agent, and we need to update it
                     // to indicate that they were signed by a team for the postseason
-                    playerTeamHistories.First().SeasonTeamHistory = seasonTeamHistories
-                                                                        .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                                            .Any(y => y.GameId == csvPitchingStat.CurrentTeamId))
-                                                                    ?? throw new Exception(
-                                                                        $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
-                                                                        $"and season ID {season.Id}");
+                    mostRecentTeamHistory.SeasonTeamHistory = seasonTeamHistories
+                                                                  .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                                      .Any(y => y.GameId == csvPitchingStat.CurrentTeamId))
+                                                              ?? throw new Exception(
+                                                                  $"No SeasonTeamHistory record found for team ID {csvPitchingStat.CurrentTeamId} " +
+                                                                  $"and season ID {season.Id}");
                 }
-                else if (playerTeamHistories
-                             .First().SeasonTeamHistory!.Team.TeamGameIdHistory
-                             .First().GameId != csvPitchingStat.CurrentTeamId)
+                else if (mostRecentTeamHistory.SeasonTeamHistory!.Team.TeamGameIdHistory
+                         .All(x => x.GameId != csvPitchingStat.CurrentTeamId))
                 {
                     // This means that the team ID on the CSV import does not match the team ID on Order 1 in the player team history
                     // We will then need to add a new player team history record to indicate that they were signed by a team for the postseason
@@ -657,22 +661,26 @@ public class CsvMappingRepository
                     .Where(x => x.PlayerId == playerSeason.PlayerId && x.SeasonId == season.Id)
                     .SelectMany(x => x.PlayerTeamHistory)
                     .ToListAsync(cancellationToken: cancellationToken);
+                
+                var mostRecentTeamHistory = playerTeamHistories
+                    .SingleOrDefault(x => x.Order == 1) ?? throw new Exception(
+                        $"No SeasonTeamHistory record found for team ID {csvBattingStat.CurrentTeamId} " +
+                        $"and season ID {season.Id}");
 
                 // ensure that the team ID on the CSV import matches the team ID on Order 1 in the player team history
-                if (playerTeamHistories.First().SeasonTeamHistory is null)
+                if (mostRecentTeamHistory.SeasonTeamHistory is null)
                 {
                     // This means that the last team that was recorded for this player was them being a free agent, and we need to update it
                     // to indicate that they were signed by a team for the postseason
-                    playerTeamHistories.First().SeasonTeamHistory = seasonTeamHistories
-                                                                        .SingleOrDefault(x => x.Team.TeamGameIdHistory
-                                                                            .Any(y => y.GameId == csvBattingStat.CurrentTeamId))
-                                                                    ?? throw new Exception(
-                                                                        $"No SeasonTeamHistory record found for team ID {csvBattingStat.CurrentTeamId} " +
-                                                                        $"and season ID {season.Id}");
+                    mostRecentTeamHistory.SeasonTeamHistory = seasonTeamHistories
+                                                                  .SingleOrDefault(x => x.Team.TeamGameIdHistory
+                                                                      .Any(y => y.GameId == csvBattingStat.CurrentTeamId))
+                                                              ?? throw new Exception(
+                                                                  $"No SeasonTeamHistory record found for team ID {csvBattingStat.CurrentTeamId} " +
+                                                                  $"and season ID {season.Id}");
                 }
-                else if (playerTeamHistories
-                             .First().SeasonTeamHistory!.Team.TeamGameIdHistory
-                             .First().GameId != csvBattingStat.CurrentTeamId)
+                else if (mostRecentTeamHistory.SeasonTeamHistory!.Team.TeamGameIdHistory
+                         .All(x => x.GameId != csvBattingStat.CurrentTeamId))
                 {
                     // This means that the team ID on the CSV import does not match the team ID on Order 1 in the player team history
                     // We will then need to add a new player team history record to indicate that they were signed by a team for the postseason
@@ -871,8 +879,9 @@ public class CsvMappingRepository
     {
         var seasonTeamHistories = await _dbContext.SeasonTeamHistory
             .Include(x => x.Team)
-            .ThenInclude(x => x.TeamGameIdHistory).Include(seasonTeamHistory => seasonTeamHistory.HomePlayoffSchedule)
-            .Include(seasonTeamHistory => seasonTeamHistory.AwayPlayoffSchedule)
+            .ThenInclude(x => x.TeamGameIdHistory)
+            .Include(x => x.HomePlayoffSchedule)
+            .Include(x => x.AwayPlayoffSchedule)
             .Where(x => x.SeasonId == season.Id)
             .ToListAsync(cancellationToken: cancellationToken);
 

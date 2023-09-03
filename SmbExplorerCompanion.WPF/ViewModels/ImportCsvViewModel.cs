@@ -226,8 +226,8 @@ public partial class ImportCsvViewModel : ViewModelBase
 
             await foreach (var progress in progressChannel.Reader.ReadAllAsync()) 
                 ImportProgress.Add(progress);
-
             await task;
+
             if (SelectedSeason.IsNewSeason)
             {
                 SelectedSeason.Id = task.Result.Id;
@@ -273,10 +273,11 @@ public partial class ImportCsvViewModel : ViewModelBase
                 Number = SelectedSeason!.Number
             };
 
-            _ = Task.Run(() => _csvImportRepository.ImportPlayoffs(filePaths, progressChannel.Writer, coreSeason, default));
+            var task = Task.Run(() => _csvImportRepository.ImportPlayoffs(filePaths, progressChannel.Writer, coreSeason, default));
 
             await foreach (var progress in progressChannel.Reader.ReadAllAsync()) 
                 ImportProgress.Add(progress);
+            await task;
 
             MessageBox.Show("Successfully imported playoff data!");
         }
