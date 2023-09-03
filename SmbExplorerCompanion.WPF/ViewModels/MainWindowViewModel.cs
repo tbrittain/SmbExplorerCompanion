@@ -143,6 +143,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
         SafeProcess.Start(appUpdateResult.ReleasePageUrl);
     }
+    
+    public static string CurrentVersionString => $"Version {CurrentVersion}";
 
     private static Version CurrentVersion
     {
@@ -252,6 +254,12 @@ public partial class MainWindowViewModel : ViewModelBase
     private void OpenGithubRepo()
     {
         SafeProcess.Start(RepoUrl);
+    }
+    
+    [RelayCommand]
+    private void OpenUpdateVersionReleasePage()
+    {
+        SafeProcess.Start(AppUpdateResult!.Value.ReleasePageUrl);
     }
 
     override public void Dispose()
