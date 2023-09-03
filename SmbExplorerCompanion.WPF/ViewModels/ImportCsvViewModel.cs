@@ -230,7 +230,7 @@ public partial class ImportCsvViewModel : ViewModelBase
             await task;
             if (SelectedSeason.IsNewSeason)
             {
-                SelectedSeason.Id = task.Id;
+                SelectedSeason.Id = task.Result.Id;
             }
 
             MessageBox.Show("Successfully imported season data!");

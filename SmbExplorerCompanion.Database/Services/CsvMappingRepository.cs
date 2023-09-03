@@ -74,7 +74,11 @@ public class CsvMappingRepository
                     .Include(x => x.SeasonTeamHistory)
                     .ThenInclude(x => x.Team)
                     .ThenInclude(x => x.SeasonTeamHistory)
-                    .ThenInclude(seasonTeamHistory => seasonTeamHistory.TeamNameHistory)
+                    .ThenInclude(x => x.TeamNameHistory)
+                    .Include(x => x.SeasonTeamHistory)
+                    .ThenInclude(x => x.Team)
+                    .ThenInclude(x => x.TeamGameIdHistory)
+                    .Include(x => x.SeasonTeamHistory)
                     .Where(x => x.SeasonTeamHistory.Any(y => y.Team.FranchiseId == franchiseId))
                     .SingleOrDefaultAsync(x => x.Name == csvTeam.TeamName &&
                                                x.SeasonTeamHistory.Any(y => y.Team.FranchiseId == franchiseId),
@@ -100,6 +104,10 @@ public class CsvMappingRepository
                 else
                 {
                     team = teamNameHistory.SeasonTeamHistory.First().Team;
+                    team.TeamGameIdHistory.Add(new TeamGameIdHistory
+                    {
+                        GameId = csvTeam.TeamId
+                    });
                 }
             }
             else
@@ -120,10 +128,6 @@ public class CsvMappingRepository
                 {
                     SeasonId = season.Id,
                     TeamId = team.Id,
-                    TeamNameHistory = new TeamNameHistory
-                    {
-                        Name = csvTeam.TeamName
-                    }
                 };
             }
             else
@@ -155,10 +159,6 @@ public class CsvMappingRepository
             seasonTeamHistory.TotalAccuracy = csvTeam.TotalAccuracy;
             seasonTeamHistory.DivisionId = division.Id;
 
-            if (newSeasonTeamHistory)
-                team.SeasonTeamHistory.Add(seasonTeamHistory);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
             // get the last team name history for this team, and if the name is different, add a new team name history
             var lastTeamNameHistory = team.SeasonTeamHistory.Last().TeamNameHistory;
             if (lastTeamNameHistory.Name != csvTeam.TeamName)
@@ -176,7 +176,9 @@ public class CsvMappingRepository
             {
                 seasonTeamHistory.TeamNameHistoryId = lastTeamNameHistory.Id;
             }
-
+            
+            if (newSeasonTeamHistory)
+                team.SeasonTeamHistory.Add(seasonTeamHistory);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             await channelWriter.WriteAsync(new ImportProgress
@@ -205,6 +207,16 @@ public class CsvMappingRepository
         var traits = await _dbContext.Traits.ToListAsync(cancellationToken: cancellationToken);
         var pitchTypes = await _dbContext.PitchTypes.ToListAsync(cancellationToken: cancellationToken);
 
+        int? previousSeasonId = null;
+        if (season.Number != 1)
+        {
+            previousSeasonId = await _dbContext.Seasons
+                .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => x.Number == season.Number - 1)
+                .Select(x => x.Id)
+                .SingleAsync(cancellationToken: cancellationToken);
+        }
+
         for (var i = 0; i < players.Count; i++)
         {
             var csvOverallPlayer = players[i];
@@ -227,12 +239,13 @@ public class CsvMappingRepository
             if (playerGameIdHistory is null)
             {
                 // attempt to match on player name AND position AND pitcher role (if applicable) AND chemistry AND handedness
-                // should be enough to uniquely identify a player
+                // AND they played in the previous season. This should be enough to uniquely identify a player
                 player = await _dbContext.Players
                     .Include(x => x.Chemistry)
                     .Include(x => x.BatHandedness)
                     .Include(x => x.ThrowHandedness)
                     .Include(x => x.PrimaryPosition)
+                    .Include(x => x.PlayerGameIdHistory)
                     .Include(x => x.PitcherRole)
                     .Where(x => x.Chemistry!.Name == csvOverallPlayer.Chemistry
                                 && x.BatHandedness.Name == csvOverallPlayer.BatHand
@@ -241,6 +254,7 @@ public class CsvMappingRepository
                                 && (x.PitcherRole == null || x.PitcherRole.Name == csvOverallPlayer.PitcherRole)
                                 && x.FirstName == csvOverallPlayer.FirstName
                                 && x.LastName == csvOverallPlayer.LastName
+                                && (previousSeasonId == null || x.PlayerSeasons.Any(y => y.SeasonId == previousSeasonId))
                                 && x.FranchiseId == franchiseId)
                     .SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -274,6 +288,13 @@ public class CsvMappingRepository
 
                     _dbContext.Players.Add(player);
                     await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+                else
+                {
+                    player.PlayerGameIdHistory.Add(new PlayerGameIdHistory
+                    {
+                        GameId = csvOverallPlayer.PlayerId
+                    });
                 }
             }
             else
