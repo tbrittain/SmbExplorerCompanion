@@ -49,6 +49,8 @@ public partial class App
             .AddLogging()
             .AddCore()
             .AddDatabase()
+            .AddHttpClient()
+            .AddSingleton<IHttpService, HttpService>()
             .AddSingleton<MainWindow>(serviceProvider => new MainWindow
             {
                 DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()

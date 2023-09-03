@@ -12,130 +12,148 @@
         FontFamily="{materialDesign:MaterialDesignFont}"
         mc:Ignorable="d"
         Title="SMB Explorer Companion"
-        Height="1280"
-        Width="720"
+        Height="720"
+        Width="1280"
         ResizeMode="CanResize"
+        WindowState="Maximized"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="200" />
-            <ColumnDefinition Width="5*" />
-        </Grid.ColumnDefinitions>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
 
-        <StackPanel
-            IsEnabled="{Binding SidebarEnabled}"
-            Grid.Column="0"
-            Orientation="Vertical"
-            Background="WhiteSmoke">
+            <MenuItem Header="_Help">
+                <MenuItem Header="Open _GitHub repository" Command="{Binding OpenGithubRepoCommand}" />
+                <MenuItem Header="_Issues">
+                    <MenuItem Header="_View open issues" Command="{Binding OpenIssuesCommand}" />
+                    <MenuItem Header="_Report a bug" Command="{Binding SubmitBugReportCommand}" />
+                </MenuItem>
+                <MenuItem Header="_Wiki" Command="{Binding OpenWikiCommand}" />
+                <MenuItem Header="_Submit a feature request" Command="{Binding SubmitFeatureRequestCommand}" />
+                <MenuItem Header="_Discussions" Command="{Binding OpenDiscussionsCommand}" />
 
-            <Button
-                Command="{Binding NavigateBackCommand}"
-                Margin="0, 0, 0, 10">
+                <MenuItem Header="{Binding UpdateAvailableDisplayText}"
+                          Visibility="{Binding UpdateAvailableVisibility}"
+                          Command="{Binding OpenUpdateVersionReleasePageCommand}" />
+
+                <Label Content="{x:Static viewModels:MainWindowViewModel.CurrentVersionString}"
+                       IsEnabled="False" />
+            </MenuItem>
+
+        </Menu>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="200" />
+                <ColumnDefinition Width="5*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel
+                IsEnabled="{Binding SidebarEnabled}"
+                Grid.Column="0"
+                Orientation="Vertical"
+                Background="WhiteSmoke">
+
+                <Button
+                    Command="{Binding NavigateBackCommand}"
+                    Margin="0, 0, 0, 10">
+                    <TextBlock
+                        Text="Go back"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
+
+                <Button Command="{Binding NavigateToHomeCommand}">
+                    <TextBlock
+                        Text="Home"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
+
                 <TextBlock
-                    Text="Go back"
-                    FontSize="15"
+                    Margin="0, 10, 0, 0"
+                    Text="Stats"
+                    FontSize="20"
                     FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                    HorizontalAlignment="Center" />
 
-            <Button Command="{Binding NavigateToHomeCommand}">
-                <TextBlock
-                    Text="Home"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
-            
-            <TextBlock
-                Margin="0, 10, 0, 0"
-                Text="Stats"
-                FontSize="20"
-                FontWeight="Bold"
-                HorizontalAlignment="Center" />
+                <Button Command="{Binding NavigateToTeamsCommand}">
+                    <TextBlock
+                        Text="Teams"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-            <Button Command="{Binding NavigateToTeamsCommand}">
-                <TextBlock
-                    Text="Teams"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                <Button Command="{Binding NavigateToCareerBattingCommand}">
+                    <TextBlock
+                        Text="Career Batting"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-            <Button Command="{Binding NavigateToCareerBattingCommand}">
-                <TextBlock
-                    Text="Career Batting"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                <Button Command="{Binding NavigateToCareerPitchingCommand}">
+                    <TextBlock
+                        Text="Career Pitching"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-            <Button Command="{Binding NavigateToCareerPitchingCommand}">
-                <TextBlock
-                    Text="Career Pitching"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                <Button Command="{Binding NavigateToSeasonBattingCommand}">
+                    <TextBlock
+                        Text="Season Batting"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-            <Button Command="{Binding NavigateToSeasonBattingCommand}">
-                <TextBlock
-                    Text="Season Batting"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                <Button Command="{Binding NavigateToSeasonPitchingCommand}">
+                    <TextBlock
+                        Text="Season Pitching"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-            <Button Command="{Binding NavigateToSeasonPitchingCommand}">
                 <TextBlock
-                    Text="Season Pitching"
-                    FontSize="15"
+                    Margin="0, 10, 0, 0"
+                    Text="Management"
+                    FontSize="20"
                     FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
-            
-            <TextBlock
-                Margin="0, 10, 0, 0"
-                Text="Management"
-                FontSize="20"
-                FontWeight="Bold"
-                HorizontalAlignment="Center" />
-            
-            <Button Command="{Binding NavigateToDelegateAwardsCommand}">
-                <TextBlock
-                    Text="Season Awards"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                    HorizontalAlignment="Center" />
 
-            <Button Command="{Binding NavigateToDelegateHallOfFamersCommand}">
-                <TextBlock
-                    Text="Hall of Famers"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
-            
-            <TextBlock
-                Margin="0, 10, 0, 0"
-                Text="Utilities"
-                FontSize="20"
-                FontWeight="Bold"
-                HorizontalAlignment="Center" />
+                <Button Command="{Binding NavigateToDelegateAwardsCommand}">
+                    <TextBlock
+                        Text="Season Awards"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-            <Button Command="{Binding NavigateToImportCsvCommand}" Margin="0, 10, 0, 0">
-                <TextBlock
-                    Text="Import season data"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Left" />
-            </Button>
+                <Button Command="{Binding NavigateToDelegateHallOfFamersCommand}">
+                    <TextBlock
+                        Text="Hall of Famers"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
 
-        </StackPanel>
-        <ContentControl
-            Grid.Column="1"
-            Content="{Binding NavigationService.CurrentView}"
-            VerticalAlignment="Stretch"
-            HorizontalAlignment="Stretch" />
-    </Grid>
+                <Button Command="{Binding NavigateToImportCsvCommand}" Margin="0, 10, 0, 0">
+                    <TextBlock
+                        Text="Import season data"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left" />
+                </Button>
+
+            </StackPanel>
+            <ContentControl
+                Grid.Column="1"
+                Content="{Binding NavigationService.CurrentView}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch" />
+        </Grid>
+    </DockPanel>
 </Window>
