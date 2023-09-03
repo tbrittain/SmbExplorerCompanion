@@ -62,7 +62,7 @@
                 </Grid.ColumnDefinitions>
             </Grid>
         </materialDesign:DialogHost>
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <ComboBox
                 Margin="2"
                 Width="200"
