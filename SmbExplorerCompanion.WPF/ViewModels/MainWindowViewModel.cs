@@ -1,19 +1,30 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects;
 using SmbExplorerCompanion.WPF.Services;
+using SmbExplorerCompanion.WPF.Utils;
+using static SmbExplorerCompanion.Shared.Constants.Github;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IApplicationContext _applicationContext;
+    private readonly IHttpService _httpService;
+    private AppUpdateResult? _appUpdateResult;
+    private bool _isUpdateAvailable;
+    private Visibility _updateAvailableVisibility;
 
-    public MainWindowViewModel(INavigationService navigationService, IApplicationContext applicationContext)
+    public MainWindowViewModel(INavigationService navigationService, IApplicationContext applicationContext, IHttpService httpService)
     {
         NavigationService = navigationService;
         _applicationContext = applicationContext;
+        _httpService = httpService;
 
         _applicationContext.PropertyChanged += ApplicationContextOnPropertyChanged;
         NavigationService.PropertyChanged += NavigationServiceOnPropertyChanged;
@@ -61,7 +72,87 @@ public partial class MainWindowViewModel : ViewModelBase
     public Task Initialize()
     {
         NavigationService.NavigateTo<FranchiseSelectViewModel>();
+        _ = Task.Run(async () => await CheckForUpdates());
         return Task.CompletedTask;
+    }
+
+    private AppUpdateResult? AppUpdateResult
+    {
+        get => _appUpdateResult;
+        set
+        {
+            SetField(ref _appUpdateResult, value);
+            IsUpdateAvailable = true;
+        }
+    }
+
+    public string UpdateAvailableDisplayText => IsUpdateAvailable
+        ? $"Update Available: {AppUpdateResult?.Version.ToString()}"
+        : "No Updates Available";
+
+    private bool IsUpdateAvailable
+    {
+        get => _isUpdateAvailable;
+        set
+        {
+            SetField(ref _isUpdateAvailable, value);
+            OnPropertyChanged(nameof(UpdateAvailableDisplayText));
+            UpdateAvailableVisibility = Visibility.Visible;
+        }
+    }
+
+    public Visibility UpdateAvailableVisibility
+    {
+        get => _updateAvailableVisibility;
+        set => SetField(ref _updateAvailableVisibility, value);
+    }
+
+    private async Task CheckForUpdates()
+    {
+        var updateResult = await _httpService.CheckForUpdates();
+
+        if (updateResult.TryPickT2(out var error, out var rest))
+        {
+            MessageBox.Show($"Failed to check for updates: {error.Value}",
+                "Update Check Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return;
+        }
+
+        if (rest.TryPickT1(out _, out var appUpdateResult))
+        {
+            // No update available
+            return;
+        }
+
+        AppUpdateResult = appUpdateResult;
+
+        if (appUpdateResult.Version.Major <= CurrentVersion.Major &&
+            appUpdateResult.Version.Minor <= CurrentVersion.Minor) return;
+
+        var message = $"An update is available ({CurrentVersion} --> {appUpdateResult.Version}, released " +
+                      $"{appUpdateResult.DaysSinceRelease} days ago). Would you like open the release page?";
+
+        var messageBoxResult = MessageBox.Show(message,
+            "Update Available",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Information);
+
+        if (messageBoxResult != MessageBoxResult.Yes) return;
+
+        SafeProcess.Start(appUpdateResult.ReleasePageUrl);
+    }
+
+    private static Version CurrentVersion
+    {
+        get
+        {
+            var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version;
+            return currentVersion is null
+                ? new Version(0, 0, 0, 0)
+                : new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
+        }
     }
 
     [RelayCommand]
@@ -127,10 +218,46 @@ public partial class MainWindowViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
+    [RelayCommand]
+    private void OpenWiki()
+    {
+        SafeProcess.Start(WikiUrl);
+    }
+
+    [RelayCommand]
+    private void SubmitFeatureRequest()
+    {
+        SafeProcess.Start(FeatureRequestUrl);
+    }
+
+    [RelayCommand]
+    private void OpenDiscussions()
+    {
+        SafeProcess.Start(DiscussionsUrl);
+    }
+
+    [RelayCommand]
+    private void OpenIssues()
+    {
+        SafeProcess.Start(IssuesUrl);
+    }
+
+    [RelayCommand]
+    private void SubmitBugReport()
+    {
+        SafeProcess.Start(NewBugUrl);
+    }
+
+    [RelayCommand]
+    private void OpenGithubRepo()
+    {
+        SafeProcess.Start(RepoUrl);
+    }
+
     override public void Dispose()
     {
         _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
         NavigationService.PropertyChanged -= NavigationServiceOnPropertyChanged;
-        base.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
