@@ -151,7 +151,7 @@
                                 CanUserSort="False" />
                             <DataGridTemplateColumn
                                 CanUserSort="False"
-                                Header="Cumulative OPS+"
+                                Header="smbWAR"
                                 SortMemberPath="WeightedOpsPlusOrEraMinus">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -293,7 +293,7 @@
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
                                 CanUserSort="True"
-                                Header="Cumulative ERA-"
+                                Header="smbWAR"
                                 SortMemberPath="WeightedOpsPlusOrEraMinus">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -431,7 +431,7 @@
                                 CanUserSort="False" />
                             <DataGridTemplateColumn
                                 CanUserSort="False"
-                                Header="Cumulative OPS+"
+                                Header="smbWAR"
                                 SortMemberPath="WeightedOpsPlusOrEraMinus">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -572,7 +572,7 @@
                                 CanUserSort="True" />
                             <DataGridTemplateColumn
                                 CanUserSort="True"
-                                Header="Cumulative ERA-"
+                                Header="smbWAR"
                                 SortMemberPath="WeightedOpsPlusOrEraMinus">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -720,7 +720,7 @@
                                             CanUserSort="False" />
                                         <DataGridTemplateColumn
                                             CanUserSort="False"
-                                            Header="Cumulative OPS+"
+                                            Header="smbWAR"
                                             SortMemberPath="WeightedOpsPlusOrEraMinus">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
@@ -877,7 +877,7 @@
                                             CanUserSort="True" />
                                         <DataGridTemplateColumn
                                             CanUserSort="True"
-                                            Header="Cumulative ERA-"
+                                            Header="smbWAR"
                                             SortMemberPath="WeightedOpsPlusOrEraMinus">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
@@ -1030,7 +1030,7 @@
                                             CanUserSort="False" />
                                         <DataGridTemplateColumn
                                             CanUserSort="False"
-                                            Header="Cumulative OPS+"
+                                            Header="smbWAR"
                                             SortMemberPath="WeightedOpsPlusOrEraMinus">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>

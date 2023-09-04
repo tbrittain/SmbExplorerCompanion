@@ -92,7 +92,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="14" Text="Cumulative OPS+/ERA-:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock FontSize="14" Text="smbWAR:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                         <TextBlock Text="{Binding PlayerOverview.WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}"
                                    FontSize="14" />
                     </StackPanel>
@@ -377,7 +377,7 @@
                                     </DataGridTemplateColumn>
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative OPS+"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -545,7 +545,7 @@
                                     </DataGridTemplateColumn>
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative OPS+"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -724,7 +724,7 @@
                                         CanUserSort="True" />
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative ERA-"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -893,7 +893,7 @@
                                         CanUserSort="True" />
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative ERA-"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>

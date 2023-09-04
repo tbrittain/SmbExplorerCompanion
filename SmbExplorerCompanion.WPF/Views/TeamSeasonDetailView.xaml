@@ -188,7 +188,7 @@
                                 </DataGridTemplateColumn>
                                 <DataGridTemplateColumn
                                     CanUserSort="True"
-                                    Header="Cumulative OPS+"
+                                    Header="smbWAR"
                                     SortMemberPath="WeightedOpsPlusOrEraMinus">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -359,7 +359,7 @@
                                     CanUserSort="True" />
                                 <DataGridTemplateColumn
                                     CanUserSort="True"
-                                    Header="Cumulative ERA-"
+                                    Header="smbWAR"
                                     SortMemberPath="WeightedOpsPlusOrEraMinus">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -541,7 +541,7 @@
                                 </DataGridTemplateColumn>
                                 <DataGridTemplateColumn
                                     CanUserSort="True"
-                                    Header="Cumulative OPS+"
+                                    Header="smbWAR"
                                     SortMemberPath="WeightedOpsPlusOrEraMinus">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -712,7 +712,7 @@
                                     CanUserSort="True" />
                                 <DataGridTemplateColumn
                                     CanUserSort="True"
-                                    Header="Cumulative ERA-"
+                                    Header="smbWAR"
                                     SortMemberPath="WeightedOpsPlusOrEraMinus">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>

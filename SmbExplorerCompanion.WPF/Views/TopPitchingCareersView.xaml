@@ -200,7 +200,7 @@
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn
                     CanUserSort="True"
-                    Header="Cumulative ERA-"
+                    Header="smbWAR"
                     SortMemberPath="WeightedOpsPlusOrEraMinus">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
