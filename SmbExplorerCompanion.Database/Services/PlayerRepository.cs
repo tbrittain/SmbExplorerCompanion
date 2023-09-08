@@ -146,17 +146,17 @@ public class PlayerRepository : IPlayerRepository
     {
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
-        
+
         if (playerId is not null && onlyHallOfFamers)
             throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
-        
+
         if (playerId is not null && primaryPositionId is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PrimaryPositionId");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
         var limitValue = limit ?? 30;
-        
+
         if (orderBy is not null)
         {
             orderBy += descending ? " desc" : " asc";
@@ -174,7 +174,7 @@ public class PlayerRepository : IPlayerRepository
                 var position = await _dbContext.Positions
                     .Where(x => x.IsPrimaryPosition)
                     .SingleOrDefaultAsync(x => x.Id == primaryPositionId, cancellationToken: cancellationToken);
-                
+
                 if (position is null)
                     return new ArgumentException($"No primary position found with Id {primaryPositionId}");
             }
@@ -209,7 +209,7 @@ public class PlayerRepository : IPlayerRepository
                 {
                     battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
                 }
-                
+
                 battingDto.BattingAverage = battingDto.AtBats == 0
                     ? 0
                     : battingDto.Hits / (double) battingDto.AtBats;
@@ -269,10 +269,10 @@ public class PlayerRepository : IPlayerRepository
     {
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
-        
+
         if (playerId is not null && onlyHallOfFamers)
             throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
-        
+
         if (playerId is not null && pitcherRoleId is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PrimaryPositionId");
 
@@ -296,11 +296,11 @@ public class PlayerRepository : IPlayerRepository
             {
                 var pitcherRole = await _dbContext.PitcherRoles
                     .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken: cancellationToken);
-                
+
                 if (pitcherRole is null)
                     return new ArgumentException($"No pitcher role found with Id {pitcherRoleId}");
             }
-            
+
             var mostRecentSeason = await _dbContext.Seasons
                 .Include(x => x.SeasonTeamHistory)
                 .ThenInclude(x => x.Team)
@@ -869,7 +869,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.PitcherRoleId == null)
                 .Where(x => retiredPlayers.Contains(x.Id));
 
-            var battingDtos = await GetCareerBattingDtos(battingQueryable)
+            var battingDtos = await GetCareerBattingDtos(battingQueryable, omitRunnerUps: false)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             // Calculate the rate stats that we omitted above
@@ -903,12 +903,12 @@ public class PlayerRepository : IPlayerRepository
                         });
                     }
             }
-            
+
             var pitchingQueryable = GetCareerPitchingIQueryable()
                 .Where(x => x.PitcherRoleId != null)
                 .Where(x => retiredPlayers.Contains(x.Id));
 
-            var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable)
+            var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable, omitRunnerUps: false)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             foreach (var pitchingDto in pitchingDtos)
@@ -1114,7 +1114,7 @@ public class PlayerRepository : IPlayerRepository
             .ThenInclude(x => x.ChampionshipWinner);
     }
 
-    private static IQueryable<PlayerCareerBattingDto> GetCareerBattingDtos(IQueryable<Player> players)
+    private static IQueryable<PlayerCareerBattingDto> GetCareerBattingDtos(IQueryable<Player> players, bool omitRunnerUps = true)
     {
         return players
             .Select(x => new PlayerCareerBattingDto
@@ -1161,7 +1161,7 @@ public class PlayerRepository : IPlayerRepository
                 Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                 Awards = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
-                    .Where(y => !y.OmitFromGroupings)
+                    .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
                     .Select(y => new PlayerAwardBaseDto
                     {
                         Id = y.Id,
@@ -1176,7 +1176,7 @@ public class PlayerRepository : IPlayerRepository
             });
     }
 
-    private static IQueryable<PlayerCareerPitchingDto> GetCareerPitchingDtos(IQueryable<Player> players)
+    private static IQueryable<PlayerCareerPitchingDto> GetCareerPitchingDtos(IQueryable<Player> players, bool omitRunnerUps = true)
     {
         return players
             .Select(x => new PlayerCareerPitchingDto
@@ -1224,7 +1224,7 @@ public class PlayerRepository : IPlayerRepository
                     .Average(y => y.FipMinus ?? 0),
                 Awards = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
-                    .Where(y => !y.OmitFromGroupings)
+                    .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
                     .Select(y => new PlayerAwardBaseDto
                     {
                         Id = y.Id,
