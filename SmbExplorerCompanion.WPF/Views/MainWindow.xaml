@@ -140,7 +140,7 @@
                         HorizontalAlignment="Left" />
                 </Button>
 
-                <Button Command="{Binding NavigateToImportCsvCommand}" Margin="0, 10, 0, 0">
+                <Button Command="{Binding NavigateToImportCsvCommand}">
                     <TextBlock
                         Text="Import season data"
                         FontSize="15"
