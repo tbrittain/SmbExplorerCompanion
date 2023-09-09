@@ -38,7 +38,8 @@
                         CanUserReorderColumns="False"
                         CanUserSortColumns="True"
                         CanUserResizeColumns="True"
-                        SelectionMode="Single">
+                        SelectionMode="Single"
+                        Height="600">
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 IsReadOnly="True"
@@ -67,14 +68,19 @@
                             <DataGridTemplateColumn
                                 IsReadOnly="True"
                                 CanUserSort="True"
-                                Header="Career Earnings"
-                                SortMemberPath="TotalSalary">
+                                Header="smbWAR"
+                                SortMemberPath="WeightedOpsPlusOrEraMinus">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
+                                        <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTextColumn
+                                IsReadOnly="True"
+                                Header="Awards"
+                                Binding="{Binding DisplayAwards}"
+                                CanUserSort="False" />
                             <DataGridTextColumn
                                 IsReadOnly="True"
                                 Header="AB"
@@ -199,23 +205,18 @@
                                 IsReadOnly="True"
                                 Header="K"
                                 Binding="{Binding Strikeouts}"
-                                CanUserSort="True" />
+                                CanUserSort="True"/>
                             <DataGridTemplateColumn
                                 IsReadOnly="True"
                                 CanUserSort="True"
-                                Header="smbWAR"
-                                SortMemberPath="WeightedOpsPlusOrEraMinus">
+                                Header="Career Earnings"
+                                SortMemberPath="TotalSalary">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
+                                        <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn
-                                IsReadOnly="True"
-                                Header="Awards"
-                                Binding="{Binding DisplayAwards}"
-                                CanUserSort="False" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
@@ -231,7 +232,8 @@
                         CanUserReorderColumns="False"
                         CanUserSortColumns="True"
                         CanUserResizeColumns="True"
-                        SelectionMode="Single">
+                        SelectionMode="Single"
+                        Height="600">
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 IsReadOnly="True"
@@ -260,14 +262,19 @@
                             <DataGridTemplateColumn
                                 IsReadOnly="True"
                                 CanUserSort="True"
-                                Header="Career Earnings"
-                                SortMemberPath="TotalSalary">
+                                Header="smbWAR"
+                                SortMemberPath="WeightedOpsPlusOrEraMinus">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
+                                        <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTextColumn
+                                IsReadOnly="True"
+                                Header="Awards"
+                                Binding="{Binding DisplayAwards}"
+                                CanUserSort="False" />
                             <DataGridTextColumn
                                 IsReadOnly="True"
                                 Header="W"
@@ -397,19 +404,14 @@
                             <DataGridTemplateColumn
                                 IsReadOnly="True"
                                 CanUserSort="True"
-                                Header="smbWAR"
-                                SortMemberPath="WeightedOpsPlusOrEraMinus">
+                                Header="Career Earnings"
+                                SortMemberPath="TotalSalary">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
+                                        <TextBlock Text="{Binding TotalSalary, StringFormat={}${0:N0}}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn
-                                IsReadOnly="True"
-                                Header="Awards"
-                                Binding="{Binding DisplayAwards}"
-                                CanUserSort="False" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
