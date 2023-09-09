@@ -19,9 +19,10 @@ public class GetPlayerFieldingRankingsRequest : IRequest<OneOf<List<PlayerFieldi
     private int? PrimaryPositionId { get; }
     private int? PageNumber { get; }
     private int? Limit { get; }
-    
+
     // ReSharper disable once UnusedType.Global
-    internal class GetPlayerFieldingRankingsHandler : IRequestHandler<GetPlayerFieldingRankingsRequest, OneOf<List<PlayerFieldingRankingDto>, Exception>>
+    internal class GetPlayerFieldingRankingsHandler : IRequestHandler<GetPlayerFieldingRankingsRequest,
+        OneOf<List<PlayerFieldingRankingDto>, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 
@@ -31,13 +32,11 @@ public class GetPlayerFieldingRankingsRequest : IRequest<OneOf<List<PlayerFieldi
         }
 
         public async Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> Handle(GetPlayerFieldingRankingsRequest request,
-            CancellationToken cancellationToken)
-        {
-            return await _playerRepository.GetPlayerFieldingRankings(request.SeasonId,
+            CancellationToken cancellationToken) =>
+            await _playerRepository.GetPlayerFieldingRankings(request.SeasonId,
                 request.PrimaryPositionId,
                 request.PageNumber,
                 request.Limit,
                 cancellationToken);
-        }
     }
 }

@@ -10,6 +10,7 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Search;
 using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Search;
 using SmbExplorerCompanion.WPF.Mappings.Summary;
@@ -24,12 +25,28 @@ public partial class HomeViewModel : ViewModelBase
     private readonly IMediator _mediator;
     private string _searchQuery;
     private readonly INavigationService _navigationService;
+    private readonly IApplicationContext _applicationContext;
+    private bool _canDisplayFranchiseSummary;
 
-    public HomeViewModel(IMediator mediator, INavigationService navigationService)
+    public HomeViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _applicationContext = applicationContext;
+
+        if (applicationContext.HasFranchiseData)
+        {
+            CanDisplayFranchiseSummary = true;
+        }
+        // Will only display a home page with information about getting started rather than
+        // summary data about the franchise
+        else
+        {
+            CanDisplayFranchiseSummary = false;
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
 
         var franchiseSummaryResult = _mediator.Send(new GetFranchiseSummaryRequest()).Result;
         if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
@@ -44,7 +61,7 @@ public partial class HomeViewModel : ViewModelBase
             var franchiseSummaryMapper = new FranchiseSummaryMapping();
             FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
         }
-        
+
         var conferenceSummaryResult = _mediator.Send(new GetLeagueSummaryRequest()).Result;
         if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
         {
@@ -52,13 +69,13 @@ public partial class HomeViewModel : ViewModelBase
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
-        
+
         if (rest2.TryPickT0(out var leagueSummaryDto, out _))
         {
             var conferenceSummaryMapper = new ConferenceSummaryMapping();
             Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
         }
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -67,10 +84,17 @@ public partial class HomeViewModel : ViewModelBase
     public ObservableGroupedCollection<SearchResultType, SearchResult> SearchResults { get; } = new();
 
     public FranchiseSummary? FranchiseSummary { get; }
+
+    public bool CanDisplayFranchiseSummary
+    {
+        get => _canDisplayFranchiseSummary;
+        set => SetField(ref _canDisplayFranchiseSummary, value);
+    }
+
     public Visibility FranchiseSummaryVisibility => FranchiseSummary?.NumPlayers > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     public int SearchRow => FranchiseSummary is null ? 1 : 2;
-    
+
     public string SearchQuery
     {
         get => _searchQuery;
@@ -82,6 +106,7 @@ public partial class HomeViewModel : ViewModelBase
                 HasSearched = false;
                 SearchResults.Clear();
             }
+
             GetSearchResultsCommand.NotifyCanExecuteChanged();
         }
     }
@@ -141,7 +166,7 @@ public partial class HomeViewModel : ViewModelBase
     private void NavigateToChampionPage()
     {
         if (FranchiseSummary?.MostRecentChampionTeamId is null) return;
-        
+
         NavigateToTeamOverviewPage(FranchiseSummary.MostRecentChampionTeamId.Value);
     }
 
@@ -154,7 +179,7 @@ public partial class HomeViewModel : ViewModelBase
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
     }
-    
+
     private void NavigateToTeamOverviewPage(int teamId)
     {
         var teamParams = new Tuple<string, object>[]
