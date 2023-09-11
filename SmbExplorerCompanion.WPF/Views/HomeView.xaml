@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              xmlns:summary="clr-namespace:SmbExplorerCompanion.WPF.Models.Summary"
+             xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HomeViewModel}"
              Name="Page">
@@ -30,7 +31,14 @@
             </TextBlock>
         </StackPanel>
 
-        <ScrollViewer Grid.Column="0" Grid.Row="{Binding SearchRow}">
+        <ScrollViewer
+            Grid.Column="0"
+            Grid.Row="{Binding SearchRow}">
+            <ScrollViewer.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{BooleanToVisibilityConverter}" />
+            </ScrollViewer.Visibility>
             <StackPanel
                 Orientation="Vertical"
                 Margin="2">
@@ -98,15 +106,26 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <TextBlock Visibility="{Binding NoSearchResultsVisibility}">No results found</TextBlock>
+                    <TextBlock
+                        Text="No results found">
+                        <TextBlock.Visibility>
+                            <Binding
+                                Path="HasSearchResults"
+                                Converter="{converters:InverseBooleanToVisibilityConverter}" />
+                        </TextBlock.Visibility>
+                    </TextBlock>
                 </Grid>
             </StackPanel>
         </ScrollViewer>
 
         <ScrollViewer Grid.Column="0" Grid.Row="1">
+            <ScrollViewer.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{BooleanToVisibilityConverter}" />
+            </ScrollViewer.Visibility>
             <StackPanel
-                Orientation="Vertical"
-                Visibility="{Binding FranchiseSummaryVisibility}">
+                Orientation="Vertical">
                 <TextBlock FontSize="16" FontWeight="SemiBold">Franchise Summary</TextBlock>
 
                 <StackPanel Orientation="Horizontal">
@@ -295,8 +314,13 @@
             </StackPanel>
         </ScrollViewer>
 
-
         <ScrollViewer Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
+            <ScrollViewer.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{BooleanToVisibilityConverter}" />
+            </ScrollViewer.Visibility>
+
             <StackPanel>
                 <TreeView ItemsSource="{Binding Conferences}">
                     <TreeView.Resources>
@@ -334,5 +358,15 @@
                 </TreeView>
             </StackPanel>
         </ScrollViewer>
+
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="2">
+            <StackPanel.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{converters:InverseBooleanToVisibilityConverter}" />
+            </StackPanel.Visibility>
+            
+            <!-- TODO -->
+        </StackPanel>
     </Grid>
 </UserControl>

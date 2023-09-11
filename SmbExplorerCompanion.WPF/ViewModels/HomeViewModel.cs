@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,10 +24,11 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public partial class HomeViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
-    private string _searchQuery;
+    private string _searchQuery = string.Empty;
     private readonly INavigationService _navigationService;
-    private readonly IApplicationContext _applicationContext;
     private bool _canDisplayFranchiseSummary;
+    private FranchiseSummary? _franchiseSummary;
+    private readonly IApplicationContext _applicationContext;
 
     public HomeViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
     {
@@ -38,17 +40,40 @@ public partial class HomeViewModel : ViewModelBase
         if (applicationContext.HasFranchiseData)
         {
             CanDisplayFranchiseSummary = true;
-        }
-        // Will only display a home page with information about getting started rather than
-        // summary data about the franchise
-        else
-        {
-            CanDisplayFranchiseSummary = false;
+            GetFranchiseSummary().Wait();
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
 
-        var franchiseSummaryResult = _mediator.Send(new GetFranchiseSummaryRequest()).Result;
+        // Will only display a home page with information about getting started rather than
+        // summary data about the franchise
+        CanDisplayFranchiseSummary = false;
+        _applicationContext.PropertyChanged += ApplicationContextOnPropertyChanged;
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    private async void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(_applicationContext.HasFranchiseData):
+            {
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    CanDisplayFranchiseSummary = _applicationContext.HasFranchiseData;
+                    if (CanDisplayFranchiseSummary)
+                    {
+                        await GetFranchiseSummary();
+                    }
+                });
+                break;
+            }
+        }
+    }
+
+    private async Task GetFranchiseSummary()
+    {
+        var franchiseSummaryResult = await _mediator.Send(new GetFranchiseSummaryRequest());
         if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
         {
             MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -62,7 +87,7 @@ public partial class HomeViewModel : ViewModelBase
             FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
         }
 
-        var conferenceSummaryResult = _mediator.Send(new GetLeagueSummaryRequest()).Result;
+        var conferenceSummaryResult = await _mediator.Send(new GetLeagueSummaryRequest());
         if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
         {
             MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -83,15 +108,17 @@ public partial class HomeViewModel : ViewModelBase
 
     public ObservableGroupedCollection<SearchResultType, SearchResult> SearchResults { get; } = new();
 
-    public FranchiseSummary? FranchiseSummary { get; }
+    public FranchiseSummary? FranchiseSummary
+    {
+        get => _franchiseSummary;
+        private set => SetField(ref _franchiseSummary, value);
+    }
 
     public bool CanDisplayFranchiseSummary
     {
         get => _canDisplayFranchiseSummary;
         set => SetField(ref _canDisplayFranchiseSummary, value);
     }
-
-    public Visibility FranchiseSummaryVisibility => FranchiseSummary?.NumPlayers > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     public int SearchRow => FranchiseSummary is null ? 1 : 2;
 
@@ -118,7 +145,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         HasSearched = true;
         SearchResults.Clear();
-        OnPropertyChanged(nameof(NoSearchResultsVisibility));
+        OnPropertyChanged(nameof(HasSearchResults));
         var searchResponse = await _mediator.Send(new GetSearchResultsQuery(SearchQuery.Trim()));
         if (searchResponse.TryPickT1(out var exception, out var searchResultDtos))
         {
@@ -137,12 +164,12 @@ public partial class HomeViewModel : ViewModelBase
             .ToList();
 
         SearchResults.AddRange(groupedSearchResults);
-        OnPropertyChanged(nameof(NoSearchResultsVisibility));
+        OnPropertyChanged(nameof(HasSearchResults));
     }
 
     private bool HasSearched { get; set; }
-
-    public Visibility NoSearchResultsVisibility => HasSearched && SearchResults.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    
+    public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
 
     [RelayCommand]
     private void NavigateToSearchResultPage(SearchResult searchResult)
@@ -197,5 +224,15 @@ public partial class HomeViewModel : ViewModelBase
             new(TeamSeasonDetailViewModel.SeasonTeamIdProp, seasonTeamId)
         };
         _navigationService.NavigateTo<TeamSeasonDetailViewModel>(teamSeasonParams);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
+        }
+
+        base.Dispose(disposing);
     }
 }
