@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,6 +19,8 @@ using SmbExplorerCompanion.WPF.Mappings.Summary;
 using SmbExplorerCompanion.WPF.Models.Search;
 using SmbExplorerCompanion.WPF.Models.Summary;
 using SmbExplorerCompanion.WPF.Services;
+using SmbExplorerCompanion.WPF.Utils;
+using static SmbExplorerCompanion.Shared.Constants.Github;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
@@ -224,6 +227,19 @@ public partial class HomeViewModel : ViewModelBase
             new(TeamSeasonDetailViewModel.SeasonTeamIdProp, seasonTeamId)
         };
         _navigationService.NavigateTo<TeamSeasonDetailViewModel>(teamSeasonParams);
+    }
+
+    [RelayCommand]
+    private void NavigateToGettingStartedWikiPage()
+    {
+        var url = Path.Combine(WikiUrl, "Getting-Started");
+        SafeProcess.Start(url);
+    }
+
+    [RelayCommand]
+    private void NavigateToSmbExplorerReleaseUrl()
+    {
+        SafeProcess.Start(SmbExplorerLatestReleaseUrl);
     }
 
     protected override void Dispose(bool disposing)

@@ -9,6 +9,10 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HomeViewModel}"
              Name="Page">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -37,7 +41,7 @@
             <ScrollViewer.Visibility>
                 <Binding
                     Path="CanDisplayFranchiseSummary"
-                    Converter="{BooleanToVisibilityConverter}" />
+                    Converter="{StaticResource BoolToVisibilityConverter}" />
             </ScrollViewer.Visibility>
             <StackPanel
                 Orientation="Vertical"
@@ -111,7 +115,7 @@
                         <TextBlock.Visibility>
                             <Binding
                                 Path="HasSearchResults"
-                                Converter="{converters:InverseBooleanToVisibilityConverter}" />
+                                Converter="{StaticResource InverseBoolToVisibilityConverter}" />
                         </TextBlock.Visibility>
                     </TextBlock>
                 </Grid>
@@ -122,7 +126,7 @@
             <ScrollViewer.Visibility>
                 <Binding
                     Path="CanDisplayFranchiseSummary"
-                    Converter="{BooleanToVisibilityConverter}" />
+                    Converter="{StaticResource BoolToVisibilityConverter}" />
             </ScrollViewer.Visibility>
             <StackPanel
                 Orientation="Vertical">
@@ -318,7 +322,7 @@
             <ScrollViewer.Visibility>
                 <Binding
                     Path="CanDisplayFranchiseSummary"
-                    Converter="{BooleanToVisibilityConverter}" />
+                    Converter="{StaticResource BoolToVisibilityConverter}" />
             </ScrollViewer.Visibility>
 
             <StackPanel>
@@ -359,14 +363,31 @@
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="2">
+        <StackPanel
+            Orientation="Vertical"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Grid.Row="1"
+            Grid.RowSpan="2">
             <StackPanel.Visibility>
                 <Binding
                     Path="CanDisplayFranchiseSummary"
-                    Converter="{converters:InverseBooleanToVisibilityConverter}" />
+                    Converter="{StaticResource InverseBoolToVisibilityConverter}" />
             </StackPanel.Visibility>
-            
-            <!-- TODO -->
+
+            <TextBlock>
+                This is your own personal Super Mega Baseball 4 reference app for your franchises using season data from the Current Season Exports from SMB Explorer
+            </TextBlock>
+
+            <StackPanel Orientation="Horizontal">
+                <Button
+                    Content="Getting Started"
+                    Command="{Binding NavigateToGettingStartedWikiPageCommand}" />
+                <Button
+                    Content="Download SMB Explorer"
+                    Command="{Binding NavigateToSmbExplorerReleaseUrlCommand}" />
+            </StackPanel>
+
         </StackPanel>
     </Grid>
 </UserControl>

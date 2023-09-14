@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace SmbExplorerCompanion.WPF.Converters;
 
-public class InverseBooleanToVisibilityConverter : IValueConverter
+public class InverseBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value,
         Type targetType,

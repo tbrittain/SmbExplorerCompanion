@@ -16,4 +16,6 @@ public static class Github
     public const string DiscussionsUrl = "https://github.com/tbrittain/SmbExplorerCompanion/discussions";
 
     public const string IssuesUrl = "https://github.com/tbrittain/SmbExplorerCompanion/issues";
+
+    public const string SmbExplorerLatestReleaseUrl = "https://github.com/tbrittain/SMB3Explorer/releases/latest";
 }
