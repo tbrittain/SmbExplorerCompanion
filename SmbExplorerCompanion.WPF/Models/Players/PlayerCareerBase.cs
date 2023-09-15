@@ -33,5 +33,5 @@ public class PlayerCareerBase : PlayerDetailBase
 
     public int NumSeasons { get; set; }
 
-    public string DisplayDescription => $"{NumSeasons} season{(NumSeasons == 1 ? "" : "s")} - {WeightedOpsPlusOrEraMinus:N1} Cumulative OPS+/ERA-";
+    public string DisplayDescription => $"{NumSeasons} season{(NumSeasons == 1 ? "" : "s")} - {WeightedOpsPlusOrEraMinus:N1} smbWAR";
 }

@@ -7,7 +7,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 
 public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Exception>>
 {
-    public GetPlayerAwardsRequest(bool onlyUserAssignable, bool isRegularSeason)
+    private GetPlayerAwardsRequest(bool onlyUserAssignable, bool isRegularSeason)
     {
         OnlyUserAssignable = onlyUserAssignable;
         IsRegularSeason = isRegularSeason;
@@ -16,8 +16,8 @@ public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Excep
     private bool OnlyUserAssignable { get; }
     private bool IsRegularSeason { get; }
 
-    public static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable) => new(onlyUserAssignable, true);
-    public static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable) => new(onlyUserAssignable, false);
+    private static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable) => new(onlyUserAssignable, true);
+    private static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable) => new(onlyUserAssignable, false);
     public static GetPlayerAwardsRequest Default => RegularSeason(true);
     public static GetPlayerAwardsRequest DefaultPlayoffs => Playoffs(true);
 

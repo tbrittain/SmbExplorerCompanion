@@ -21,6 +21,15 @@ public class SummaryRepository : ISummaryRepository
         _playerRepository = playerRepository;
     }
 
+    public Task<bool> HasFranchiseDataAsync(CancellationToken cancellationToken = default)
+    {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+        return _context.Seasons
+            .Where(x => x.FranchiseId == franchiseId)
+            .AnyAsync(cancellationToken: cancellationToken);
+    }
+
     public async Task<OneOf<FranchiseSummaryDto, None, Exception>> GetFranchiseSummaryAsync(CancellationToken cancellationToken = default)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;

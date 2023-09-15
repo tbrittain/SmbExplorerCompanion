@@ -6,9 +6,14 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              xmlns:dataTemplateSelectors="clr-namespace:SmbExplorerCompanion.WPF.DataTemplateSelectors"
              xmlns:players="clr-namespace:SmbExplorerCompanion.WPF.Models.Players"
+             xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
     <UserControl.Resources>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+
         <DataTemplate x:Key="BasicAwardTemplate" d:DataContext="{d:DesignInstance players:FormattedPlayerAward}">
             <Border
                 Background="{Binding Color}"
@@ -92,7 +97,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="14" Text="Cumulative OPS+/ERA-:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
+                        <TextBlock FontSize="14" Text="smbWAR:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                         <TextBlock Text="{Binding PlayerOverview.WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}"
                                    FontSize="14" />
                     </StackPanel>
@@ -121,7 +126,7 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Orientation="Vertical"
-                    Visibility="{Binding CareerBattingVisibility}"
+                    Visibility="{Binding PlayerOverview.IsPitcher, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                     Margin="0, 10, 0, 0">
                     <TextBlock FontSize="14" Text="Career Batting" FontWeight="Bold" />
                     <DataGrid
@@ -192,7 +197,7 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Orientation="Vertical"
-                    Visibility="{Binding CareerPitchingVisibility}"
+                    Visibility="{Binding PlayerOverview.IsPitcher, Converter={StaticResource BoolToVisibilityConverter}}"
                     Margin="0, 10, 0, 0">
                     <TextBlock FontSize="14" Text="Career Pitching" FontWeight="Bold" />
                     <DataGrid
@@ -255,13 +260,14 @@
 
                 <Grid
                     Grid.Row="{Binding BatterGridRow}"
-                    Visibility="{Binding OverallBattingVisibility}">
+                    Visibility="{Binding HasAnyBatting, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <ScrollViewer Grid.Row="0" Visibility="{Binding SeasonBattingVisibility}">
+                    <ScrollViewer Grid.Row="0"
+                                  Visibility="{Binding HasSeasonBatting, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Season Batting" FontWeight="Bold" />
                             <DataGrid
@@ -377,7 +383,7 @@
                                     </DataGridTemplateColumn>
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative OPS+"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -429,7 +435,8 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <ScrollViewer Grid.Row="1" Visibility="{Binding PlayoffBattingVisibility}">
+                    <ScrollViewer Grid.Row="1"
+                                  Visibility="{Binding HasPlayoffBatting, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
                             <DataGrid
@@ -545,7 +552,7 @@
                                     </DataGridTemplateColumn>
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative OPS+"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -600,13 +607,14 @@
 
                 <Grid
                     Grid.Row="{Binding PitcherGridRow}"
-                    Visibility="{Binding OverallPitchingVisibility}">
+                    Visibility="{Binding HasAnyPitching, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <ScrollViewer Grid.Row="0" Visibility="{Binding SeasonPitchingVisibility}">
+                    <ScrollViewer Grid.Row="0"
+                                  Visibility="{Binding HasSeasonPitching, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Season Pitching" FontWeight="Bold" />
                             <DataGrid
@@ -724,7 +732,7 @@
                                         CanUserSort="True" />
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative ERA-"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -776,7 +784,8 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <ScrollViewer Grid.Row="1" Visibility="{Binding PlayoffPitchingVisibility}">
+                    <ScrollViewer Grid.Row="1"
+                                  Visibility="{Binding HasPlayoffPitching, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Vertical">
                             <TextBlock FontSize="14" Text="Playoff Pitching" FontWeight="Bold" />
                             <DataGrid
@@ -893,7 +902,7 @@
                                         CanUserSort="True" />
                                     <DataGridTemplateColumn
                                         CanUserSort="True"
-                                        Header="Cumulative ERA-"
+                                        Header="smbWAR"
                                         SortMemberPath="WeightedOpsPlusOrEraMinus">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -990,7 +999,8 @@
                                 <DataGridTextColumn
                                     CanUserSort="True"
                                     Header="Fielding"
-                                    Binding="{Binding Speed}" />   <DataGridTextColumn
+                                    Binding="{Binding Speed}" />
+                                <DataGridTextColumn
                                     CanUserSort="True"
                                     Header="Arm"
                                     Binding="{Binding Arm}" />

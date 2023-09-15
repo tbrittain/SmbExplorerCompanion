@@ -5,9 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              xmlns:summary="clr-namespace:SmbExplorerCompanion.WPF.Models.Summary"
+             xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:HomeViewModel}"
              Name="Page">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -30,7 +35,14 @@
             </TextBlock>
         </StackPanel>
 
-        <ScrollViewer Grid.Column="0" Grid.Row="{Binding SearchRow}">
+        <ScrollViewer
+            Grid.Column="0"
+            Grid.Row="{Binding SearchRow}">
+            <ScrollViewer.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{StaticResource BoolToVisibilityConverter}" />
+            </ScrollViewer.Visibility>
             <StackPanel
                 Orientation="Vertical"
                 Margin="2">
@@ -98,15 +110,26 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <TextBlock Visibility="{Binding NoSearchResultsVisibility}">No results found</TextBlock>
+                    <TextBlock
+                        Text="No results found">
+                        <TextBlock.Visibility>
+                            <Binding
+                                Path="HasSearchResults"
+                                Converter="{StaticResource InverseBoolToVisibilityConverter}" />
+                        </TextBlock.Visibility>
+                    </TextBlock>
                 </Grid>
             </StackPanel>
         </ScrollViewer>
 
         <ScrollViewer Grid.Column="0" Grid.Row="1">
+            <ScrollViewer.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{StaticResource BoolToVisibilityConverter}" />
+            </ScrollViewer.Visibility>
             <StackPanel
-                Orientation="Vertical"
-                Visibility="{Binding FranchiseSummaryVisibility}">
+                Orientation="Vertical">
                 <TextBlock FontSize="16" FontWeight="SemiBold">Franchise Summary</TextBlock>
 
                 <StackPanel Orientation="Horizontal">
@@ -131,7 +154,7 @@
 
                 <StackPanel
                     Orientation="Horizontal"
-                    Visibility="{Binding FranchiseSummary.MostRecentChampionVisibility}">
+                    Visibility="{Binding FranchiseSummary.HasMostRecentChampion, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="14" Text="Most recent champion:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button Command="{Binding NavigateToChampionPageCommand}">
                         <TextBlock Text="{Binding FranchiseSummary.MostRecentChampionTeamName}" FontSize="14" />
@@ -140,7 +163,7 @@
 
                 <StackPanel
                     Orientation="Horizontal"
-                    Visibility="{Binding FranchiseSummary.MostRecentSeasonMvpVisibility}">
+                    Visibility="{Binding FranchiseSummary.HasMostRecentMvp, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="14" Text="Most recent MVP:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button
                         Command="{Binding NavigateToPlayerOverviewPageCommand}"
@@ -151,7 +174,7 @@
 
                 <StackPanel
                     Orientation="Horizontal"
-                    Visibility="{Binding FranchiseSummary.MostRecentSeasonCyYoungVisibility}">
+                    Visibility="{Binding FranchiseSummary.HasMostRecentCyYoung, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="14" Text="Most recent Cy Young:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button
                         Command="{Binding NavigateToPlayerOverviewPageCommand}"
@@ -295,8 +318,13 @@
             </StackPanel>
         </ScrollViewer>
 
-
         <ScrollViewer Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
+            <ScrollViewer.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{StaticResource BoolToVisibilityConverter}" />
+            </ScrollViewer.Visibility>
+
             <StackPanel>
                 <TreeView ItemsSource="{Binding Conferences}">
                     <TreeView.Resources>
@@ -327,12 +355,39 @@
                                 <TextBlock Text="{Binding RegularSeasonRecordText}" />
                                 <TextBlock
                                     Text="{Binding PlayoffResultsText}"
-                                    Visibility="{Binding PlayoffResultsVisibility}" />
+                                    Visibility="{Binding HasPlayoffResults, Converter={StaticResource BoolToVisibilityConverter}}" />
                             </StackPanel>
                         </DataTemplate>
                     </TreeView.Resources>
                 </TreeView>
             </StackPanel>
         </ScrollViewer>
+
+        <StackPanel
+            Orientation="Vertical"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Grid.Row="1"
+            Grid.RowSpan="2">
+            <StackPanel.Visibility>
+                <Binding
+                    Path="CanDisplayFranchiseSummary"
+                    Converter="{StaticResource InverseBoolToVisibilityConverter}" />
+            </StackPanel.Visibility>
+
+            <TextBlock>
+                This is your own personal Super Mega Baseball 4 reference app for your franchises using season data from the Current Season Exports from SMB Explorer
+            </TextBlock>
+
+            <StackPanel Orientation="Horizontal">
+                <Button
+                    Content="Getting Started"
+                    Command="{Binding NavigateToGettingStartedWikiPageCommand}" />
+                <Button
+                    Content="Download SMB Explorer"
+                    Command="{Binding NavigateToSmbExplorerReleaseUrlCommand}" />
+            </StackPanel>
+
+        </StackPanel>
     </Grid>
 </UserControl>

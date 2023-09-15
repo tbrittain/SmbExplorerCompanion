@@ -27,9 +27,7 @@ public class GetHallOfFameCandidatesRequest : IRequest<OneOf<RetiredPlayerCareer
         }
 
         public async Task<OneOf<RetiredPlayerCareerStatsDto, None, Exception>> Handle(GetHallOfFameCandidatesRequest request,
-            CancellationToken cancellationToken)
-        {
-            return await _playerRepository.GetHallOfFameCandidates(request.SeasonId, cancellationToken);
-        }
+            CancellationToken cancellationToken) =>
+            await _playerRepository.GetHallOfFameCandidates(request.SeasonId, cancellationToken);
     }
 }

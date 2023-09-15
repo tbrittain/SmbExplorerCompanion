@@ -8,6 +8,7 @@ using MaterialDesignThemes.Wpf;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Franchises;
 using SmbExplorerCompanion.Core.Commands.Queries.Franchises;
+using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings;
@@ -64,10 +65,11 @@ public partial class FranchiseSelectViewModel : ViewModelBase
     public bool IsFranchiseSelected => SelectedFranchise is not null;
 
     [RelayCommand(CanExecute = nameof(IsFranchiseSelected))]
-    private void LoadFranchise()
+    private async Task LoadFranchise()
     {
         if (SelectedFranchise is null) return;
         _applicationContext.SelectedFranchiseId = SelectedFranchise.Id;
+        _applicationContext.HasFranchiseData = await _mediator.Send(new GetHasFranchiseDataRequest());
 
         _navigationService.NavigateTo<HomeViewModel>();
     }

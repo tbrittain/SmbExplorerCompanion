@@ -37,8 +37,6 @@ public class TeamSeasonDetail : TeamBase
     public bool WonConference { get; set; }
     public bool WonChampionship { get; set; }
     public bool IncludesPlayoffData { get; set; }
-    
-    public Visibility PlayoffVisibility => IncludesPlayoffData ? Visibility.Visible : Visibility.Collapsed;
 
     public List<TeamPlayoffRoundResult> PlayoffResults { get; set; } = new();
 

@@ -18,9 +18,7 @@ public class GetFranchiseSummaryRequest : IRequest<OneOf<FranchiseSummaryDto, No
             _summaryRepository = summaryRepository;
         }
 
-        public async Task<OneOf<FranchiseSummaryDto, None, Exception>> Handle(GetFranchiseSummaryRequest request, CancellationToken cancellationToken)
-        {
-            return await _summaryRepository.GetFranchiseSummaryAsync(cancellationToken);
-        }
+        public async Task<OneOf<FranchiseSummaryDto, None, Exception>> Handle(GetFranchiseSummaryRequest request,
+            CancellationToken cancellationToken) => await _summaryRepository.GetFranchiseSummaryAsync(cancellationToken);
     }
 }

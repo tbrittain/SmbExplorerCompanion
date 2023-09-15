@@ -25,9 +25,7 @@ public class GetSearchResultsQuery : IRequest<OneOf<IEnumerable<SearchResultDto>
         }
 
         public async Task<OneOf<IEnumerable<SearchResultDto>, Exception>> Handle(GetSearchResultsQuery request,
-            CancellationToken cancellationToken)
-        {
-            return await _searchRepository.Search(request.SearchQuery, cancellationToken);
-        }
+            CancellationToken cancellationToken) =>
+            await _searchRepository.Search(request.SearchQuery, cancellationToken);
     }
 }

@@ -151,7 +151,7 @@
                                     Binding="{Binding PlayerPosition}" />
                                 <DataGridTextColumn
                                     CanUserSort="True"
-                                    Header="Cumulative OPS+/ERA- w/ Team"
+                                    Header="smbWAR w/ Team"
                                     SortDirection="Descending"
                                     Binding="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:N1}}" />
                                 <DataGridTextColumn

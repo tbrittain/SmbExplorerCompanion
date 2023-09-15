@@ -8,6 +8,7 @@ namespace SmbExplorerCompanion.WPF.Services;
 public sealed class ApplicationContext : IApplicationContext, INotifyPropertyChanged
 {
     private int? _selectedFranchiseId;
+    private bool _hasFranchiseData;
 
     public int? SelectedFranchiseId
     {
@@ -20,6 +21,12 @@ public sealed class ApplicationContext : IApplicationContext, INotifyPropertyCha
     }
 
     public bool IsFranchiseSelected => SelectedFranchiseId is not null;
+
+    public bool HasFranchiseData
+    {
+        get => _hasFranchiseData;
+        set => SetField(ref _hasFranchiseData, value);
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

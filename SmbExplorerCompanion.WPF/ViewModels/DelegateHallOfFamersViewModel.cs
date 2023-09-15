@@ -78,11 +78,13 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
 
     private async Task GetHallOfFamers()
     {
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var response = await _mediator.Send(new GetHallOfFameCandidatesRequest(SelectedSeason!.Id));
 
         if (response.TryPickT2(out var exception, out var rest))
         {
             MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
             return;
         }
 
@@ -93,6 +95,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         {
             MessageBox.Show("No retired players found. Please try another season.");
             SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
             return;
         }
 
@@ -105,6 +108,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             .Select(p => pitchingMapper.FromPitchingDto(p)));
 
         SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmitHallOfFamers))]

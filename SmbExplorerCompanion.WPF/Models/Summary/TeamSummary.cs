@@ -40,9 +40,7 @@ public class TeamSummary
 
     private string PlayoffSeedText => PlayoffSeed.HasValue ? $"#{PlayoffSeed.Value} seed" : string.Empty;
 
-    public Visibility PlayoffResultsVisibility => PlayoffWins.HasValue && PlayoffLosses.HasValue
-        ? Visibility.Visible
-        : Visibility.Collapsed;
+    public bool HasPlayoffResults => PlayoffWins.HasValue && PlayoffLosses.HasValue;
 
     public string PlayoffResultsText
     {

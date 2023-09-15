@@ -20,11 +20,9 @@ public class FranchiseSummary
     public int? MostRecentCyYoungPlayerId { get; set; }
     public string? MostRecentCyYoungPlayerName { get; set; }
 
-    public Visibility MostRecentChampionVisibility => MostRecentChampionTeamId.HasValue ? Visibility.Visible : Visibility.Collapsed;
-
-    public Visibility MostRecentSeasonMvpVisibility => MostRecentMvpPlayerId.HasValue ? Visibility.Visible : Visibility.Collapsed;
-
-    public Visibility MostRecentSeasonCyYoungVisibility => MostRecentCyYoungPlayerId.HasValue ? Visibility.Visible : Visibility.Collapsed;
+    public bool HasMostRecentChampion => MostRecentChampionTeamId.HasValue;
+    public bool HasMostRecentMvp => MostRecentMvpPlayerId.HasValue;
+    public bool HasMostRecentCyYoung => MostRecentCyYoungPlayerId.HasValue;
 
     public PlayerLeaderSummary TopHomeRuns { get; set; } = new();
     public PlayerLeaderSummary TopHits { get; set; } = new();
