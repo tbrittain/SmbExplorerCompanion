@@ -17,6 +17,10 @@
         ResizeMode="CanResize"
         WindowState="Maximized"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Window.Resources>
+
     <DockPanel>
         <Menu DockPanel.Dock="Top">
 
@@ -31,7 +35,7 @@
                 <MenuItem Header="_Discussions" Command="{Binding OpenDiscussionsCommand}" />
 
                 <MenuItem Header="{Binding UpdateAvailableDisplayText}"
-                          Visibility="{Binding UpdateAvailableVisibility}"
+                          Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
                           Command="{Binding OpenUpdateVersionReleasePageCommand}" />
 
                 <Label Content="{x:Static viewModels:MainWindowViewModel.CurrentVersionString}"

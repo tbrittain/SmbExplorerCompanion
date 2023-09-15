@@ -6,6 +6,10 @@
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TeamSeasonDetailViewModel}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
     <ScrollViewer>
         <StackPanel Orientation="Vertical">
             <Grid>
@@ -53,9 +57,9 @@
                 <ScrollViewer>
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="600" />
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="300" />
                         </Grid.RowDefinitions>
 
@@ -402,16 +406,17 @@
                     </Grid>
                 </ScrollViewer>
             </StackPanel>
-            <StackPanel Visibility="{Binding TeamSeasonDetail.PlayoffVisibility}">
+            <StackPanel
+                Visibility="{Binding TeamSeasonDetail.IncludesPlayoffData, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ScrollViewer>
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="600" />
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="300" />
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Grid.Row="0" FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
                         <DataGrid
                             Grid.Row="1"

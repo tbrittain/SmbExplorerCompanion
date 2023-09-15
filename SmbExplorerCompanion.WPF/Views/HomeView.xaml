@@ -154,7 +154,7 @@
 
                 <StackPanel
                     Orientation="Horizontal"
-                    Visibility="{Binding FranchiseSummary.MostRecentChampionVisibility}">
+                    Visibility="{Binding FranchiseSummary.HasMostRecentChampion, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="14" Text="Most recent champion:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button Command="{Binding NavigateToChampionPageCommand}">
                         <TextBlock Text="{Binding FranchiseSummary.MostRecentChampionTeamName}" FontSize="14" />
@@ -163,7 +163,7 @@
 
                 <StackPanel
                     Orientation="Horizontal"
-                    Visibility="{Binding FranchiseSummary.MostRecentSeasonMvpVisibility}">
+                    Visibility="{Binding FranchiseSummary.HasMostRecentMvp, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="14" Text="Most recent MVP:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button
                         Command="{Binding NavigateToPlayerOverviewPageCommand}"
@@ -174,7 +174,7 @@
 
                 <StackPanel
                     Orientation="Horizontal"
-                    Visibility="{Binding FranchiseSummary.MostRecentSeasonCyYoungVisibility}">
+                    Visibility="{Binding FranchiseSummary.HasMostRecentCyYoung, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock FontSize="14" Text="Most recent Cy Young:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <Button
                         Command="{Binding NavigateToPlayerOverviewPageCommand}"
@@ -355,7 +355,7 @@
                                 <TextBlock Text="{Binding RegularSeasonRecordText}" />
                                 <TextBlock
                                     Text="{Binding PlayoffResultsText}"
-                                    Visibility="{Binding PlayoffResultsVisibility}" />
+                                    Visibility="{Binding HasPlayoffResults, Converter={StaticResource BoolToVisibilityConverter}}" />
                             </StackPanel>
                         </DataTemplate>
                     </TreeView.Resources>

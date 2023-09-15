@@ -18,7 +18,6 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IHttpService _httpService;
     private AppUpdateResult? _appUpdateResult;
     private bool _isUpdateAvailable;
-    private Visibility _updateAvailableVisibility;
 
     public MainWindowViewModel(INavigationService navigationService, IApplicationContext applicationContext, IHttpService httpService)
     {
@@ -90,21 +89,14 @@ public partial class MainWindowViewModel : ViewModelBase
         ? $"Update Available: {AppUpdateResult?.Version.ToString()}"
         : "No Updates Available";
 
-    private bool IsUpdateAvailable
+    public bool IsUpdateAvailable
     {
         get => _isUpdateAvailable;
         set
         {
             SetField(ref _isUpdateAvailable, value);
             OnPropertyChanged(nameof(UpdateAvailableDisplayText));
-            UpdateAvailableVisibility = Visibility.Visible;
         }
-    }
-
-    public Visibility UpdateAvailableVisibility
-    {
-        get => _updateAvailableVisibility;
-        set => SetField(ref _updateAvailableVisibility, value);
     }
 
     private async Task CheckForUpdates()
