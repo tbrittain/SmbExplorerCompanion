@@ -18,6 +18,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IHttpService _httpService;
     private AppUpdateResult? _appUpdateResult;
     private bool _isUpdateAvailable;
+    private bool _areDataRoutesEnabled;
 
     public MainWindowViewModel(INavigationService navigationService, IApplicationContext applicationContext, IHttpService httpService)
     {
@@ -65,7 +66,21 @@ public partial class MainWindowViewModel : ViewModelBase
                 OnPropertyChanged(nameof(SidebarEnabled));
                 break;
             }
+            case nameof(IApplicationContext.HasFranchiseData):
+            {
+                if (_applicationContext.HasFranchiseData)
+                {
+                    AreDataRoutesEnabled = true;
+                }
+                break;
+            }
         }
+    }
+
+    public bool AreDataRoutesEnabled
+    {
+        get => _areDataRoutesEnabled;
+        set => SetField(ref _areDataRoutesEnabled, value);
     }
 
     public Task Initialize()

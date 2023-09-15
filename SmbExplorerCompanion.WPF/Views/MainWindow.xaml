@@ -57,6 +57,7 @@
                 Background="WhiteSmoke">
 
                 <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
                     Command="{Binding NavigateBackCommand}"
                     Margin="0, 0, 0, 10">
                     <TextBlock
@@ -81,7 +82,9 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Center" />
 
-                <Button Command="{Binding NavigateToTeamsCommand}">
+                <Button 
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToTeamsCommand}">
                     <TextBlock
                         Text="Teams"
                         FontSize="15"
@@ -89,7 +92,9 @@
                         HorizontalAlignment="Left" />
                 </Button>
 
-                <Button Command="{Binding NavigateToCareerBattingCommand}">
+                <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToCareerBattingCommand}">
                     <TextBlock
                         Text="Career Batting"
                         FontSize="15"
@@ -97,7 +102,9 @@
                         HorizontalAlignment="Left" />
                 </Button>
 
-                <Button Command="{Binding NavigateToCareerPitchingCommand}">
+                <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToCareerPitchingCommand}">
                     <TextBlock
                         Text="Career Pitching"
                         FontSize="15"
@@ -105,7 +112,9 @@
                         HorizontalAlignment="Left" />
                 </Button>
 
-                <Button Command="{Binding NavigateToSeasonBattingCommand}">
+                <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToSeasonBattingCommand}">
                     <TextBlock
                         Text="Season Batting"
                         FontSize="15"
@@ -113,7 +122,9 @@
                         HorizontalAlignment="Left" />
                 </Button>
 
-                <Button Command="{Binding NavigateToSeasonPitchingCommand}">
+                <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToSeasonPitchingCommand}">
                     <TextBlock
                         Text="Season Pitching"
                         FontSize="15"
@@ -128,7 +139,9 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Center" />
 
-                <Button Command="{Binding NavigateToDelegateAwardsCommand}">
+                <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToDelegateAwardsCommand}">
                     <TextBlock
                         Text="Season Awards"
                         FontSize="15"
@@ -136,7 +149,9 @@
                         HorizontalAlignment="Left" />
                 </Button>
 
-                <Button Command="{Binding NavigateToDelegateHallOfFamersCommand}">
+                <Button
+                    IsEnabled="{Binding AreDataRoutesEnabled}"
+                    Command="{Binding NavigateToDelegateHallOfFamersCommand}">
                     <TextBlock
                         Text="Hall of Famers"
                         FontSize="15"
