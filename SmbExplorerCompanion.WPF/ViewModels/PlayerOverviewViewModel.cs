@@ -47,22 +47,13 @@ public class PlayerOverviewViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
-    // TODO: replace these with bool properties and use a converter to return Visibility.Collapsed if false
-    public Visibility CareerPitchingVisibility => PlayerOverview.IsPitcher ? Visibility.Visible : Visibility.Collapsed;
-    public Visibility CareerBattingVisibility => PlayerOverview.IsPitcher ? Visibility.Collapsed : Visibility.Visible;
-
-    public Visibility OverallBattingVisibility => PlayerOverview.PlayerSeasonBatting.Any() ||
-                                                  PlayerOverview.PlayerPlayoffBatting.Any()
-        ? Visibility.Visible
-        : Visibility.Collapsed;
-    public Visibility SeasonBattingVisibility => PlayerOverview.PlayerSeasonBatting.Any() ? Visibility.Visible : Visibility.Collapsed;
-    public Visibility PlayoffBattingVisibility => PlayerOverview.PlayerPlayoffBatting.Any() ? Visibility.Visible : Visibility.Collapsed;
-    public Visibility OverallPitchingVisibility => PlayerOverview.PlayerSeasonPitching.Any() ||
-                                                   PlayerOverview.PlayerPlayoffPitching.Any()
-        ? Visibility.Visible
-        : Visibility.Collapsed;
-    public Visibility SeasonPitchingVisibility => PlayerOverview.PlayerSeasonPitching.Any() ? Visibility.Visible : Visibility.Collapsed;
-    public Visibility PlayoffPitchingVisibility => PlayerOverview.PlayerPlayoffPitching.Any() ? Visibility.Visible : Visibility.Collapsed;
+    public bool HasAnyBatting => HasSeasonBatting || HasPlayoffBatting;
+    public bool HasSeasonBatting => PlayerOverview.PlayerSeasonBatting.Any();
+    public bool HasPlayoffBatting => PlayerOverview.PlayerPlayoffBatting.Any();
+    
+    public bool HasAnyPitching => HasSeasonPitching || HasPlayoffPitching;
+    public bool HasSeasonPitching => PlayerOverview.PlayerSeasonPitching.Any();
+    public bool HasPlayoffPitching => PlayerOverview.PlayerPlayoffPitching.Any();
 
     public int PitcherGridRow => PlayerOverview.IsPitcher ? 0 : 1;
     public int BatterGridRow => PlayerOverview.IsPitcher ? 1 : 0;
