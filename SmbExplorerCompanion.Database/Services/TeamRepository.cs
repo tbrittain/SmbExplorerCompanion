@@ -247,7 +247,7 @@ public class TeamRepository : ITeamRepository
                     return team;
                 })
                 .ToList();
-            
+
             var currentSeason = await _dbContext.Seasons
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => seasonId == null || x.Id == seasonId)
@@ -423,22 +423,33 @@ public class TeamRepository : ITeamRepository
 
                     if (isPitcher)
                     {
-                        dto.AverageEraMinus = seasonsWithTeam
+                        var pitchingStats = seasonsWithTeam
                             .SelectMany(y => y.PitchingStats)
-                            .Average(y => y.EraMinus ?? 0);
-                        dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
-                            .SelectMany(y => y.PitchingStats)
-                            .Sum(y => (((y.EraMinus ?? 0) + (y.FipMinus ?? 0)) / 2 - 95) * y.InningsPitched * PitchingScalingFactor ?? 0);
+                            .ToList();
+
+                        if (pitchingStats.Any())
+                        {
+                            dto.AverageEraMinus = pitchingStats
+                                .Average(y => y.EraMinus ?? 0);
+
+                            dto.WeightedOpsPlusOrEraMinus = pitchingStats
+                                .Sum(y => (((y.EraMinus ?? 0) + (y.FipMinus ?? 0)) / 2 - 95) * (y.InningsPitched ?? 0) * PitchingScalingFactor);
+                        }
                     }
                     else
                     {
-                        dto.AverageOpsPlus = seasonsWithTeam
+                        var battingStats = seasonsWithTeam
                             .SelectMany(y => y.BattingStats)
-                            .Average(y => y.OpsPlus ?? 0);
-                        dto.WeightedOpsPlusOrEraMinus = seasonsWithTeam
-                            .SelectMany(y => y.BattingStats)
-                            .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
-                                      (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor);
+                            .ToList();
+
+                        if (battingStats.Any())
+                        {
+                            dto.AverageOpsPlus = battingStats
+                                .Average(y => y.OpsPlus ?? 0);
+                            dto.WeightedOpsPlusOrEraMinus = battingStats
+                                .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
+                                          (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor);
+                        }
                     }
 
                     return dto;

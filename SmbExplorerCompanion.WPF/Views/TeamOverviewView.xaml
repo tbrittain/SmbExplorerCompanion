@@ -59,6 +59,9 @@
             <ScrollViewer>
                 <StackPanel Orientation="Vertical">
                     <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="500"/>
+                        </Grid.RowDefinitions>
                         <DataGrid
                             Name="TeamSeasonsDataGrid"
                             IsReadOnly="True"
