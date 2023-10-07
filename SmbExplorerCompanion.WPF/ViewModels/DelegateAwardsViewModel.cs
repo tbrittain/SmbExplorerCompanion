@@ -130,7 +130,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var topSeasonBattersResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
-                limit: 5,
+                limit: 10,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
         if (topSeasonBattersResponse.TryPickT1(out exception, out var topSeasonBatters))
@@ -150,7 +150,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var topSeasonPitchersResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
                 seasonId: SelectedSeason.Id,
-                limit: 5,
+                limit: 10,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
 
@@ -170,7 +170,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var topSeasonBattingRookiesResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
                 seasonId: SelectedSeason.Id,
-                limit: 5,
+                limit: 10,
                 onlyRookies: true,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
@@ -191,7 +191,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var topSeasonPitchingRookiesResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
                 seasonId: SelectedSeason.Id,
-                limit: 5,
+                limit: 10,
                 onlyRookies: true,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
