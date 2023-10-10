@@ -1,17 +1,91 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
+using Microsoft.Extensions.DependencyInjection;
+using SmbExplorerCompanion.Core;
+using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Database;
+using SmbExplorerCompanion.WPF.Services;
+using SmbExplorerCompanion.WPF.ViewModels;
+using SmbExplorerCompanion.WPF.Views;
+using static SmbExplorerCompanion.Shared.Constants.FileExports;
 
-namespace SmbExplorerCompanion.WPF
+namespace SmbExplorerCompanion.WPF;
+
+public partial class App
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    public App()
     {
+#if RELEASE
+        DispatcherUnhandledException += App_DispatcherUnhandledException;
+#endif
+    }
+
+    private IServiceProvider ServiceProvider { get; set; } = null!;
+    private IServiceCollection Services { get; set; } = null!;
+
+    protected override async void OnStartup(StartupEventArgs e)
+    {
+        if (!Directory.Exists(BaseApplicationDirectory)) Directory.CreateDirectory(BaseApplicationDirectory);
+
+        Services = new ServiceCollection();
+        await ConfigureServices(Services);
+        ServiceProvider = Services.BuildServiceProvider();
+        SmbExplorerCompanionDbContext.ApplyMigrations(ServiceProvider);
+        SmbExplorerCompanionDbContext.SeedLookups(ServiceProvider);
+
+        var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+        mainWindow.Show();
+        await ((MainWindowViewModel) mainWindow.DataContext).Initialize();
+
+        base.OnStartup(e);
+    }
+
+    private static Task ConfigureServices(IServiceCollection services)
+    {
+        services
+            .AddLogging()
+            .AddCore()
+            .AddDatabase()
+            .AddHttpClient()
+            .AddSingleton<IHttpService, HttpService>()
+            .AddSingleton<MainWindow>(serviceProvider => new MainWindow
+            {
+                DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
+            })
+            .AddTransient<MainWindowViewModel>()
+            .AddTransient<FranchiseSelectViewModel>()
+            .AddTransient<HomeViewModel>()
+            .AddTransient<ImportCsvViewModel>()
+            .AddTransient<HistoricalTeamsViewModel>()
+            .AddTransient<TeamOverviewViewModel>()
+            .AddTransient<PlayerOverviewViewModel>()
+            .AddTransient<TopBattingCareersViewModel>()
+            .AddTransient<TopPitchingCareersViewModel>()
+            .AddTransient<TopBattingSeasonsViewModel>()
+            .AddTransient<TopPitchingSeasonsViewModel>()
+            .AddTransient<TeamSeasonDetailViewModel>()
+            .AddTransient<DelegateAwardsViewModel>()
+            .AddTransient<DelegateHallOfFamersViewModel>()
+            .AddSingleton<INavigationService, NavigationService>()
+            .AddSingleton<IApplicationContext, ApplicationContext>()
+            // NavigationService calls this Func to get the ViewModel instance
+            .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
+                viewModelType => (ViewModelBase) serviceProvider.GetRequiredService(viewModelType));
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     Global exception handler. In debug mode, this will not be called and exceptions will be thrown.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+        Shutdown();
     }
 }

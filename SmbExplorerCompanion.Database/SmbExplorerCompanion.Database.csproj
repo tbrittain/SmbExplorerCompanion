@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.11">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
+        <PackageReference Include="Riok.Mapperly" Version="3.2.0" />
+        <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj" />
+        <ProjectReference Include="..\SmbExplorerCompanion.Csv\SmbExplorerCompanion.Csv.csproj" />
+        <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Mappings\Csv\" />
+        <Folder Include="Migrations\" />
+    </ItemGroup>
+
+</Project>

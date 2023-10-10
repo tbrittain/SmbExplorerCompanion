@@ -2,6 +2,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.WPF", "SmbExplorerCompanion.WPF\SmbExplorerCompanion.WPF.csproj", "{64C06849-853B-47F0-AE6B-EC82CCF2B430}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Database", "SmbExplorerCompanion.Database\SmbExplorerCompanion.Database.csproj", "{A0402E5F-BB9B-4EAF-A650-591CACF2B5CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Csv", "SmbExplorerCompanion.Csv\SmbExplorerCompanion.Csv.csproj", "{7F57F95B-C111-483C-B2E4-426B695A55AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Core", "SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj", "{2602720D-CDA2-463C-9049-30E01AE77D3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmbExplorerCompanion.Shared", "SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj", "{EB3F8F59-54E7-4050-9731-9FBE99541A48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +20,21 @@ Global
 		{64C06849-853B-47F0-AE6B-EC82CCF2B430}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64C06849-853B-47F0-AE6B-EC82CCF2B430}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64C06849-853B-47F0-AE6B-EC82CCF2B430}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0402E5F-BB9B-4EAF-A650-591CACF2B5CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0402E5F-BB9B-4EAF-A650-591CACF2B5CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0402E5F-BB9B-4EAF-A650-591CACF2B5CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0402E5F-BB9B-4EAF-A650-591CACF2B5CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F57F95B-C111-483C-B2E4-426B695A55AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F57F95B-C111-483C-B2E4-426B695A55AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F57F95B-C111-483C-B2E4-426B695A55AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F57F95B-C111-483C-B2E4-426B695A55AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2602720D-CDA2-463C-9049-30E01AE77D3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB3F8F59-54E7-4050-9731-9FBE99541A48}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

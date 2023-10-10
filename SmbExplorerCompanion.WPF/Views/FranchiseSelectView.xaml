@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="SmbExplorerCompanion.WPF.Views.FranchiseSelectView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:models="clr-namespace:SmbExplorerCompanion.WPF.Models"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance viewModels:FranchiseSelectViewModel}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Controls/DialogTemplate.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <materialDesign:DialogHost Identifier="FranchiseSelectViewModel">
+            <materialDesign:DialogHost.DialogContentTemplate>
+                <DataTemplate>
+                    <DataTemplate.Resources>
+                        
+                        <DataTemplate DataType="{x:Type models:DialogViewModel}">
+                            <Grid Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.ColumnSpan="3" Margin="0,0,0,5">
+                                    <TextBox Text="{Binding Text}" />
+                                </StackPanel>
+
+                                <Button Content="_Add"
+                                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" Grid.Row="1"
+                                        Grid.Column="2">
+                                    <Button.CommandParameter>
+                                        <system:Boolean>True</system:Boolean>
+                                    </Button.CommandParameter>
+                                </Button>
+                                <Button Content="_Cancel"
+                                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" Grid.Row="1"
+                                        Grid.Column="0" />
+                            </Grid>
+                        </DataTemplate>
+                    </DataTemplate.Resources>
+                    <ContentControl Content="{Binding}" />
+                </DataTemplate>
+            </materialDesign:DialogHost.DialogContentTemplate>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </materialDesign:DialogHost>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <ComboBox
+                Margin="2"
+                Width="200"
+                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                materialDesign:HintAssist.Hint="Select a franchise"
+                ItemsSource="{Binding Franchises}"
+                DisplayMemberPath="Name"
+                SelectedItem="{Binding SelectedFranchise}">
+            </ComboBox>
+            <Button
+                Style="{DynamicResource MaterialDesignRaisedButton}"
+                Margin="2"
+                Command="{Binding LoadFranchiseCommand}">
+                Load Franchise
+            </Button>
+            <Button
+                Style="{DynamicResource MaterialDesignRaisedButton}"
+                Margin="2"
+                Command="{Binding AddFranchiseCommand}">
+                Add Franchise
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

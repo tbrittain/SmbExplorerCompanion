@@ -1,10 +1,52 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net7.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
+        <AssemblyName>SmbExplorerCompanion</AssemblyName>
+        <ApplicationIcon>favicon.ico</ApplicationIcon>
+        <Version>1.0.0</Version>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+      <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.1" />
+      <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.11">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+      <PackageReference Include="Riok.Mapperly" Version="3.2.0" />
+      <PackageReference Include="ShowMeTheXAML.MSBuild" Version="2.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SmbExplorerCompanion.Core\SmbExplorerCompanion.Core.csproj" />
+      <ProjectReference Include="..\SmbExplorerCompanion.Database\SmbExplorerCompanion.Database.csproj" />
+      <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Views\MainWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+
+
+
+
+
+
+
+
+    </ItemGroup>
+
+
+
 
 </Project>
