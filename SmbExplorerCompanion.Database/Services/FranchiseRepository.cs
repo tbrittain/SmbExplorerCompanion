@@ -55,7 +55,7 @@ public class FranchiseRepository : IRepository<FranchiseDto>
         }
     }
 
-    public async Task<OneOf<FranchiseDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public Task<OneOf<FranchiseDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }

@@ -61,7 +61,7 @@ public class SeasonRepository : IRepository<SeasonDto>
         throw new NotSupportedException();
     }
 
-    public async Task<OneOf<SeasonDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public Task<OneOf<SeasonDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }

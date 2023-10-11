@@ -122,7 +122,7 @@ public class PlayerAwardRepository : IRepository<PlayerAwardDto>
         return newPlayerAwardDto;
     }
 
-    public async Task<OneOf<IEnumerable<PlayerAwardDto>, Exception>> AddRangeAsync(IEnumerable<PlayerAwardDto> entities,
+    public Task<OneOf<IEnumerable<PlayerAwardDto>, Exception>> AddRangeAsync(IEnumerable<PlayerAwardDto> entities,
         CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
