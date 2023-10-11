@@ -130,11 +130,6 @@ public class CsvMappingRepository
                     TeamId = team.Id,
                 };
             }
-            else
-            {
-                // if the season team history already exists, then we need to check if the team name is different
-                seasonTeamHistory.TeamNameHistory.Name = csvTeam.TeamName;
-            }
 
             seasonTeamHistory.Budget = csvTeam.Budget;
             seasonTeamHistory.Payroll = csvTeam.Payroll;
@@ -160,8 +155,8 @@ public class CsvMappingRepository
             seasonTeamHistory.DivisionId = division.Id;
 
             // get the last team name history for this team, and if the name is different, add a new team name history
-            var lastTeamNameHistory = team.SeasonTeamHistory.Last().TeamNameHistory;
-            if (lastTeamNameHistory.Name != csvTeam.TeamName)
+            var lastTeamNameHistory = team.SeasonTeamHistory.LastOrDefault()?.TeamNameHistory;
+            if (lastTeamNameHistory?.Name != csvTeam.TeamName)
             {
                 var teamNameHistory = new TeamNameHistory
                 {

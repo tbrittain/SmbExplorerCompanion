@@ -1138,4 +1138,21 @@ public class SmbExplorerCompanionDbContext : DbContext
         var dbContext = scope.ServiceProvider.GetRequiredService<SmbExplorerCompanionDbContext>();
         if (dbContext.Database.GetPendingMigrations().Any()) dbContext.Database.Migrate();
     }
+
+    public async Task<int?> GetMaxPlayoffSeriesAsync(int franchiseId, CancellationToken cancellationToken = default)
+    {
+        var playoffSchedulesQueryable = TeamPlayoffSchedules
+            .Include(x => x.HomeTeamHistory)
+            .ThenInclude(x => x.Team)
+            .Where(x => x.HomeTeamHistory.Team.FranchiseId == franchiseId);
+        
+        var hasPlayoffSeries = await playoffSchedulesQueryable
+            .AnyAsync(cancellationToken: cancellationToken);
+        if (!hasPlayoffSeries) return null;
+        
+        var maxSeries = await playoffSchedulesQueryable
+            .MaxAsync(x => x.SeriesNumber, cancellationToken);
+        
+        return maxSeries;
+    }
 }

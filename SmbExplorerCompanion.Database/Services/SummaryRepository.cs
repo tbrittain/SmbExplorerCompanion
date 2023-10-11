@@ -261,9 +261,8 @@ public class SummaryRepository : ISummaryRepository
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
             if (mostRecentSeason is null) return new None();
-            
-            var maxPlayoffSeries = await _context.TeamPlayoffSchedules
-                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+
+            var maxPlayoffSeries = await _context.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
 
             var conferences = await _context.Conferences
                 .Where(x => x.FranchiseId == franchiseId)
@@ -303,23 +302,33 @@ public class SummaryRepository : ISummaryRepository
                         .ToListAsync(cancellationToken: cancellationToken);
 
                     var mostRecentSeasonTeamHistoryDtos = mostRecentSeasonTeamHistory
-                        .Select(x => new TeamSummaryDto
+                        .Select(x =>
                         {
-                            Id = x.TeamId,
-                            SeasonTeamId = x.Id,
-                            TeamName = x.TeamNameHistory.Name,
-                            Wins = x.Wins,
-                            Losses = x.Losses,
-                            PlayoffSeed = x.PlayoffSeed,
-                            PlayoffWins = x.PlayoffWins,
-                            PlayoffLosses = x.PlayoffLosses,
-                            IsDivisionChampion = x.GamesBehind == 0,
-                            IsConferenceChampion =
-                                x.HomePlayoffSchedule
-                                    .Any(y => y.SeriesNumber == maxPlayoffSeries) ||
-                                x.AwayPlayoffSchedule
-                                    .Any(y => y.SeriesNumber == maxPlayoffSeries),
-                            IsChampion = x.ChampionshipWinner is not null,
+                            var teamSummary = 
+                                new TeamSummaryDto
+                                {
+                                    Id = x.TeamId,
+                                    SeasonTeamId = x.Id,
+                                    TeamName = x.TeamNameHistory.Name,
+                                    Wins = x.Wins,
+                                    Losses = x.Losses,
+                                    PlayoffSeed = x.PlayoffSeed,
+                                    PlayoffWins = x.PlayoffWins,
+                                    PlayoffLosses = x.PlayoffLosses,
+                                    IsDivisionChampion = x.GamesBehind == 0,
+                                };
+
+                            if (maxPlayoffSeries is not null)
+                            {
+                                teamSummary.IsConferenceChampion =
+                                    x.HomePlayoffSchedule
+                                        .Any(y => y.SeriesNumber == maxPlayoffSeries) ||
+                                    x.AwayPlayoffSchedule
+                                        .Any(y => y.SeriesNumber == maxPlayoffSeries);
+                                teamSummary.IsChampion = x.ChampionshipWinner is not null;
+                            }
+                            
+                            return teamSummary;
                         })
                         .ToList();
 
