@@ -52,6 +52,8 @@ public class CsvImportRepository : ICsvImportRepository
             await ImportSeasonSchedule(filePaths.SeasonSchedule, channel, season, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+
+            _applicationContext.HasFranchiseData = true;
         }
         catch (Exception)
         {
@@ -76,9 +78,17 @@ public class CsvImportRepository : ICsvImportRepository
         Season season;
         if (selectedSeason.Id == default)
         {
-            var maxSeasonId = await _dbContext.Seasons
-                .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
-                .MaxAsync(x => x.Id, cancellationToken: cancellationToken);
+            var hasAtLeastOneSeason = await _dbContext.Seasons
+                .AnyAsync(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value,
+                    cancellationToken: cancellationToken);
+
+            var maxSeasonId = 0;
+            if (hasAtLeastOneSeason)
+            {
+                maxSeasonId = await _dbContext.Seasons
+                    .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+                    .MaxAsync(x => x.Id, cancellationToken: cancellationToken);
+            }
 
             season = new Season
             {

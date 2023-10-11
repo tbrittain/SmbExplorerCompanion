@@ -63,8 +63,7 @@ public class TeamRepository : ITeamRepository
 
         try
         {
-            var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
-                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+            var maxPlayoffSeries = await _dbContext.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
 
             int? previousSeasonId = null;
             if (seasonId is not null)
@@ -284,8 +283,8 @@ public class TeamRepository : ITeamRepository
     {
         try
         {
-            var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
-                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+            var maxPlayoffSeries = await _dbContext
+                .GetMaxPlayoffSeriesAsync(_applicationContext.SelectedFranchiseId!.Value, cancellationToken);
 
             var teamOverviewDto = await _dbContext.SeasonTeamHistory
                 .Include(x => x.TeamNameHistory)
@@ -470,8 +469,8 @@ public class TeamRepository : ITeamRepository
     {
         try
         {
-            var maxPlayoffSeries = await _dbContext.TeamPlayoffSchedules
-                .MaxAsync(y => y.SeriesNumber, cancellationToken: cancellationToken);
+            var maxPlayoffSeries = await _dbContext
+                .GetMaxPlayoffSeriesAsync(_applicationContext.SelectedFranchiseId!.Value, cancellationToken);
 
             var teamSeason = await _dbContext.SeasonTeamHistory
                 .Include(x => x.TeamNameHistory)
@@ -530,7 +529,8 @@ public class TeamRepository : ITeamRepository
             {
                 teamSeasonDetailDto.IncludesPlayoffData = true;
 
-                teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(maxPlayoffSeries,
+                teamSeasonDetailDto.PlayoffResults = await GetTeamPlayoffResults(
+                    maxPlayoffSeries!.Value,
                     teamSeason.HomePlayoffSchedule,
                     teamSeason.AwayPlayoffSchedule);
 
