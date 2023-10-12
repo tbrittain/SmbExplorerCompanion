@@ -9,7 +9,7 @@
              d:DataContext="{d:DesignInstance viewModels:TopPitchingSeasonsViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -22,7 +22,7 @@
                 ItemsSource="{Binding Seasons}"
                 SelectedItem="{Binding SelectedSeason}"
                 DisplayMemberPath="DisplaySeasonNumber" />
-            
+
             <ComboBox
                 Margin="2"
                 Width="200"

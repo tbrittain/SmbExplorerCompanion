@@ -39,7 +39,7 @@
                         CanUserSortColumns="True"
                         CanUserResizeColumns="True"
                         SelectionMode="Single"
-                        Height="600">
+                        MaxHeight="600">
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 IsReadOnly="True"
@@ -233,7 +233,7 @@
                         CanUserSortColumns="True"
                         CanUserResizeColumns="True"
                         SelectionMode="Single"
-                        Height="600">
+                        MaxHeight="600">
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 IsReadOnly="True"

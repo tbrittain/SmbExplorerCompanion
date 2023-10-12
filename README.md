@@ -10,3 +10,5 @@ franchise stats that are exported via [SMB Explorer](https://github.com/tbrittai
 ## Installation
 
 See the [installation section of the wiki](https://github.com/tbrittain/SmbExplorerCompanion/wiki/Installation) for more information.
+
+<a href="https://www.buymeacoffee.com/tbrittain" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-yellow.png" alt="Buy Me A Coffee" height="41" width="174"></a>

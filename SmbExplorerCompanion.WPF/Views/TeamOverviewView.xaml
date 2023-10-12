@@ -60,7 +60,7 @@
                 <StackPanel Orientation="Vertical">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="500"/>
+                            <RowDefinition MaxHeight="500"/>
                         </Grid.RowDefinitions>
                         <DataGrid
                             Name="TeamSeasonsDataGrid"
