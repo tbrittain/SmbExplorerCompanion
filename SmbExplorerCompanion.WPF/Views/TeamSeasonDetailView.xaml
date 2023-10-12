@@ -58,9 +58,9 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="600" />
+                            <RowDefinition MaxHeight="600" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="300" />
+                            <RowDefinition MaxHeight="300" />
                         </Grid.RowDefinitions>
 
                         <TextBlock FontSize="14" Text="Season Batting" FontWeight="Bold" />
@@ -412,9 +412,9 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="600" />
+                            <RowDefinition MaxHeight="600" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="300" />
+                            <RowDefinition MaxHeight="300" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
