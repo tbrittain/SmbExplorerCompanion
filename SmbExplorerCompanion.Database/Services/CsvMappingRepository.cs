@@ -190,12 +190,11 @@ public class CsvMappingRepository
     private List<PlayerTeamHistory> GetPlayerTeamHistory(SeasonStatBase seasonStatBase, List<SeasonTeamHistory> seasonTeamHistories)
     {
         // overwrite the PlayerTeamHistory entries with what is present on the CSV
-        var isCurrentFreeAgent = seasonStatBase.CurrentTeamId is null;
         var playerTeamHistories = new List<PlayerTeamHistory>();
 
         var currentOrder = 1;
 
-        if (isCurrentFreeAgent)
+        if (!seasonStatBase.CurrentTeamId.HasValue)
         {
             playerTeamHistories.Add(new PlayerTeamHistory
             {
@@ -219,10 +218,10 @@ public class CsvMappingRepository
         }
 
         var mostRecentTeam = seasonStatBase.PreviousTeamId;
-        if (mostRecentTeam is not null)
+        if (mostRecentTeam.HasValue)
         {
             // If the player has a current team that differs from the most recent team, then we need to add a new team history
-            if (!isCurrentFreeAgent && seasonStatBase.CurrentTeamId is not null && seasonStatBase.CurrentTeamId != mostRecentTeam)
+            if (mostRecentTeam != seasonStatBase.CurrentTeamId)
             {
                 var mostRecentSeasonTeamHistory = seasonTeamHistories
                                                       .SingleOrDefault(x => x.Team.TeamGameIdHistory
@@ -238,7 +237,7 @@ public class CsvMappingRepository
         }
 
         var secondMostRecentTeam = seasonStatBase.SecondPreviousTeamId;
-        if (secondMostRecentTeam is not null)
+        if (secondMostRecentTeam.HasValue)
         {
             var secondMostRecentTeamHistory = seasonTeamHistories
                                                   .SingleOrDefault(x => x.Team.TeamGameIdHistory

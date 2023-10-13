@@ -1329,12 +1329,16 @@ public class PlayerRepository : IPlayerRepository
                     .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
                               (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor),
                 OpsPlus = x.PlayerSeasons
-                              .SelectMany(y => y.BattingStats)
-                              .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances)
-                          /
-                          x.PlayerSeasons
-                              .SelectMany(y => y.BattingStats)
-                              .Sum(y => y.PlateAppearances),
+                    .SelectMany(y => y.BattingStats)
+                    .Sum(y => y.PlateAppearances) == 0
+                    ? 0
+                    : x.PlayerSeasons
+                          .SelectMany(y => y.BattingStats)
+                          .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances)
+                      /
+                      x.PlayerSeasons
+                          .SelectMany(y => y.BattingStats)
+                          .Sum(y => y.PlateAppearances),
                 Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
                 Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
                 Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
