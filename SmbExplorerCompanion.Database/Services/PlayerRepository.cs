@@ -983,6 +983,11 @@ public class PlayerRepository : IPlayerRepository
         var battingAverage = playerCareerBatting.BattingAverage;
         var slg = playerCareerBatting.Slg;
 
+        var chemistryId = playerCareerBatting.ChemistryId;
+        var throwHandednessId = playerCareerBatting.ThrowHandednessId;
+        var batHandednessId = playerCareerBatting.BatHandednessId;
+        var primaryPositionId = playerCareerBatting.PrimaryPositionId;
+
         var queryable = GetCareerBattingIQueryable()
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
             .Where(x => x.Id != playerId);
@@ -1026,7 +1031,11 @@ public class PlayerRepository : IPlayerRepository
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)) - stolenBases) / 20D +
                         Math.Abs(x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.BattingAverage ?? 0)) - battingAverage) * 100 +
                         Math.Abs(x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Slg ?? 0)) - slg) / 2 * 100
-                    )
+                    ) - 
+                    (x.PrimaryPositionId != primaryPositionId ? 50 : 0) -
+                    (x.ChemistryId != chemistryId ? 50 : 0) -
+                    (x.BatHandednessId != batHandednessId ? 30 : 0) -
+                    (x.ThrowHandednessId != throwHandednessId ? 30 : 0)
             })
             .OrderByDescending(x => x.SimilarityScore)
             .Take(10)
@@ -1065,6 +1074,10 @@ public class PlayerRepository : IPlayerRepository
         var shutouts = playerCareerPitching.Shutouts;
         var saves = playerCareerPitching.Saves;
         
+        var chemistryId = playerCareerPitching.ChemistryId;
+        var throwHandednessId = playerCareerPitching.ThrowHandednessId;
+        var pitcherRoleId = playerCareerPitching.PitcherRoleId;
+        
         var queryable = GetCareerPitchingIQueryable()
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
             .Where(x => x.Id != playerId);
@@ -1096,9 +1109,13 @@ public class PlayerRepository : IPlayerRepository
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)) - inningsPitched) / 50D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Hits)) - hits) / 50D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)) - strikeouts) / 30D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Walks)) - walks) / 10D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)) - shutouts) / 5D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)) - saves) / 3D
-                    )
+                    ) - 
+                    (x.PitcherRoleId != pitcherRoleId ? 50 : 0) -
+                    (x.ChemistryId != chemistryId ? 50 : 0) -
+                    (x.ThrowHandednessId != throwHandednessId ? 30 : 0)
             })
             .OrderByDescending(x => x.SimilarityScore)
             .Take(10)
@@ -1288,9 +1305,13 @@ public class PlayerRepository : IPlayerRepository
                         ? 0
                         : y.Salary),
                 BatHandedness = x.BatHandedness.Name,
+                BatHandednessId = x.BatHandednessId,
                 ThrowHandedness = x.ThrowHandedness.Name,
+                ThrowHandednessId = x.ThrowHandednessId,
                 PrimaryPosition = x.PrimaryPosition.Name,
+                PrimaryPositionId = x.PrimaryPositionId,
                 PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
+                ChemistryId = x.ChemistryId,
                 Chemistry = x.Chemistry!.Name,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
@@ -1352,10 +1373,15 @@ public class PlayerRepository : IPlayerRepository
                         ? 0
                         : y.Salary),
                 PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
+                PitcherRoleId = x.PitcherRoleId,
                 BatHandedness = x.BatHandedness.Name,
+                BatHandednessId = x.BatHandednessId,
                 ThrowHandedness = x.ThrowHandedness.Name,
+                ThrowHandednessId = x.ThrowHandednessId,
                 PrimaryPosition = x.PrimaryPosition.Name,
+                PrimaryPositionId = x.PrimaryPositionId,
                 Chemistry = x.Chemistry!.Name,
+                ChemistryId = x.ChemistryId,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
                 Age = x.PlayerSeasons.Max(y => y.Age),

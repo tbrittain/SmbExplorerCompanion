@@ -13,4 +13,9 @@ public class PlayerDetailBaseDto : PlayerBaseDto
     ///  We can kind of think of this as a proxy for WAR, but it's not quite the same
     /// </summary>
     public double WeightedOpsPlusOrEraMinus { get; set; }
+    public int BatHandednessId { get; set; }
+    public int ThrowHandednessId { get; set; }
+    public int PrimaryPositionId { get; set; }
+    public int? ChemistryId { get; set; }
+    public int? PitcherRoleId { get; set; }
 }
