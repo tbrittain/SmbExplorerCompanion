@@ -69,4 +69,8 @@ public interface IPlayerRepository
     public Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarBattingCareers(
         int playerId,
         CancellationToken cancellationToken = default);
+    
+    public Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(
+        int playerId,
+        CancellationToken cancellationToken = default);
 }

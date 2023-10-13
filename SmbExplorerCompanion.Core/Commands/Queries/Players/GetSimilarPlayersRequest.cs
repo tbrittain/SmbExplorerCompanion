@@ -30,8 +30,7 @@ public class GetSimilarPlayersRequest : IRequest<OneOf<List<SimilarPlayerDto>, E
         {
             if (request.IsPositionPlayer)
                 return await _playerRepository.GetSimilarBattingCareers(request.PlayerId, cancellationToken);
-
-            return new List<SimilarPlayerDto>();
+            return await _playerRepository.GetSimilarPitchingCareers(request.PlayerId, cancellationToken);
         }
     }
 }

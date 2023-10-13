@@ -1042,6 +1042,78 @@ public class PlayerRepository : IPlayerRepository
             .ToList();
     }
 
+    public async Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(int playerId, CancellationToken cancellationToken = default)
+    {
+        var playerCareerPitchingResult = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+        if (playerCareerPitchingResult.TryPickT1(out var exception, out var playerCareer))
+            return exception;
+
+        if (!playerCareer.Any())
+            return new Exception($"No player career found for player ID {playerId}");
+
+        var playerCareerPitching = playerCareer.First();
+        
+        var wins = playerCareerPitching.Wins;
+        var losses = playerCareerPitching.Losses;
+        var era = playerCareerPitching.Era;
+        var starts = playerCareerPitching.GamesStarted;
+        var completeGames = playerCareerPitching.CompleteGames;
+        var inningsPitched = playerCareerPitching.InningsPitched;
+        var hits = playerCareerPitching.Hits;
+        var strikeouts = playerCareerPitching.Strikeouts;
+        var walks = playerCareerPitching.Walks;
+        var shutouts = playerCareerPitching.Shutouts;
+        var saves = playerCareerPitching.Saves;
+        
+        var queryable = GetCareerPitchingIQueryable()
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .Where(x => x.Id != playerId);
+        
+        var similarPitchers = await queryable
+            .Select(x => new
+            {
+                PlayerId = x.Id,
+                PlayerName = $"{x.FirstName} {x.LastName}",
+                Wins = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)),
+                Losses = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)),
+                GamesStarted = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)),
+                Saves = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)),
+                InningsPitched = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)),
+                Strikeouts = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)),
+                CompleteGames = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)),
+                Shutouts = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)),
+                Walks = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Walks)),
+                Hits = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Hits)),
+                SimilarityScore =
+                    1000 - (
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)) - wins) +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)) - losses) / 2D +
+                        Math.Max(
+                            Math.Abs(x.PlayerSeasons.Average(y => y.PitchingStats.Average(z => z.EarnedRunAverage ?? 0)) - era / 0.02), 100
+                            ) +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)) - starts) / 10D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)) - completeGames) / 20D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)) - inningsPitched) / 50D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Hits)) - hits) / 50D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)) - strikeouts) / 30D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)) - shutouts) / 5D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)) - saves) / 3D
+                    )
+            })
+            .OrderByDescending(x => x.SimilarityScore)
+            .Take(10)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        return similarPitchers
+            .Select(x => new SimilarPlayerDto
+            {
+                PlayerId = x.PlayerId,
+                Name = x.PlayerName,
+                SimilarityScore = x.SimilarityScore
+            })
+            .ToList();
+    }
+
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)
     {
         var playerOverview = new PlayerOverviewDto();
