@@ -682,7 +682,8 @@ public class PlayerRepository : IPlayerRepository
                     FipMinus = x.FipMinus ?? 0,
                     CompleteGames = x.CompleteGames,
                     Shutouts = x.Shutouts,
-                    WeightedOpsPlusOrEraMinus = (((x.EraMinus ?? 0) + (x.FipMinus ?? 0)) / 2 - 95) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
+                    WeightedOpsPlusOrEraMinus =
+                        (((x.EraMinus ?? 0) + (x.FipMinus ?? 0)) / 2 - 95) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
                     Awards = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
@@ -956,6 +957,180 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
+    public async Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarBattingCareers(int playerId,
+        CancellationToken cancellationToken = default)
+    {
+        var playerCareerBattingResult = await GetBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
+        if (playerCareerBattingResult.TryPickT1(out var exception, out var playerCareer))
+            return exception;
+
+        if (!playerCareer.Any())
+            return new Exception($"No player career found for player ID {playerId}");
+
+        var playerCareerBatting = playerCareer.First();
+
+        var gamesPlayed = playerCareerBatting.GamesPlayed;
+        var atBats = playerCareerBatting.AtBats;
+        var runs = playerCareerBatting.Runs;
+        var hits = playerCareerBatting.Hits;
+        var doubles = playerCareerBatting.Doubles;
+        var triples = playerCareerBatting.Triples;
+        var homeRuns = playerCareerBatting.HomeRuns;
+        var runsBattedIn = playerCareerBatting.RunsBattedIn;
+        var walks = playerCareerBatting.Walks;
+        var strikeouts = playerCareerBatting.Strikeouts;
+        var stolenBases = playerCareerBatting.StolenBases;
+        var battingAverage = playerCareerBatting.BattingAverage;
+        var slg = playerCareerBatting.Slg;
+
+        var chemistryId = playerCareerBatting.ChemistryId;
+        var throwHandednessId = playerCareerBatting.ThrowHandednessId;
+        var batHandednessId = playerCareerBatting.BatHandednessId;
+        var primaryPositionId = playerCareerBatting.PrimaryPositionId;
+
+        var queryable = GetCareerBattingIQueryable()
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .Where(x => x.Id != playerId);
+
+        var similarBatters = await queryable
+            .Select(x => new
+            {
+                PlayerId = x.Id,
+                PlayerName = $"{x.FirstName} {x.LastName}",
+                BatHandedness = x.BatHandedness.Name,
+                ThrowHandedness = x.ThrowHandedness.Name,
+                PrimaryPosition = x.PrimaryPosition.Name,
+                Chemistry = x.Chemistry!.Name,
+                AtBats = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)),
+                Hits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)),
+                HomeRuns = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)),
+                Runs = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)),
+                RunsBattedIn = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)),
+                StolenBases = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)),
+                Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
+                Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
+                Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
+                Walks = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Walks)),
+                Strikeouts = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Strikeouts)),
+                GamesPlayed = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.GamesPlayed)),
+                BattingAverage = x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.BattingAverage ?? 0
+                )),
+                Slg = x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Slg ?? 0)),
+                SimilarityScore =
+                    1000 - (
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.GamesPlayed)) - gamesPlayed) / 20D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)) - atBats) / 75D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)) - runs) / 10D + 
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)) - hits) / 15D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)) - doubles) / 5D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)) - triples) / 4D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)) - homeRuns) / 2D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)) - runsBattedIn) / 10D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Walks)) - walks) / 25D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Strikeouts)) - strikeouts) / 150D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)) - stolenBases) / 20D +
+                        Math.Abs(x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.BattingAverage ?? 0)) - battingAverage) * 100 +
+                        Math.Abs(x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Slg ?? 0)) - slg) / 2 * 100
+                    ) - 
+                    (x.PrimaryPositionId != primaryPositionId ? 50 : 0) -
+                    (x.ChemistryId != chemistryId ? 50 : 0) -
+                    (x.BatHandednessId != batHandednessId ? 30 : 0) -
+                    (x.ThrowHandednessId != throwHandednessId ? 30 : 0)
+            })
+            .OrderByDescending(x => x.SimilarityScore)
+            .Take(10)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        return similarBatters
+            .Select(x => new SimilarPlayerDto
+            {
+                PlayerId = x.PlayerId,
+                Name = x.PlayerName,
+                SimilarityScore = x.SimilarityScore
+            })
+            .ToList();
+    }
+
+    public async Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(int playerId, CancellationToken cancellationToken = default)
+    {
+        var playerCareerPitchingResult = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+        if (playerCareerPitchingResult.TryPickT1(out var exception, out var playerCareer))
+            return exception;
+
+        if (!playerCareer.Any())
+            return new Exception($"No player career found for player ID {playerId}");
+
+        var playerCareerPitching = playerCareer.First();
+        
+        var wins = playerCareerPitching.Wins;
+        var losses = playerCareerPitching.Losses;
+        var era = playerCareerPitching.Era;
+        var starts = playerCareerPitching.GamesStarted;
+        var completeGames = playerCareerPitching.CompleteGames;
+        var inningsPitched = playerCareerPitching.InningsPitched;
+        var hits = playerCareerPitching.Hits;
+        var strikeouts = playerCareerPitching.Strikeouts;
+        var walks = playerCareerPitching.Walks;
+        var shutouts = playerCareerPitching.Shutouts;
+        var saves = playerCareerPitching.Saves;
+        
+        var chemistryId = playerCareerPitching.ChemistryId;
+        var throwHandednessId = playerCareerPitching.ThrowHandednessId;
+        var pitcherRoleId = playerCareerPitching.PitcherRoleId;
+        
+        var queryable = GetCareerPitchingIQueryable()
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .Where(x => x.Id != playerId);
+        
+        var similarPitchers = await queryable
+            .Select(x => new
+            {
+                PlayerId = x.Id,
+                PlayerName = $"{x.FirstName} {x.LastName}",
+                Wins = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)),
+                Losses = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)),
+                GamesStarted = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)),
+                Saves = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)),
+                InningsPitched = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)),
+                Strikeouts = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)),
+                CompleteGames = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)),
+                Shutouts = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)),
+                Walks = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Walks)),
+                Hits = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Hits)),
+                SimilarityScore =
+                    1000 - (
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)) - wins) +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)) - losses) / 2D +
+                        Math.Max(
+                            Math.Abs(x.PlayerSeasons.Average(y => y.PitchingStats.Average(z => z.EarnedRunAverage ?? 0)) - era / 0.02), 100
+                            ) +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)) - starts) / 10D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)) - completeGames) / 20D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)) - inningsPitched) / 50D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Hits)) - hits) / 50D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)) - strikeouts) / 30D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Walks)) - walks) / 10D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)) - shutouts) / 5D +
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)) - saves) / 3D
+                    ) - 
+                    (x.PitcherRoleId != pitcherRoleId ? 50 : 0) -
+                    (x.ChemistryId != chemistryId ? 50 : 0) -
+                    (x.ThrowHandednessId != throwHandednessId ? 30 : 0)
+            })
+            .OrderByDescending(x => x.SimilarityScore)
+            .Take(10)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        return similarPitchers
+            .Select(x => new SimilarPlayerDto
+            {
+                PlayerId = x.PlayerId,
+                Name = x.PlayerName,
+                SimilarityScore = x.SimilarityScore
+            })
+            .ToList();
+    }
+
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)
     {
         var playerOverview = new PlayerOverviewDto();
@@ -1066,7 +1241,7 @@ public class PlayerRepository : IPlayerRepository
         var weightedOpsPlus = player.PlayerSeasons
             .SelectMany(y => y.BattingStats)
             .Where(y => y.OpsPlus is not null)
-            .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor + 
+            .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
                       (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor);
 
         var weightedEraMinus = player.PlayerSeasons
@@ -1130,9 +1305,13 @@ public class PlayerRepository : IPlayerRepository
                         ? 0
                         : y.Salary),
                 BatHandedness = x.BatHandedness.Name,
+                BatHandednessId = x.BatHandednessId,
                 ThrowHandedness = x.ThrowHandedness.Name,
+                ThrowHandednessId = x.ThrowHandednessId,
                 PrimaryPosition = x.PrimaryPosition.Name,
+                PrimaryPositionId = x.PrimaryPositionId,
                 PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
+                ChemistryId = x.ChemistryId,
                 Chemistry = x.Chemistry!.Name,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
@@ -1158,6 +1337,7 @@ public class PlayerRepository : IPlayerRepository
                 Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
                 Walks = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Walks)),
                 Strikeouts = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Strikeouts)),
+                GamesPlayed = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.GamesPlayed)),
                 HitByPitch = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HitByPitch)),
                 SacrificeHits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeHits)),
                 SacrificeFlies = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
@@ -1193,10 +1373,15 @@ public class PlayerRepository : IPlayerRepository
                         ? 0
                         : y.Salary),
                 PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
+                PitcherRoleId = x.PitcherRoleId,
                 BatHandedness = x.BatHandedness.Name,
+                BatHandednessId = x.BatHandednessId,
                 ThrowHandedness = x.ThrowHandedness.Name,
+                ThrowHandednessId = x.ThrowHandednessId,
                 PrimaryPosition = x.PrimaryPosition.Name,
+                PrimaryPositionId = x.PrimaryPositionId,
                 Chemistry = x.Chemistry!.Name,
+                ChemistryId = x.ChemistryId,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
                 Age = x.PlayerSeasons.Max(y => y.Age),

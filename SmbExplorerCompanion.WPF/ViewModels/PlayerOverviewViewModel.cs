@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
+using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
-public class PlayerOverviewViewModel : ViewModelBase
+public partial class PlayerOverviewViewModel : ViewModelBase
 {
     public const string PlayerIdProp = "PlayerId";
     private readonly INavigationService _navigationService;
@@ -44,6 +48,17 @@ public class PlayerOverviewViewModel : ViewModelBase
         var overview = mapper.FromDto(playerOverview);
         PlayerOverview = overview;
         
+        var similarPlayersResponse = mediator.Send(new GetSimilarPlayersRequest(PlayerId, !overview.IsPitcher)).Result;
+        if (similarPlayersResponse.TryPickT1(out exception, out var similarPlayers))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+
+        var similarPlayerMapper = new SimilarPlayerMapping();
+        SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
+        
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -59,6 +74,17 @@ public class PlayerOverviewViewModel : ViewModelBase
     public int BatterGridRow => PlayerOverview.IsPitcher ? 1 : 0;
 
     public PlayerOverview PlayerOverview { get; }
+    public ObservableCollection<SimilarPlayer> SimilarPlayers { get; } = new();
+    
+    [RelayCommand]
+    private void NavigateToPlayerOverviewPage(int playerId)
+    {
+        var playerParams = new Tuple<string, object>[]
+        {
+            new(PlayerIdProp, playerId)
+        };
+        _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+    }
 
     private int PlayerId { get; }
 }
