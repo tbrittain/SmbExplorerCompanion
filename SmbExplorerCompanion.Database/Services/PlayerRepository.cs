@@ -1149,10 +1149,13 @@ public class PlayerRepository : IPlayerRepository
                     .SelectMany(y => y.BattingStats)
                     .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
                               (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor),
-                // Simply average the OPS+ values
                 OpsPlus = x.PlayerSeasons
-                    .SelectMany(y => y.BattingStats)
-                    .Average(y => y.OpsPlus ?? 0),
+                              .SelectMany(y => y.BattingStats)
+                              .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances)
+                          /
+                          x.PlayerSeasons
+                              .SelectMany(y => y.BattingStats)
+                              .Sum(y => y.PlateAppearances),
                 Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
                 Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
                 Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
@@ -1218,13 +1221,22 @@ public class PlayerRepository : IPlayerRepository
                 WeightedOpsPlusOrEraMinus = x.PlayerSeasons
                     .SelectMany(y => y.PitchingStats)
                     .Sum(y => (((y.EraMinus ?? 0) + (y.FipMinus ?? 0)) / 2 - 95) * (y.InningsPitched ?? 0) * PitchingScalingFactor),
-                // Simply average the ERA- values, only taking into account regular season games for this calculation
-                EraMinus = x.PlayerSeasons
-                    .SelectMany(y => y.PitchingStats)
-                    .Average(y => y.EraMinus ?? 0),
-                FipMinus = x.PlayerSeasons
-                    .SelectMany(y => y.PitchingStats)
-                    .Average(y => y.FipMinus ?? 0),
+                EraMinus =
+                    x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
+                    /
+                    x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Sum(y => (y.InningsPitched ?? 1)),
+                FipMinus =
+                    x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Sum(y => (y.FipMinus ?? 0) * (y.InningsPitched ?? 0))
+                    /
+                    x.PlayerSeasons
+                        .SelectMany(y => y.PitchingStats)
+                        .Sum(y => (y.InningsPitched ?? 1)),
                 Awards = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
                     .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
