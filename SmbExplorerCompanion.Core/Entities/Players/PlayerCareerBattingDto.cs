@@ -22,4 +22,11 @@ public class PlayerCareerBattingDto : PlayerCareerBaseDto
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
+    public int GamesPlayed { get; set; }
+}
+
+public class PlayerCareerBattingSimilarityDto
+{
+    public PlayerCareerBattingDto Player { get; set; } = null!;
+    public double SimilarityScore { get; set; }
 }

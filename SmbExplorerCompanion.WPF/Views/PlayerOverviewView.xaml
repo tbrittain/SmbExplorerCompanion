@@ -8,7 +8,8 @@
              xmlns:players="clr-namespace:SmbExplorerCompanion.WPF.Models.Players"
              xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
+             d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}"
+             x:Name="Control">
     <UserControl.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -1033,6 +1034,35 @@
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
+            
+            <StackPanel Orientation="Vertical">
+                <TextBlock FontSize="16" FontWeight="SemiBold">Similar Players</TextBlock>
+                <ItemsControl
+                    ItemsSource="{Binding SimilarPlayers}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Margin="5"
+                                Height="60"
+                                CommandParameter="{Binding PlayerId}">
+                                <Button.Command>
+                                    <Binding Path="DataContext.NavigateToPlayerOverviewPageCommand"
+                                             ElementName="Control" />
+                                </Button.Command>
+                                <StackPanel Orientation="Vertical">
+                                    <Label Content="{Binding Name}" />
+                                    <Label Content="{Binding SimilarityScoreString}" />
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
