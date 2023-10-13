@@ -682,7 +682,8 @@ public class PlayerRepository : IPlayerRepository
                     FipMinus = x.FipMinus ?? 0,
                     CompleteGames = x.CompleteGames,
                     Shutouts = x.Shutouts,
-                    WeightedOpsPlusOrEraMinus = (((x.EraMinus ?? 0) + (x.FipMinus ?? 0)) / 2 - 95) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
+                    WeightedOpsPlusOrEraMinus =
+                        (((x.EraMinus ?? 0) + (x.FipMinus ?? 0)) / 2 - 95) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
                     Awards = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
                         .Select(y => new PlayerAwardBaseDto
@@ -1066,7 +1067,7 @@ public class PlayerRepository : IPlayerRepository
         var weightedOpsPlus = player.PlayerSeasons
             .SelectMany(y => y.BattingStats)
             .Where(y => y.OpsPlus is not null)
-            .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor + 
+            .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
                       (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor);
 
         var weightedEraMinus = player.PlayerSeasons
@@ -1150,12 +1151,16 @@ public class PlayerRepository : IPlayerRepository
                     .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
                               (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor),
                 OpsPlus = x.PlayerSeasons
-                              .SelectMany(y => y.BattingStats)
-                              .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances)
-                          /
-                          x.PlayerSeasons
-                              .SelectMany(y => y.BattingStats)
-                              .Sum(y => y.PlateAppearances),
+                    .SelectMany(y => y.BattingStats)
+                    .Sum(y => y.PlateAppearances) == 0
+                    ? 0
+                    : x.PlayerSeasons
+                          .SelectMany(y => y.BattingStats)
+                          .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances)
+                      /
+                      x.PlayerSeasons
+                          .SelectMany(y => y.BattingStats)
+                          .Sum(y => y.PlateAppearances),
                 Singles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Singles)),
                 Doubles = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
                 Triples = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)),
