@@ -246,6 +246,14 @@
                                 Binding="{Binding Whip, StringFormat={}{0:F2}}" />
                             <DataGridTextColumn
                                 CanUserSort="False"
+                                Header="ERA-"
+                                Binding="{Binding EraMinus, StringFormat={}{0:F1}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
+                                Header="FIP-"
+                                Binding="{Binding FipMinus, StringFormat={}{0:F1}}" />
+                            <DataGridTextColumn
+                                CanUserSort="False"
                                 Header="Age"
                                 Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
