@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -305,10 +307,26 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             labels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
         }
         
-        var bar = plot.Plot.AddBar(values: values, positions: labelPositions);
+        List<ScottPlot.Plottable.Bar> bars = new();
+        for (var i = 0; i < values.Length; i++)
+        {
+            var value = values[i];
+            
+            var clampValue = (int)Math.Round(Math.Clamp(value, 0, 99));
+            ScottPlot.Plottable.Bar bar = new()
+            {
+                Value = value,
+                Position = i,
+                FillColor = GetValueColor(clampValue),
+                Label = value.ToString(CultureInfo.InvariantCulture),
+                LineWidth = 2,
+            };
+            bars.Add(bar);
+        }
+
+        plot.Plot.AddBarSeries(bars);
         plot.Plot.SetAxisLimits(yMin: 0, yMax: 100);
         plot.Plot.XTicks(positions: labelPositions, labels: labels);
-        bar.ShowValuesAboveBars = true;
 
         plot.Height = 300;
         plot.Width = 350;
@@ -316,6 +334,33 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var title = $"{playerType} Attribute Percentiles (Season {SeasonStats.SeasonNumber})";
         plot.Plot.Title(title);
         plot.Render();
+    }
+    
+    private static Color GetValueColor(int value)
+    {
+        float weight;
+        if (value <= 50)
+        {
+            weight = value / 50f;
+
+            // Interpolate between blue and white
+            var red = (int)(255 * weight);
+            var green = (int)(255 * weight);
+            const int blue = 255;
+
+            return Color.FromArgb(red, green, blue);
+        }
+        else
+        {
+            weight = (value - 50) / 50f;
+
+            // Interpolate between white and red
+            const int red = 255;
+            var green = (int)(255 * (1 - weight));
+            var blue = (int)(255 * (1 - weight));
+
+            return Color.FromArgb(red, green, blue);
+        }
     }
 
     private int PlayerId { get; }
