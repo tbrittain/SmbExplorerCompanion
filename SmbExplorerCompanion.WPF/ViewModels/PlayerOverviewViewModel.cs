@@ -55,7 +55,8 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             .OrderByDescending(x => x.SeasonNumber)
             .First();
         
-        var leagueAverageResponse = mediator.Send(new GetLeagueAverageGameStatsCommand(MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
+        // TODO: Check out Matias Zoner - something isn't adding up with his fielding
+        var leagueAverageResponse = mediator.Send(new GetLeagueAverageGameStatsRequest(MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
         if (leagueAverageResponse.TryPickT1(out exception, out var leagueAverage))
         {
             MessageBox.Show(exception.Message);
@@ -63,6 +64,15 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
         LeagueAverage = leagueAverage;
+        
+        var playerGameStatPercentilesResponse = mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId, MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
+        if (playerGameStatPercentilesResponse.TryPickT1(out exception, out var playerGameStatPercentiles))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+        PlayerGameStatPercentiles = playerGameStatPercentiles;
 
         var similarPlayersResponse = mediator.Send(new GetSimilarPlayersRequest(PlayerId, !overview.IsPitcher)).Result;
         if (similarPlayersResponse.TryPickT1(out exception, out var similarPlayers))
@@ -104,8 +114,9 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
     private PlayerGameStatOverview MostRecentSeasonStats { get; set; } = null!;
     private GameStatDto LeagueAverage { get; set; } = null!;
+    private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; } = null!;
 
-    public void DrawRadialPlot(WpfPlot plot)
+    public void DrawPlayerGameStatsRadialPlot(WpfPlot plot)
     {
         plot.Plot.Clear();
         
@@ -177,6 +188,50 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         plot.Plot.Legend();
         plot.Plot.AxisAuto();
         plot.Plot.AxisZoom(1.5, 1.5);
+        plot.Render();
+    }
+
+    public void DrawPlayerGameStatsPercentilePlot(WpfPlot plot)
+    {
+        plot.Plot.Clear();
+        
+        var power = PlayerGameStatPercentiles.Power;
+        var contact = PlayerGameStatPercentiles.Contact;
+        var speed = PlayerGameStatPercentiles.Speed;
+        var fielding = PlayerGameStatPercentiles.Fielding;
+        var arm = PlayerGameStatPercentiles.Arm ?? 0;
+        var velocity = PlayerGameStatPercentiles.Velocity ?? 0;
+        var junk = PlayerGameStatPercentiles.Junk ?? 0;
+        var accuracy = PlayerGameStatPercentiles.Accuracy ?? 0;
+        
+        plot.Plot.Palette = Palette.DarkPastel;
+
+        double[] values;
+        string[] labels;
+        if (PlayerOverview.IsPitcher)
+        {
+            values = new[] {velocity, junk, accuracy, fielding, power, contact, speed};
+            labels = new[]
+            {
+                "Velocity", "Junk", "Accuracy", "Fielding", "Power", "Contact", "Speed"
+            };
+        }
+        else
+        {
+            values = new[] {power, contact, speed, fielding, arm};
+            labels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
+        }
+        
+        var gauges = plot.Plot.AddRadialGauge(values);
+        gauges.Labels = labels;
+
+        plot.Height = 300;
+        plot.Width = 300;
+        plot.Plot.Grid(lineStyle: LineStyle.Dot);
+        plot.Plot.Title($"Player Attribute Percentiles (Season {MostRecentSeasonStats.SeasonNumber})");
+        plot.Plot.Legend();
+        plot.Plot.AxisAuto();
+        plot.Plot.AxisZoom(0.8, 0.8);
         plot.Render();
     }
 

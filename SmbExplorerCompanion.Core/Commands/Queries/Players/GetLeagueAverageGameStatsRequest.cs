@@ -5,9 +5,9 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetLeagueAverageGameStatsCommand : IRequest<OneOf<GameStatDto, Exception>>
+public class GetLeagueAverageGameStatsRequest : IRequest<OneOf<GameStatDto, Exception>>
 {
-    public GetLeagueAverageGameStatsCommand(int seasonId, bool isPitcher)
+    public GetLeagueAverageGameStatsRequest(int seasonId, bool isPitcher)
     {
         SeasonId = seasonId;
         IsPitcher = isPitcher;
@@ -17,7 +17,7 @@ public class GetLeagueAverageGameStatsCommand : IRequest<OneOf<GameStatDto, Exce
     private bool IsPitcher { get; }
     
     // ReSharper disable once UnusedType.Global
-    internal class GetLeagueAverageGameStatsHandler : IRequestHandler<GetLeagueAverageGameStatsCommand, OneOf<GameStatDto, Exception>>
+    internal class GetLeagueAverageGameStatsHandler : IRequestHandler<GetLeagueAverageGameStatsRequest, OneOf<GameStatDto, Exception>>
     {
         private readonly IPlayerRepository _playerRepository;
 
@@ -26,7 +26,7 @@ public class GetLeagueAverageGameStatsCommand : IRequest<OneOf<GameStatDto, Exce
             _playerRepository = playerRepository;
         }
 
-        public async Task<OneOf<GameStatDto, Exception>> Handle(GetLeagueAverageGameStatsCommand request, CancellationToken cancellationToken) =>
+        public async Task<OneOf<GameStatDto, Exception>> Handle(GetLeagueAverageGameStatsRequest request, CancellationToken cancellationToken) =>
             await _playerRepository.GetLeagueAverageGameStats(request.SeasonId, request.IsPitcher, cancellationToken);
     }
 }

@@ -1168,6 +1168,115 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
+    public async Task<OneOf<PlayerGameStatPercentileDto, Exception>> GetPlayerGameStatPercentiles(int playerId, int seasonId, bool isPitcher, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var playerGameStats = await _dbContext.PlayerSeasonGameStats
+                .Include(x => x.PlayerSeason)
+                .Where(x => x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => x.PlayerSeason.PlayerId == playerId)
+                .FirstAsync(cancellationToken: cancellationToken);
+            
+            var power = playerGameStats.Power;
+            var contact = playerGameStats.Contact;
+            var speed = playerGameStats.Speed;
+            var fielding = playerGameStats.Fielding;
+            var arm = playerGameStats.Arm;
+            var velocity = playerGameStats.Velocity;
+            var junk = playerGameStats.Junk;
+            var accuracy = playerGameStats.Accuracy;
+
+            var queryable = _dbContext.PlayerSeasonGameStats
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .Where(x => x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => isPitcher && x.PlayerSeason.Player.PitcherRoleId != null ||
+                            !isPitcher && x.PlayerSeason.Player.PitcherRoleId == null)
+                .Where(x => x.PlayerSeason.PlayerId != playerId);
+            
+            var numPlayers = await queryable
+                .Select(x => x.PlayerSeason.PlayerId)
+                .Distinct()
+                .CountAsync(cancellationToken: cancellationToken);
+            
+            var greaterThanPower = await queryable
+                .Where(x => power > x.Power)
+                .Select(x => x.PlayerSeason.PlayerId)
+                .Distinct()
+                .CountAsync(cancellationToken: cancellationToken);
+            
+            var greaterThanContact = await queryable
+                .Where(x => contact > x.Contact)
+                .Select(x => x.PlayerSeason.PlayerId)
+                .Distinct()
+                .CountAsync(cancellationToken: cancellationToken);
+            
+            var greaterThanSpeed = await queryable
+                .Where(x => speed > x.Speed)
+                .Select(x => x.PlayerSeason.PlayerId)
+                .Distinct()
+                .CountAsync(cancellationToken: cancellationToken);
+            
+            var greaterThanFielding = await queryable
+                .Where(x => fielding > x.Fielding)
+                .Select(x => x.PlayerSeason.PlayerId)
+                .Distinct()
+                .CountAsync(cancellationToken: cancellationToken);
+
+            var greaterThanVelocity = 0;
+            var greaterThanJunk = 0;
+            var greaterThanAccuracy = 0;
+            var greaterThanArm = 0;
+
+            if (!isPitcher)
+            {
+                greaterThanArm = await queryable
+                    .Where(x => arm > x.Arm)
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .Distinct()
+                    .CountAsync(cancellationToken: cancellationToken);
+            }
+            else
+            {
+                greaterThanVelocity = await queryable
+                    .Where(x => velocity > x.Velocity)
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .Distinct()
+                    .CountAsync(cancellationToken: cancellationToken);
+                
+                greaterThanJunk = await queryable
+                    .Where(x => junk > x.Junk)
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .Distinct()
+                    .CountAsync(cancellationToken: cancellationToken);
+                
+                greaterThanAccuracy = await queryable
+                    .Where(x => accuracy > x.Accuracy)
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .Distinct()
+                    .CountAsync(cancellationToken: cancellationToken);
+            }
+            
+            var playerGameStatPercentileDto = new PlayerGameStatPercentileDto
+            {
+                Power = (int) Math.Round(greaterThanPower / (double) numPlayers * 100),
+                Contact = (int) Math.Round(greaterThanContact / (double) numPlayers * 100),
+                Speed = (int) Math.Round(greaterThanSpeed / (double) numPlayers * 100),
+                Fielding = (int) Math.Round(greaterThanFielding / (double) numPlayers * 100),
+                Arm = (int) Math.Round(greaterThanArm / (double) numPlayers * 100),
+                Velocity = (int) Math.Round(greaterThanVelocity / (double) numPlayers * 100),
+                Junk = (int) Math.Round(greaterThanJunk / (double) numPlayers * 100),
+                Accuracy = (int) Math.Round(greaterThanAccuracy / (double) numPlayers * 100)
+            };
+            return playerGameStatPercentileDto;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)
     {
         var playerOverview = new PlayerOverviewDto();

@@ -22,7 +22,8 @@ public partial class PlayerOverviewView : IDisposable
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is not PlayerOverviewViewModel viewModel) return;
-        viewModel.DrawRadialPlot(RadialPlot);
+        viewModel.DrawPlayerGameStatsRadialPlot(PlayerGameStatsRadialPlot);
+        viewModel.DrawPlayerGameStatsPercentilePlot(PlayerGameStatsPercentilePlot);
     }
 
     public void Dispose()

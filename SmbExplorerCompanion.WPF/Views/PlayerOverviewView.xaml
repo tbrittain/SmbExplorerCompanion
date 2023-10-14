@@ -264,8 +264,11 @@
                 <StackPanel 
                     Grid.Row="2" 
                     Grid.Column="0" 
-                    Grid.ColumnSpan="2">
-                    <WpfPlot x:Name="RadialPlot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    >
+                    <WpfPlot x:Name="PlayerGameStatsRadialPlot"/>
+                    <WpfPlot x:Name="PlayerGameStatsPercentilePlot"/>
                 </StackPanel>
             </Grid>
 
