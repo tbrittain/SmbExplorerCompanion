@@ -137,7 +137,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
-        LeagueAverage = leagueAverage;
+        LeagueAverageGameStats = leagueAverage;
         
         var playerGameStatPercentilesResponse = await _mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId, SelectedSeason.Id, PlayerOverview.IsPitcher));
         if (playerGameStatPercentilesResponse.TryPickT1(out exception, out var playerGameStatPercentiles))
@@ -186,7 +186,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     }
 
     private PlayerGameStatOverview SeasonStats { get; set; }
-    private GameStatDto LeagueAverage { get; set; }
+    private GameStatDto LeagueAverageGameStats { get; set; }
     private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; }
 
     public ObservableCollection<Season> Seasons { get; } = new();
@@ -210,14 +210,14 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var junk = SeasonStats.Junk ?? 0;
         var accuracy = SeasonStats.Accuracy ?? 0;
         
-        var averagePower = LeagueAverage.Power;
-        var averageContact = LeagueAverage.Contact;
-        var averageSpeed = LeagueAverage.Speed;
-        var averageFielding = LeagueAverage.Fielding;
-        var averageArm = LeagueAverage.Arm ?? 0;
-        var averageVelocity = LeagueAverage.Velocity ?? 0;
-        var averageJunk = LeagueAverage.Junk ?? 0;
-        var averageAccuracy = LeagueAverage.Accuracy ?? 0;
+        var averagePower = LeagueAverageGameStats.Power;
+        var averageContact = LeagueAverageGameStats.Contact;
+        var averageSpeed = LeagueAverageGameStats.Speed;
+        var averageFielding = LeagueAverageGameStats.Fielding;
+        var averageArm = LeagueAverageGameStats.Arm ?? 0;
+        var averageVelocity = LeagueAverageGameStats.Velocity ?? 0;
+        var averageJunk = LeagueAverageGameStats.Junk ?? 0;
+        var averageAccuracy = LeagueAverageGameStats.Accuracy ?? 0;
         double[,] values;
         double[] maxValues;
         string[] categoryLabels;
