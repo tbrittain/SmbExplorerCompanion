@@ -1008,7 +1008,7 @@
                                 <DataGridTextColumn
                                     CanUserSort="True"
                                     Header="Fielding"
-                                    Binding="{Binding Speed}" />
+                                    Binding="{Binding Fielding}" />
                                 <DataGridTextColumn
                                     CanUserSort="True"
                                     Header="Arm"
