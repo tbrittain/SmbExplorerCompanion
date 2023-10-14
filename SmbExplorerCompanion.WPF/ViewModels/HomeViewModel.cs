@@ -9,6 +9,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Search;
 using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
@@ -208,6 +209,19 @@ public partial class HomeViewModel : ViewModelBase
             new(PlayerOverviewViewModel.PlayerIdProp, playerId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+    }
+    
+    [RelayCommand]
+    private async Task NavigateToRandomPlayerOverviewPage()
+    {
+        var randomPlayerResult = await _mediator.Send(new GetRandomPlayerRequest());
+        if (randomPlayerResult.TryPickT1(out var exception, out var player))
+        {
+            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+        
+        NavigateToPlayerOverviewPage(player.PlayerId);
     }
 
     private void NavigateToTeamOverviewPage(int teamId)

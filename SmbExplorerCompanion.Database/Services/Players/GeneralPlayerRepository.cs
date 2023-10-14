@@ -387,6 +387,22 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         }
     }
 
+    public async Task<OneOf<PlayerBaseDto, Exception>> GetRandomPlayer()
+    {
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var queryable = _dbContext.Players
+            .Where(x => x.FranchiseId == franchiseId);
+        
+        return await queryable
+            .OrderBy(x => EF.Functions.Random())
+            .Select(x => new PlayerBaseDto
+            {
+                PlayerId = x.Id,
+                PlayerName = $"{x.FirstName} {x.LastName}"
+            })
+            .FirstAsync();
+    }
+
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)
     {
         var playerOverview = new PlayerOverviewDto();
