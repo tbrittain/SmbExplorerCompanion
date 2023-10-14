@@ -54,8 +54,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             .GameStats
             .OrderByDescending(x => x.SeasonNumber)
             .First();
-        
-        // TODO: Check out Matias Zoner - something isn't adding up with his fielding
+
         var leagueAverageResponse = mediator.Send(new GetLeagueAverageGameStatsRequest(MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
         if (leagueAverageResponse.TryPickT1(out exception, out var leagueAverage))
         {
@@ -207,10 +206,12 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         plot.Plot.Palette = Palette.DarkPastel;
 
         double[] values;
+        double[] labelPositions;
         string[] labels;
         if (PlayerOverview.IsPitcher)
         {
             values = new[] {velocity, junk, accuracy, fielding, power, contact, speed};
+            labelPositions = new[] {0D, 1, 2, 3, 4, 5, 6};
             labels = new[]
             {
                 "Velocity", "Junk", "Accuracy", "Fielding", "Power", "Contact", "Speed"
@@ -219,19 +220,20 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         else
         {
             values = new[] {power, contact, speed, fielding, arm};
+            labelPositions = new[] {0D, 1, 2, 3, 4};
             labels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
         }
         
-        var gauges = plot.Plot.AddRadialGauge(values);
-        gauges.Labels = labels;
+        var bar = plot.Plot.AddBar(values: values, positions: labelPositions);
+        plot.Plot.SetAxisLimits(yMin: 0, yMax: 100);
+        plot.Plot.XTicks(positions: labelPositions, labels: labels);
+        bar.ShowValuesAboveBars = true;
 
         plot.Height = 300;
-        plot.Width = 300;
-        plot.Plot.Grid(lineStyle: LineStyle.Dot);
-        plot.Plot.Title($"Player Attribute Percentiles (Season {MostRecentSeasonStats.SeasonNumber})");
-        plot.Plot.Legend();
-        plot.Plot.AxisAuto();
-        plot.Plot.AxisZoom(0.8, 0.8);
+        plot.Width = 350;
+        var playerType = PlayerOverview.IsPitcher ? "Pitcher" : "Batter";
+        var title = $"{playerType} Attribute Percentiles (Season {MostRecentSeasonStats.SeasonNumber})";
+        plot.Plot.Title(title);
         plot.Render();
     }
 
