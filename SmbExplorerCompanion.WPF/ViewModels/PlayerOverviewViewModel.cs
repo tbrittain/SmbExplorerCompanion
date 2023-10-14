@@ -6,7 +6,10 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using ScottPlot;
+using ScottPlot.Drawing;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Players;
@@ -47,7 +50,20 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var mapper = new PlayerOverviewMapping();
         var overview = mapper.FromDto(playerOverview);
         PlayerOverview = overview;
+        MostRecentSeasonStats = overview
+            .GameStats
+            .OrderByDescending(x => x.SeasonNumber)
+            .First();
         
+        var leagueAverageResponse = mediator.Send(new GetLeagueAverageGameStatsCommand(MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
+        if (leagueAverageResponse.TryPickT1(out exception, out var leagueAverage))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+        LeagueAverage = leagueAverage;
+
         var similarPlayersResponse = mediator.Send(new GetSimilarPlayersRequest(PlayerId, !overview.IsPitcher)).Result;
         if (similarPlayersResponse.TryPickT1(out exception, out var similarPlayers))
         {
@@ -58,14 +74,14 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
         var similarPlayerMapper = new SimilarPlayerMapping();
         SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public bool HasAnyBatting => HasSeasonBatting || HasPlayoffBatting;
     public bool HasSeasonBatting => PlayerOverview.PlayerSeasonBatting.Any();
     public bool HasPlayoffBatting => PlayerOverview.PlayerPlayoffBatting.Any();
-    
+
     public bool HasAnyPitching => HasSeasonPitching || HasPlayoffPitching;
     public bool HasSeasonPitching => PlayerOverview.PlayerSeasonPitching.Any();
     public bool HasPlayoffPitching => PlayerOverview.PlayerPlayoffPitching.Any();
@@ -75,7 +91,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
     public PlayerOverview PlayerOverview { get; }
     public ObservableCollection<SimilarPlayer> SimilarPlayers { get; } = new();
-    
+
     [RelayCommand]
     private void NavigateToPlayerOverviewPage(int playerId)
     {
@@ -84,6 +100,84 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             new(PlayerIdProp, playerId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
+    }
+
+    private PlayerGameStatOverview MostRecentSeasonStats { get; set; } = null!;
+    private GameStatDto LeagueAverage { get; set; } = null!;
+
+    public void DrawRadialPlot(WpfPlot plot)
+    {
+        plot.Plot.Clear();
+        
+        var power = MostRecentSeasonStats.Power;
+        var contact = MostRecentSeasonStats.Contact;
+        var speed = MostRecentSeasonStats.Speed;
+        var fielding = MostRecentSeasonStats.Fielding;
+        var arm = MostRecentSeasonStats.Arm ?? 0;
+        var velocity = MostRecentSeasonStats.Velocity ?? 0;
+        var junk = MostRecentSeasonStats.Junk ?? 0;
+        var accuracy = MostRecentSeasonStats.Accuracy ?? 0;
+        
+        var averagePower = LeagueAverage.Power;
+        var averageContact = LeagueAverage.Contact;
+        var averageSpeed = LeagueAverage.Speed;
+        var averageFielding = LeagueAverage.Fielding;
+        var averageArm = LeagueAverage.Arm ?? 0;
+        var averageVelocity = LeagueAverage.Velocity ?? 0;
+        var averageJunk = LeagueAverage.Junk ?? 0;
+        var averageAccuracy = LeagueAverage.Accuracy ?? 0;
+        double[,] values;
+        double[] maxValues;
+        string[] categoryLabels;
+
+        if (PlayerOverview.IsPitcher)
+        {
+            values = new double[,]
+            {
+                {velocity, junk, accuracy, fielding, power, contact, speed},
+                {averageVelocity, averageJunk, averageAccuracy, averageFielding, averagePower, averageContact, averageSpeed}
+            };
+            maxValues = new[] {99D, 99D, 99D, 99D, 99D, 99D, 99D};
+            categoryLabels = new[]
+            {
+                "Velocity", "Junk", "Accuracy", "Fielding", "Power", "Contact", "Speed"
+            };
+        }
+        else
+        {
+            values = new double[,]
+            {
+                {power, contact, speed, fielding, arm},
+                {averagePower, averageContact, averageSpeed, averageFielding, averageArm}
+            };
+            maxValues = new[] {99D, 99D, 99D, 99D, 99D};
+            categoryLabels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
+        }
+
+        plot.Plot.Palette = Palette.DarkPastel;
+        var radarPlot = plot.Plot.AddRadar(values: values, maxValues: maxValues, independentAxes: false);
+        radarPlot.HatchOptions = new HatchOptions[]
+        {
+            new() {Pattern = HatchStyle.StripedUpwardDiagonal},
+            new() {Pattern = HatchStyle.StripedDownwardDiagonal},
+        };
+        
+        radarPlot.AxisType = RadarAxis.Polygon;
+        
+        var isPitcher = PlayerOverview.IsPitcher;
+        var leagueAverageText = isPitcher ? "League Average Pitcher" : "League Average Batter";
+        radarPlot.GroupLabels = new[] {PlayerOverview.PlayerName, leagueAverageText};
+        radarPlot.CategoryLabels = categoryLabels;
+        radarPlot.ShowAxisValues = true;
+  
+        plot.Height = 300;
+        plot.Width = 300;
+        plot.Plot.Grid(lineStyle: LineStyle.Dot);
+        plot.Plot.Title($"Player Attributes (Season {MostRecentSeasonStats.SeasonNumber})");
+        plot.Plot.Legend();
+        plot.Plot.AxisAuto();
+        plot.Plot.AxisZoom(1.5, 1.5);
+        plot.Render();
     }
 
     private int PlayerId { get; }

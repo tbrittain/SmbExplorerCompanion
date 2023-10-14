@@ -62,15 +62,21 @@ public interface IPlayerRepository
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> GetPlayerFieldingRankings(int seasonId,
-        int? primaryPositionId, int? pageNumber, int? limit, CancellationToken cancellationToken = default);
+        int? primaryPositionId,
+        int? pageNumber,
+        int? limit,
+        CancellationToken cancellationToken = default);
 
-    public Task<OneOf<RetiredPlayerCareerStatsDto, None, Exception>> GetHallOfFameCandidates(int seasonId, CancellationToken cancellationToken = default);
-    
+    public Task<OneOf<RetiredPlayerCareerStatsDto, None, Exception>> GetHallOfFameCandidates(int seasonId,
+        CancellationToken cancellationToken = default);
+
     public Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarBattingCareers(
         int playerId,
         CancellationToken cancellationToken = default);
-    
+
     public Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(
         int playerId,
         CancellationToken cancellationToken = default);
+
+    public Task<OneOf<GameStatDto, Exception>> GetLeagueAverageGameStats(int seasonId, bool isPitcher, CancellationToken cancellationToken = default);
 }

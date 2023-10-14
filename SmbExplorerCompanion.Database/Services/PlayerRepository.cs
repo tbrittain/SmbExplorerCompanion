@@ -98,6 +98,7 @@ public class PlayerRepository : IPlayerRepository
                 .Select(x => new PlayerGameStatOverviewDto
                 {
                     SeasonNumber = x.PlayerSeason.Season.Number,
+                    SeasonId = x.PlayerSeason.SeasonId,
                     Age = x.PlayerSeason.Age,
                     TeamNames = string.Join(", ",
                         x.PlayerSeason.PlayerTeamHistory
@@ -1020,7 +1021,7 @@ public class PlayerRepository : IPlayerRepository
                     1000 - (
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.GamesPlayed)) - gamesPlayed) / 20D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)) - atBats) / 75D +
-                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)) - runs) / 10D + 
+                        Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Runs)) - runs) / 10D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)) - hits) / 15D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Doubles)) - doubles) / 5D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Triples)) - triples) / 4D +
@@ -1031,7 +1032,7 @@ public class PlayerRepository : IPlayerRepository
                         Math.Abs(x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.StolenBases)) - stolenBases) / 20D +
                         Math.Abs(x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.BattingAverage ?? 0)) - battingAverage) * 100 +
                         Math.Abs(x.PlayerSeasons.Average(y => y.BattingStats.Average(z => z.Slg ?? 0)) - slg) / 2 * 100
-                    ) - 
+                    ) -
                     (x.PrimaryPositionId != primaryPositionId ? 50 : 0) -
                     (x.ChemistryId != chemistryId ? 50 : 0) -
                     (x.BatHandednessId != batHandednessId ? 30 : 0) -
@@ -1051,7 +1052,8 @@ public class PlayerRepository : IPlayerRepository
             .ToList();
     }
 
-    public async Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(int playerId, CancellationToken cancellationToken = default)
+    public async Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(int playerId,
+        CancellationToken cancellationToken = default)
     {
         var playerCareerPitchingResult = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
         if (playerCareerPitchingResult.TryPickT1(out var exception, out var playerCareer))
@@ -1061,7 +1063,7 @@ public class PlayerRepository : IPlayerRepository
             return new Exception($"No player career found for player ID {playerId}");
 
         var playerCareerPitching = playerCareer.First();
-        
+
         var wins = playerCareerPitching.Wins;
         var losses = playerCareerPitching.Losses;
         var era = playerCareerPitching.Era;
@@ -1073,15 +1075,15 @@ public class PlayerRepository : IPlayerRepository
         var walks = playerCareerPitching.Walks;
         var shutouts = playerCareerPitching.Shutouts;
         var saves = playerCareerPitching.Saves;
-        
+
         var chemistryId = playerCareerPitching.ChemistryId;
         var throwHandednessId = playerCareerPitching.ThrowHandednessId;
         var pitcherRoleId = playerCareerPitching.PitcherRoleId;
-        
+
         var queryable = GetCareerPitchingIQueryable()
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
             .Where(x => x.Id != playerId);
-        
+
         var similarPitchers = await queryable
             .Select(x => new
             {
@@ -1102,8 +1104,9 @@ public class PlayerRepository : IPlayerRepository
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)) - wins) +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Losses)) - losses) / 2D +
                         Math.Max(
-                            Math.Abs(x.PlayerSeasons.Average(y => y.PitchingStats.Average(z => z.EarnedRunAverage ?? 0)) - era / 0.02), 100
-                            ) +
+                            Math.Abs(x.PlayerSeasons.Average(y => y.PitchingStats.Average(z => z.EarnedRunAverage ?? 0)) - era / 0.02),
+                            100
+                        ) +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)) - starts) / 10D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)) - completeGames) / 20D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)) - inningsPitched) / 50D +
@@ -1112,7 +1115,7 @@ public class PlayerRepository : IPlayerRepository
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Walks)) - walks) / 10D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)) - shutouts) / 5D +
                         Math.Abs(x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)) - saves) / 3D
-                    ) - 
+                    ) -
                     (x.PitcherRoleId != pitcherRoleId ? 50 : 0) -
                     (x.ChemistryId != chemistryId ? 50 : 0) -
                     (x.ThrowHandednessId != throwHandednessId ? 30 : 0)
@@ -1129,6 +1132,40 @@ public class PlayerRepository : IPlayerRepository
                 SimilarityScore = x.SimilarityScore
             })
             .ToList();
+    }
+
+    public async Task<OneOf<GameStatDto, Exception>> GetLeagueAverageGameStats(int seasonId,
+        bool isPitcher,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var averageGameStats = await _dbContext.PlayerSeasonGameStats
+                .Include(x => x.PlayerSeason)
+                .ThenInclude(x => x.Player)
+                .Where(x => x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => isPitcher && x.PlayerSeason.Player.PitcherRoleId != null ||
+                            !isPitcher && x.PlayerSeason.Player.PitcherRoleId == null)
+                .GroupBy(x => 1)
+                .Select(x => new GameStatDto
+                {
+                    Power = (int) Math.Round(x.Average(y => y.Power)),
+                    Contact = (int) Math.Round(x.Average(y => y.Contact)),
+                    Speed = (int) Math.Round(x.Average(y => y.Speed)),
+                    Fielding = (int) Math.Round(x.Average(y => y.Fielding)),
+                    Arm = (int) Math.Round(x.Average(y => y.Arm ?? 0)),
+                    Velocity = (int) Math.Round(x.Average(y => y.Velocity ?? 0)),
+                    Junk = (int) Math.Round(x.Average(y => y.Junk ?? 0)),
+                    Accuracy = (int) Math.Round(x.Average(y => y.Accuracy ?? 0)),
+                })
+                .SingleAsync(cancellationToken: cancellationToken);
+
+            return averageGameStats;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
     }
 
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)

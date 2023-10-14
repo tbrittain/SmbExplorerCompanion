@@ -55,6 +55,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="300"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -258,6 +259,13 @@
                                 Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
+                </StackPanel>
+                
+                <StackPanel 
+                    Grid.Row="2" 
+                    Grid.Column="0" 
+                    Grid.ColumnSpan="2">
+                    <WpfPlot x:Name="RadialPlot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </StackPanel>
             </Grid>
 
