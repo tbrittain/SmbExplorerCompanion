@@ -55,7 +55,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="300"/>
+                    <RowDefinition Height="300" />
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -260,15 +260,14 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
-                
-                <StackPanel 
-                    Grid.Row="2" 
-                    Grid.Column="0" 
+
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Orientation="Horizontal"
-                    >
-                    <WpfPlot x:Name="PlayerGameStatsRadialPlot"/>
-                    <WpfPlot x:Name="PlayerGameStatsPercentilePlot"/>
+                    Orientation="Horizontal">
+                    <WpfPlot x:Name="PlayerGameStatsRadialPlot" />
+                    <WpfPlot x:Name="PlayerGameStatsPercentilePlot" />
                 </StackPanel>
             </Grid>
 
@@ -1053,7 +1052,7 @@
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
-            
+
             <StackPanel Orientation="Vertical">
                 <TextBlock FontSize="16" FontWeight="SemiBold">Similar Players</TextBlock>
                 <ItemsControl

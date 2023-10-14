@@ -174,7 +174,7 @@ public class PlayerRepository : IPlayerRepository
             {
                 var position = await _dbContext.Positions
                     .Where(x => x.IsPrimaryPosition)
-                    .SingleOrDefaultAsync(x => x.Id == primaryPositionId, cancellationToken: cancellationToken);
+                    .SingleOrDefaultAsync(x => x.Id == primaryPositionId, cancellationToken);
 
                 if (position is null)
                     return new ArgumentException($"No primary position found with Id {primaryPositionId}");
@@ -206,10 +206,7 @@ public class PlayerRepository : IPlayerRepository
             foreach (var battingDto in playerBattingDtos)
             {
                 battingDto.IsRetired = battingDto.EndSeasonNumber < mostRecentSeason.Number;
-                if (battingDto.IsRetired)
-                {
-                    battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
-                }
+                if (battingDto.IsRetired) battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
 
                 battingDto.BattingAverage = battingDto.AtBats == 0
                     ? 0
@@ -238,7 +235,6 @@ public class PlayerRepository : IPlayerRepository
                     }
 
                 if (battingDto.IsHallOfFamer)
-                {
                     battingDto.Awards.Add(new PlayerAwardBaseDto
                     {
                         Id = -1,
@@ -246,7 +242,6 @@ public class PlayerRepository : IPlayerRepository
                         Importance = 0,
                         OmitFromGroupings = false
                     });
-                }
             }
 
             return playerBattingDtos;
@@ -296,7 +291,7 @@ public class PlayerRepository : IPlayerRepository
             if (pitcherRoleId is not null)
             {
                 var pitcherRole = await _dbContext.PitcherRoles
-                    .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken: cancellationToken);
+                    .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken);
 
                 if (pitcherRole is null)
                     return new ArgumentException($"No pitcher role found with Id {pitcherRoleId}");
@@ -356,7 +351,6 @@ public class PlayerRepository : IPlayerRepository
                     }
 
                 if (pitchingDto.IsHallOfFamer)
-                {
                     pitchingDto.Awards.Add(new PlayerAwardBaseDto
                     {
                         Id = -1,
@@ -364,7 +358,6 @@ public class PlayerRepository : IPlayerRepository
                         Importance = 0,
                         OmitFromGroupings = false
                     });
-                }
             }
 
             return playerPitchingDtos;
@@ -872,7 +865,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.PitcherRoleId == null)
                 .Where(x => retiredPlayers.Contains(x.Id));
 
-            var battingDtos = await GetCareerBattingDtos(battingQueryable, omitRunnerUps: false)
+            var battingDtos = await GetCareerBattingDtos(battingQueryable, false)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             // Calculate the rate stats that we omitted above
@@ -911,7 +904,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.PitcherRoleId != null)
                 .Where(x => retiredPlayers.Contains(x.Id));
 
-            var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable, omitRunnerUps: false)
+            var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable, false)
                 .ToListAsync(cancellationToken: cancellationToken);
 
             foreach (var pitchingDto in pitchingDtos)
@@ -1144,8 +1137,8 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
                 .Where(x => x.PlayerSeason.SeasonId == seasonId)
-                .Where(x => isPitcher && x.PlayerSeason.Player.PitcherRoleId != null ||
-                            !isPitcher && x.PlayerSeason.Player.PitcherRoleId == null)
+                .Where(x => (isPitcher && x.PlayerSeason.Player.PitcherRoleId != null) ||
+                            (!isPitcher && x.PlayerSeason.Player.PitcherRoleId == null))
                 .GroupBy(x => 1)
                 .Select(x => new GameStatDto
                 {
@@ -1156,7 +1149,7 @@ public class PlayerRepository : IPlayerRepository
                     Arm = (int) Math.Round(x.Average(y => y.Arm ?? 0)),
                     Velocity = (int) Math.Round(x.Average(y => y.Velocity ?? 0)),
                     Junk = (int) Math.Round(x.Average(y => y.Junk ?? 0)),
-                    Accuracy = (int) Math.Round(x.Average(y => y.Accuracy ?? 0)),
+                    Accuracy = (int) Math.Round(x.Average(y => y.Accuracy ?? 0))
                 })
                 .SingleAsync(cancellationToken: cancellationToken);
 
@@ -1168,7 +1161,10 @@ public class PlayerRepository : IPlayerRepository
         }
     }
 
-    public async Task<OneOf<PlayerGameStatPercentileDto, Exception>> GetPlayerGameStatPercentiles(int playerId, int seasonId, bool isPitcher, CancellationToken cancellationToken = default)
+    public async Task<OneOf<PlayerGameStatPercentileDto, Exception>> GetPlayerGameStatPercentiles(int playerId,
+        int seasonId,
+        bool isPitcher,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -1177,7 +1173,7 @@ public class PlayerRepository : IPlayerRepository
                 .Where(x => x.PlayerSeason.SeasonId == seasonId)
                 .Where(x => x.PlayerSeason.PlayerId == playerId)
                 .FirstAsync(cancellationToken: cancellationToken);
-            
+
             var power = playerGameStats.Power;
             var contact = playerGameStats.Contact;
             var speed = playerGameStats.Speed;
@@ -1191,33 +1187,33 @@ public class PlayerRepository : IPlayerRepository
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
                 .Where(x => x.PlayerSeason.SeasonId == seasonId)
-                .Where(x => isPitcher && x.PlayerSeason.Player.PitcherRoleId != null ||
-                            !isPitcher && x.PlayerSeason.Player.PitcherRoleId == null)
+                .Where(x => (isPitcher && x.PlayerSeason.Player.PitcherRoleId != null) ||
+                            (!isPitcher && x.PlayerSeason.Player.PitcherRoleId == null))
                 .Where(x => x.PlayerSeason.PlayerId != playerId);
-            
+
             var numPlayers = await queryable
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
-            
+
             var greaterThanPower = await queryable
                 .Where(x => power >= x.Power)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
-            
+
             var greaterThanContact = await queryable
                 .Where(x => contact >= x.Contact)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
-            
+
             var greaterThanSpeed = await queryable
                 .Where(x => speed >= x.Speed)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
-            
+
             var greaterThanFielding = await queryable
                 .Where(x => fielding >= x.Fielding)
                 .Select(x => x.PlayerSeason.PlayerId)
@@ -1244,20 +1240,20 @@ public class PlayerRepository : IPlayerRepository
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
-                
+
                 greaterThanJunk = await queryable
                     .Where(x => junk >= x.Junk)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
-                
+
                 greaterThanAccuracy = await queryable
                     .Where(x => accuracy >= x.Accuracy)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
             }
-            
+
             var playerGameStatPercentileDto = new PlayerGameStatPercentileDto
             {
                 Power = (int) Math.Round(greaterThanPower / (double) numPlayers * 100),
@@ -1563,7 +1559,7 @@ public class PlayerRepository : IPlayerRepository
                     /
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.InningsPitched ?? 1)),
+                        .Sum(y => y.InningsPitched ?? 1),
                 FipMinus =
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
@@ -1571,7 +1567,7 @@ public class PlayerRepository : IPlayerRepository
                     /
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.InningsPitched ?? 1)),
+                        .Sum(y => y.InningsPitched ?? 1),
                 Awards = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
                     .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
