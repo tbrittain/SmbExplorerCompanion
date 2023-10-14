@@ -17,6 +17,5 @@ public class PlayerKpiPercentileDto
     public double Whip { get; set; }
     public double InningsPitched { get; set; }
     public double PitcherStrikeoutsPerNine { get; set; }
-    public double PitcherWalksPerNine { get; set; }
     public double PitcherStrikeoutToWalkRatio { get; set; }
 }
