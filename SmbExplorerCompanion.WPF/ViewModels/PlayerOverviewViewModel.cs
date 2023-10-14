@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -9,10 +11,14 @@ using MediatR;
 using ScottPlot;
 using ScottPlot.Drawing;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
+using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Players;
+using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
+using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -21,11 +27,14 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 {
     public const string PlayerIdProp = "PlayerId";
     private readonly INavigationService _navigationService;
+    private Season? _selectedSeason;
+    private readonly ISender _mediator;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, IApplicationContext applicationContext)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
+        _mediator = mediator;
 
         var ok = _navigationService.TryGetParameter<int>(PlayerIdProp, out var playerId);
         if (!ok)
@@ -38,7 +47,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         PlayerId = playerId;
         _navigationService.ClearParameters();
 
-        var playerOverviewResponse = mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
+        var playerOverviewResponse = _mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
         if (playerOverviewResponse.TryPickT1(out var exception, out var playerOverview))
         {
             MessageBox.Show(exception.Message);
@@ -50,30 +59,12 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var mapper = new PlayerOverviewMapping();
         var overview = mapper.FromDto(playerOverview);
         PlayerOverview = overview;
-        MostRecentSeasonStats = overview
+        SeasonStats = overview
             .GameStats
             .OrderByDescending(x => x.SeasonNumber)
             .First();
 
-        var leagueAverageResponse = mediator.Send(new GetLeagueAverageGameStatsRequest(MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
-        if (leagueAverageResponse.TryPickT1(out exception, out var leagueAverage))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-        LeagueAverage = leagueAverage;
-        
-        var playerGameStatPercentilesResponse = mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId, MostRecentSeasonStats.SeasonId, PlayerOverview.IsPitcher)).Result;
-        if (playerGameStatPercentilesResponse.TryPickT1(out exception, out var playerGameStatPercentiles))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-        PlayerGameStatPercentiles = playerGameStatPercentiles;
-
-        var similarPlayersResponse = mediator.Send(new GetSimilarPlayersRequest(PlayerId, !overview.IsPitcher)).Result;
+        var similarPlayersResponse = _mediator.Send(new GetSimilarPlayersRequest(PlayerId, !PlayerOverview.IsPitcher)).Result;
         if (similarPlayersResponse.TryPickT1(out exception, out var similarPlayers))
         {
             MessageBox.Show(exception.Message);
@@ -83,8 +74,86 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
         var similarPlayerMapper = new SimilarPlayerMapping();
         SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
+        
+        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
+            applicationContext.SelectedFranchiseId!.Value)).Result;
 
+        if (seasonsResponse.TryPickT1(out exception, out var seasons))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+
+        var seasonMapper = new SeasonMapping();
+
+        var applicableSeasonIds = overview
+            .GameStats
+            .Select(x => x.SeasonId)
+            .Distinct()
+            .ToList();
+        var playerSeasons = seasons
+            .Where(x => applicableSeasonIds.Contains(x.Id))
+            .OrderBy(x => x.Number)
+            .Select(s => seasonMapper.FromDto(s))
+            .ToList();
+        Seasons.AddRange(playerSeasons);
+        SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+        
+        GetLeagueAveragesForSeason().Wait();
+
+        PropertyChanged += OnPropertyChanged;
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SelectedSeason):
+            {
+                if (SelectedSeason is null) return;
+                await GetLeagueAveragesForSeason();
+                break;
+            }
+        }
+    }
+
+    private async Task GetLeagueAveragesForSeason()
+    {
+        if (SelectedSeason is null)
+        {
+            MessageBox.Show("No season selected.");
+            return;
+        }
+        
+        var leagueAverageResponse = await _mediator.Send(
+            new GetLeagueAverageGameStatsRequest(SelectedSeason.Id, PlayerOverview.IsPitcher));
+        if (leagueAverageResponse.TryPickT1(out var exception, out var leagueAverage))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+        LeagueAverage = leagueAverage;
+        
+        var playerGameStatPercentilesResponse = await _mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId, SelectedSeason.Id, PlayerOverview.IsPitcher));
+        if (playerGameStatPercentilesResponse.TryPickT1(out exception, out var playerGameStatPercentiles))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+        PlayerGameStatPercentiles = playerGameStatPercentiles;
+
+        SeasonStats = PlayerOverview
+            .GameStats
+            .Single(x => x.SeasonId == SelectedSeason.Id);
+
+        if (_playerGameStatsRadialPlot is not null) 
+            DrawPlayerGameStatsRadialPlot(_playerGameStatsRadialPlot);
+        if (_playerGameStatsPercentilePlot is not null) 
+            DrawPlayerGameStatsPercentilePlot(_playerGameStatsPercentilePlot);
     }
 
     public bool HasAnyBatting => HasSeasonBatting || HasPlayoffBatting;
@@ -101,6 +170,9 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     public PlayerOverview PlayerOverview { get; }
     public ObservableCollection<SimilarPlayer> SimilarPlayers { get; } = new();
 
+    private WpfPlot? _playerGameStatsRadialPlot;
+    private WpfPlot? _playerGameStatsPercentilePlot;
+
     [RelayCommand]
     private void NavigateToPlayerOverviewPage(int playerId)
     {
@@ -111,22 +183,30 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
     }
 
-    private PlayerGameStatOverview MostRecentSeasonStats { get; set; } = null!;
-    private GameStatDto LeagueAverage { get; set; } = null!;
-    private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; } = null!;
+    private PlayerGameStatOverview SeasonStats { get; set; }
+    private GameStatDto LeagueAverage { get; set; }
+    private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; }
+
+    public ObservableCollection<Season> Seasons { get; } = new();
+    public Season? SelectedSeason
+    {
+        get => _selectedSeason;
+        set => SetField(ref _selectedSeason, value);
+    }
 
     public void DrawPlayerGameStatsRadialPlot(WpfPlot plot)
     {
+        _playerGameStatsRadialPlot = plot;
         plot.Plot.Clear();
         
-        var power = MostRecentSeasonStats.Power;
-        var contact = MostRecentSeasonStats.Contact;
-        var speed = MostRecentSeasonStats.Speed;
-        var fielding = MostRecentSeasonStats.Fielding;
-        var arm = MostRecentSeasonStats.Arm ?? 0;
-        var velocity = MostRecentSeasonStats.Velocity ?? 0;
-        var junk = MostRecentSeasonStats.Junk ?? 0;
-        var accuracy = MostRecentSeasonStats.Accuracy ?? 0;
+        var power = SeasonStats.Power;
+        var contact = SeasonStats.Contact;
+        var speed = SeasonStats.Speed;
+        var fielding = SeasonStats.Fielding;
+        var arm = SeasonStats.Arm ?? 0;
+        var velocity = SeasonStats.Velocity ?? 0;
+        var junk = SeasonStats.Junk ?? 0;
+        var accuracy = SeasonStats.Accuracy ?? 0;
         
         var averagePower = LeagueAverage.Power;
         var averageContact = LeagueAverage.Contact;
@@ -183,7 +263,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         plot.Height = 300;
         plot.Width = 300;
         plot.Plot.Grid(lineStyle: LineStyle.Dot);
-        plot.Plot.Title($"Player Attributes (Season {MostRecentSeasonStats.SeasonNumber})");
+        plot.Plot.Title($"Player Attributes (Season {SeasonStats.SeasonNumber})");
         plot.Plot.Legend();
         plot.Plot.AxisAuto();
         plot.Plot.AxisZoom(1.5, 1.5);
@@ -192,6 +272,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
     public void DrawPlayerGameStatsPercentilePlot(WpfPlot plot)
     {
+        _playerGameStatsPercentilePlot = plot;
         plot.Plot.Clear();
         
         var power = PlayerGameStatPercentiles.Power;
@@ -232,7 +313,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         plot.Height = 300;
         plot.Width = 350;
         var playerType = PlayerOverview.IsPitcher ? "Pitcher" : "Batter";
-        var title = $"{playerType} Attribute Percentiles (Season {MostRecentSeasonStats.SeasonNumber})";
+        var title = $"{playerType} Attribute Percentiles (Season {SeasonStats.SeasonNumber})";
         plot.Plot.Title(title);
         plot.Render();
     }

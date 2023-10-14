@@ -7,6 +7,7 @@
              xmlns:dataTemplateSelectors="clr-namespace:SmbExplorerCompanion.WPF.DataTemplateSelectors"
              xmlns:players="clr-namespace:SmbExplorerCompanion.WPF.Models.Players"
              xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}"
              x:Name="Control">
@@ -55,7 +56,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="300" />
+                    <RowDefinition Height="350" />
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -265,9 +266,21 @@
                     Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Orientation="Horizontal">
-                    <WpfPlot x:Name="PlayerGameStatsRadialPlot" />
-                    <WpfPlot x:Name="PlayerGameStatsPercentilePlot" />
+                    Orientation="Vertical">
+                    <ComboBox
+                        DockPanel.Dock="Left"
+                        Width="200"
+                        Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                        materialDesign:HintAssist.Hint="Season"
+                        ItemsSource="{Binding Seasons}"
+                        SelectedItem="{Binding SelectedSeason}"
+                        DisplayMemberPath="DisplaySeasonNumber" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <WpfPlot x:Name="PlayerGameStatsRadialPlot" />
+                        <WpfPlot x:Name="PlayerGameStatsPercentilePlot" />
+                    </StackPanel>
+
                 </StackPanel>
             </Grid>
 
