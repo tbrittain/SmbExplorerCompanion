@@ -5,7 +5,7 @@ using SmbExplorerCompanion.Core.Entities.Seasons;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Mappings;
 
-namespace SmbExplorerCompanion.Database.Services;
+namespace SmbExplorerCompanion.Database.Services.Lookups;
 
 public class SeasonRepository : IRepository<SeasonDto>
 {

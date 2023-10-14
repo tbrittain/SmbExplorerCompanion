@@ -30,7 +30,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
         OnlyRookies = onlyRookies;
         TeamId = teamId;
         IncludeChampionAwards = includeChampionAwards;
-        PitherRoleId = pitcherRoleId;
+        PitcherRoleId = pitcherRoleId;
     }
 
     private int? SeasonId { get; }
@@ -43,21 +43,21 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
     private bool OnlyRookies { get; }
     private bool IncludeChampionAwards { get; }
     private bool OnlyUserAssignableAwards { get; }
-    private int? PitherRoleId { get; }
+    private int? PitcherRoleId { get; }
 
     // ReSharper disable once UnusedType.Global
     internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
 
-        public GetTopPitchingSeasonHandler(IPlayerRepository playerRepository)
+        public GetTopPitchingSeasonHandler(IPitcherSeasonRepository pitcherSeasonRepository)
         {
-            _playerRepository = playerRepository;
+            _pitcherSeasonRepository = pitcherSeasonRepository;
         }
 
         public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> Handle(GetTopPitchingSeasonRequest request,
             CancellationToken cancellationToken) =>
-            await _playerRepository.GetPitchingSeasons(
+            await _pitcherSeasonRepository.GetPitchingSeasons(
                 seasonId: request.SeasonId,
                 isPlayoffs: request.IsPlayoffs,
                 pageNumber: request.PageNumber,
@@ -68,7 +68,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
                 onlyRookies: request.OnlyRookies,
                 includeChampionAwards: request.IncludeChampionAwards,
                 onlyUserAssignableAwards: request.OnlyUserAssignableAwards,
-                pitcherRoleId: request.PitherRoleId,
+                pitcherRoleId: request.PitcherRoleId,
                 cancellationToken: cancellationToken);
     }
 }

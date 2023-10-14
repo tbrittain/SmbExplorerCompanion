@@ -48,16 +48,16 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
     // ReSharper disable once UnusedType.Global
     internal class GetTopBattingSeasonHandler : IRequestHandler<GetTopBattingSeasonRequest, OneOf<List<PlayerBattingSeasonDto>, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPositionPlayerSeasonRepository _positionPlayerSeasonRepository;
 
-        public GetTopBattingSeasonHandler(IPlayerRepository playerRepository)
+        public GetTopBattingSeasonHandler(IPositionPlayerSeasonRepository positionPlayerSeasonRepository)
         {
-            _playerRepository = playerRepository;
+            _positionPlayerSeasonRepository = positionPlayerSeasonRepository;
         }
 
         public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> Handle(GetTopBattingSeasonRequest request,
             CancellationToken cancellationToken) =>
-            await _playerRepository.GetBattingSeasons(
+            await _positionPlayerSeasonRepository.GetBattingSeasons(
                 seasonId: request.SeasonId,
                 isPlayoffs: request.IsPlayoffs,
                 pageNumber: request.PageNumber,

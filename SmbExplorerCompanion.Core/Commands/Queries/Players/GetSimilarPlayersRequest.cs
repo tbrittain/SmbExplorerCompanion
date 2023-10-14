@@ -15,22 +15,25 @@ public class GetSimilarPlayersRequest : IRequest<OneOf<List<SimilarPlayerDto>, E
 
     private int PlayerId { get; }
     private bool IsPositionPlayer { get; set; }
-    
+
     // ReSharper disable once UnusedType.Global
     internal class GetSimilarPlayersHandler : IRequestHandler<GetSimilarPlayersRequest, OneOf<List<SimilarPlayerDto>, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
+        private readonly IPitcherCareerRepository _pitcherCareerRepository;
 
-        public GetSimilarPlayersHandler(IPlayerRepository playerRepository)
+        public GetSimilarPlayersHandler(IPositionPlayerCareerRepository positionPlayerCareerRepository,
+            IPitcherCareerRepository pitcherCareerRepository)
         {
-            _playerRepository = playerRepository;
+            _positionPlayerCareerRepository = positionPlayerCareerRepository;
+            _pitcherCareerRepository = pitcherCareerRepository;
         }
 
         public async Task<OneOf<List<SimilarPlayerDto>, Exception>> Handle(GetSimilarPlayersRequest request, CancellationToken cancellationToken)
         {
             if (request.IsPositionPlayer)
-                return await _playerRepository.GetSimilarBattingCareers(request.PlayerId, cancellationToken);
-            return await _playerRepository.GetSimilarPitchingCareers(request.PlayerId, cancellationToken);
+                return await _positionPlayerCareerRepository.GetSimilarBattingCareers(request.PlayerId, cancellationToken);
+            return await _pitcherCareerRepository.GetSimilarPitchingCareers(request.PlayerId, cancellationToken);
         }
     }
 }

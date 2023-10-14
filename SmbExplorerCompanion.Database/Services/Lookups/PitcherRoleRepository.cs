@@ -4,7 +4,7 @@ using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
 
-namespace SmbExplorerCompanion.Database.Services;
+namespace SmbExplorerCompanion.Database.Services.Lookups;
 
 public class PitcherRoleRepository : IRepository<PitcherRoleDto>
 {

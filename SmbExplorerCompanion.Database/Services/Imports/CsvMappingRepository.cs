@@ -6,7 +6,7 @@ using SmbExplorerCompanion.Csv.Models;
 using SmbExplorerCompanion.Database.Entities;
 using Team = SmbExplorerCompanion.Database.Entities.Team;
 
-namespace SmbExplorerCompanion.Database.Services;
+namespace SmbExplorerCompanion.Database.Services.Imports;
 
 public class CsvMappingRepository
 {

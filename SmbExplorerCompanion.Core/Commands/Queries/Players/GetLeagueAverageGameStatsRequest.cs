@@ -15,18 +15,18 @@ public class GetLeagueAverageGameStatsRequest : IRequest<OneOf<GameStatDto, Exce
 
     private int SeasonId { get; }
     private bool IsPitcher { get; }
-    
+
     // ReSharper disable once UnusedType.Global
     internal class GetLeagueAverageGameStatsHandler : IRequestHandler<GetLeagueAverageGameStatsRequest, OneOf<GameStatDto, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
-        public GetLeagueAverageGameStatsHandler(IPlayerRepository playerRepository)
+        public GetLeagueAverageGameStatsHandler(IGeneralPlayerRepository generalPlayerRepository)
         {
-            _playerRepository = playerRepository;
+            _generalPlayerRepository = generalPlayerRepository;
         }
 
         public async Task<OneOf<GameStatDto, Exception>> Handle(GetLeagueAverageGameStatsRequest request, CancellationToken cancellationToken) =>
-            await _playerRepository.GetLeagueAverageGameStats(request.SeasonId, request.IsPitcher, cancellationToken);
+            await _generalPlayerRepository.GetLeagueAverageGameStats(request.SeasonId, request.IsPitcher, cancellationToken);
     }
 }

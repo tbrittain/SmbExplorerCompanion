@@ -6,7 +6,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities.Lookups;
 using SmbExplorerCompanion.Database.Mappings;
 
-namespace SmbExplorerCompanion.Database.Services;
+namespace SmbExplorerCompanion.Database.Services.Lookups;
 
 public class PlayerAwardRepository : IRepository<PlayerAwardDto>
 {

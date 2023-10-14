@@ -12,13 +12,18 @@ public class TeamRepository : ITeamRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
-    private readonly IPlayerRepository _playerRepository;
+    private readonly IPositionPlayerSeasonRepository _positionPlayerSeasonRepository;
+    private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
 
-    public TeamRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext, IPlayerRepository playerRepository)
+    public TeamRepository(SmbExplorerCompanionDbContext dbContext,
+        IApplicationContext applicationContext,
+        IPositionPlayerSeasonRepository positionPlayerSeasonRepository,
+        IPitcherSeasonRepository pitcherSeasonRepository)
     {
         _dbContext = dbContext;
         _applicationContext = applicationContext;
-        _playerRepository = playerRepository;
+        _positionPlayerSeasonRepository = positionPlayerSeasonRepository;
+        _pitcherSeasonRepository = pitcherSeasonRepository;
     }
 
     public async Task<OneOf<IEnumerable<TeamDto>, Exception>> GetSeasonTeams(int seasonId, CancellationToken cancellationToken)
@@ -534,7 +539,7 @@ public class TeamRepository : ITeamRepository
                     teamSeason.HomePlayoffSchedule,
                     teamSeason.AwayPlayoffSchedule);
 
-                var playoffPitchingResult = await _playerRepository.GetPitchingSeasons(
+                var playoffPitchingResult = await _pitcherSeasonRepository.GetPitchingSeasons(
                     seasonId: seasonId,
                     isPlayoffs: true,
                     teamId: teamId,
@@ -545,7 +550,7 @@ public class TeamRepository : ITeamRepository
 
                 teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
 
-                var playoffBattingResult = await _playerRepository.GetBattingSeasons(
+                var playoffBattingResult = await _positionPlayerSeasonRepository.GetBattingSeasons(
                     seasonId: seasonId,
                     isPlayoffs: true,
                     teamId: teamId,
@@ -557,7 +562,7 @@ public class TeamRepository : ITeamRepository
                 teamSeasonDetailDto.PlayoffBatting = playoffBattingSeasonDtos;
             }
 
-            var regularSeasonPitchingResult = await _playerRepository.GetPitchingSeasons(
+            var regularSeasonPitchingResult = await _pitcherSeasonRepository.GetPitchingSeasons(
                 seasonId: seasonId,
                 isPlayoffs: false,
                 teamId: teamId,
@@ -568,7 +573,7 @@ public class TeamRepository : ITeamRepository
 
             teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
 
-            var regularSeasonBattingResult = await _playerRepository.GetBattingSeasons(
+            var regularSeasonBattingResult = await _positionPlayerSeasonRepository.GetBattingSeasons(
                 seasonId: seasonId,
                 isPlayoffs: false,
                 teamId: teamId,

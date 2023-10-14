@@ -17,18 +17,20 @@ public class GetPlayerGameStatPercentilesRequest : IRequest<OneOf<PlayerGameStat
     private int PlayerId { get; }
     private int SeasonId { get; }
     private bool IsPitcher { get; }
-    
-    // ReSharper disable once UnusedType.Global
-    internal class GetPlayerGameStatPercentilesHandler : IRequestHandler<GetPlayerGameStatPercentilesRequest, OneOf<PlayerGameStatPercentileDto, Exception>>
-    {
-        private readonly IPlayerRepository _playerRepository;
 
-        public GetPlayerGameStatPercentilesHandler(IPlayerRepository playerRepository)
+    // ReSharper disable once UnusedType.Global
+    internal class GetPlayerGameStatPercentilesHandler : IRequestHandler<GetPlayerGameStatPercentilesRequest,
+        OneOf<PlayerGameStatPercentileDto, Exception>>
+    {
+        private readonly IGeneralPlayerRepository _generalPlayerRepository;
+
+        public GetPlayerGameStatPercentilesHandler(IGeneralPlayerRepository generalPlayerRepository)
         {
-            _playerRepository = playerRepository;
+            _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<OneOf<PlayerGameStatPercentileDto, Exception>> Handle(GetPlayerGameStatPercentilesRequest request, CancellationToken cancellationToken) =>
-            await _playerRepository.GetPlayerGameStatPercentiles(request.PlayerId, request.SeasonId, request.IsPitcher, cancellationToken);
+        public async Task<OneOf<PlayerGameStatPercentileDto, Exception>> Handle(GetPlayerGameStatPercentilesRequest request,
+            CancellationToken cancellationToken) =>
+            await _generalPlayerRepository.GetPlayerGameStatPercentiles(request.PlayerId, request.SeasonId, request.IsPitcher, cancellationToken);
     }
 }

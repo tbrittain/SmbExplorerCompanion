@@ -54,11 +54,11 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
     // ReSharper disable once UnusedType.Global
     internal class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, OneOf<List<PlayerCareerBattingDto>, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
 
-        public GetTopBattingCareersHandler(IPlayerRepository playerRepository)
+        public GetTopBattingCareersHandler(IPositionPlayerCareerRepository positionPlayerCareerRepository)
         {
-            _playerRepository = playerRepository;
+            _positionPlayerCareerRepository = positionPlayerCareerRepository;
         }
 
         public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> Handle(GetTopBattingCareersRequest request,
@@ -67,7 +67,7 @@ public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBatti
             if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
                 return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
 
-            return await _playerRepository.GetBattingCareers(
+            return await _positionPlayerCareerRepository.GetBattingCareers(
                 pageNumber: request.PageNumber,
                 limit: request.Limit,
                 orderBy: request.OrderBy,
