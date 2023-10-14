@@ -364,7 +364,9 @@ public class TeamRepository : ITeamRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PitchingStats)
                 .Include(player => player.PlayerSeasons)
-                .ThenInclude(playerSeason => playerSeason.ChampionshipWinner)
+                .ThenInclude(x => x.ChampionshipWinner)
+                .Include(player => player.PlayerSeasons)
+                .ThenInclude(x => x.Season)
                 .Where(x => x.PlayerSeasons
                     .Any(y => y.PlayerTeamHistory
                         .Any(z => z.SeasonTeamHistory != null && z.SeasonTeamHistory.TeamId == teamId)))
@@ -383,6 +385,9 @@ public class TeamRepository : ITeamRepository
                             .Any(z => z.SeasonTeamHistory is not null && z.SeasonTeamHistory.TeamId == teamId))
                         .ToList();
                     dto.NumSeasonsWithTeam = seasonsWithTeam.Count;
+                    dto.SeasonNumbers = seasonsWithTeam
+                        .Select(y => y.Season.Number)
+                        .ToList();
 
                     var isPitcher = x.PitcherRoleId is not null;
                     dto.IsPitcher = isPitcher;

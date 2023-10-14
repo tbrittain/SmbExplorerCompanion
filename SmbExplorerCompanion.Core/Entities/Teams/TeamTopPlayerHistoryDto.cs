@@ -6,6 +6,7 @@ public class TeamTopPlayerHistoryDto
 {
     public int PlayerId { get; set; }
     public int NumSeasonsWithTeam { get; set; }
+    public List<int> SeasonNumbers { get; set; } = new();
     public bool IsPitcher { get; set; }
     public string PlayerName { get; set; } = string.Empty;
     public string PlayerPosition { get; set; } = string.Empty;
