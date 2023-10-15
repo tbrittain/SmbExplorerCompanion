@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
+using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Teams;
@@ -47,6 +50,18 @@ public class TeamSeasonDetailViewModel : ViewModelBase
             var mapper = new TeamSeasonDetailMapping();
             TeamSeasonDetail = mapper.FromTeamSeasonDetailDto(teamSeasonDetail);
         }
+        
+        var teamScheduleBreakdownResponse = mediator.Send(
+            new GetTeamScheduleBreakdownRequest(TeamSeasonId)).Result;
+        
+        if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var teamScheduleBreakdown))
+        {
+            MessageBox.Show(exception.Message);
+        }
+        else
+        {
+            TeamScheduleBreakdowns = SetBreakdowns(teamScheduleBreakdown);
+        }
 
         PropertyChanged += OnPropertyChanged;
         
@@ -64,6 +79,27 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                 break;
             }
         }
+    }
+
+    public ObservableCollection<TeamScheduleBreakdown> TeamScheduleBreakdowns { get; set; } = new();
+
+    private static ObservableCollection<TeamScheduleBreakdown> SetBreakdowns(HashSet<TeamScheduleBreakdownDto> breakdownDtos)
+    {
+        var breakdowns = new ObservableCollection<TeamScheduleBreakdown>();
+        var wins = 0;
+        foreach (var dto in breakdownDtos)
+        {
+            if (dto.TeamScore > dto.OpponentTeamScore)
+                wins++;
+            else if (dto.TeamScore < dto.OpponentTeamScore)
+                wins--;
+            var breakdown = new TeamScheduleBreakdown(dto.TeamHistoryId, dto.TeamName, dto.OpponentTeamHistoryId,
+                dto.OpponentTeamName, dto.Day, dto.GlobalGameNumber, dto.TeamScore, dto.OpponentTeamScore,
+                wins);
+            breakdowns.Add(breakdown);
+        }
+
+        return breakdowns;
     }
 
     private void NavigateToPlayerOverview(PlayerBase player)

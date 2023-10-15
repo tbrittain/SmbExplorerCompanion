@@ -597,7 +597,7 @@ public class TeamRepository : ITeamRepository
         }
     }
 
-    public async Task<OneOf<HashSet<TeamScheduleBreakdown>, Exception>> GetTeamScheduleBreakdown(int teamSeasonId, CancellationToken cancellationToken)
+    public async Task<OneOf<HashSet<TeamScheduleBreakdownDto>, Exception>> GetTeamScheduleBreakdown(int teamSeasonId, CancellationToken cancellationToken)
     {
         try
         {
@@ -622,7 +622,7 @@ public class TeamRepository : ITeamRepository
                 {
                     if (x.HomeTeamHistoryId == teamSeasonId)
                     {
-                        return new TeamScheduleBreakdown(
+                        return new TeamScheduleBreakdownDto(
                             teamSeasonId,
                             teamSeason.TeamNameHistory.Name,
                             x.AwayTeamHistoryId,
@@ -633,7 +633,7 @@ public class TeamRepository : ITeamRepository
                             x.AwayScore!.Value);
                     }
 
-                    return new TeamScheduleBreakdown(
+                    return new TeamScheduleBreakdownDto(
                         teamSeasonId,
                         teamSeason.TeamNameHistory.Name,
                         x.HomeTeamHistoryId,
