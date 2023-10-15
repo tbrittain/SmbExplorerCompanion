@@ -53,6 +53,10 @@
                 </StackPanel>
             </Grid>
 
+            <StackPanel Height="300">
+                <WpfPlot x:Name="TeamSchedulePlot" />
+            </StackPanel>
+
             <StackPanel>
                 <ScrollViewer>
                     <Grid>

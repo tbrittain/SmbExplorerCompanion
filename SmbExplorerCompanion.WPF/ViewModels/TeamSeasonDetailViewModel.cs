@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using MediatR;
+using ScottPlot;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.WPF.Mappings.Teams;
@@ -81,11 +83,11 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollection<TeamScheduleBreakdown> TeamScheduleBreakdowns { get; set; } = new();
+    public HashSet<TeamScheduleBreakdown> TeamScheduleBreakdowns { get; set; } = new();
 
-    private static ObservableCollection<TeamScheduleBreakdown> SetBreakdowns(HashSet<TeamScheduleBreakdownDto> breakdownDtos)
+    private static HashSet<TeamScheduleBreakdown> SetBreakdowns(HashSet<TeamScheduleBreakdownDto> breakdownDtos)
     {
-        var breakdowns = new ObservableCollection<TeamScheduleBreakdown>();
+        var breakdowns = new HashSet<TeamScheduleBreakdown>();
         var wins = 0;
         foreach (var dto in breakdownDtos)
         {
@@ -100,6 +102,30 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
 
         return breakdowns;
+    }
+
+    public void DrawTeamSchedulePlot(WpfPlot plot)
+    {
+        plot.Plot.Clear();
+        
+        var teamScheduleBreakdowns = TeamScheduleBreakdowns
+            .OrderBy(b => b.Day)
+            .ToHashSet();
+        
+        var days = teamScheduleBreakdowns.Select(b => (double)b.Day).ToArray();
+        var steps = teamScheduleBreakdowns.Select(b => (double)b.WinsDelta).ToArray();
+        
+        plot.Plot.AddScatterStep(xs: days, ys: steps, label: "Games >.500", lineWidth: 2);
+        plot.Plot.AddHorizontalLine(0, color: System.Drawing.Color.Black, style: LineStyle.Dash);
+        plot.Height = 300;
+        plot.Width = 1000;
+        plot.Plot.SetAxisLimits(xMin: days.Min(), xMax: days.Max());
+        
+        plot.Plot.XAxis.TickLabelStyle(rotation: 45);
+        plot.Plot.XAxis.Label("Day");
+        plot.Plot.YAxis.Label("Games >.500");
+        plot.Plot.Title("Team Schedule");
+        plot.Render();
     }
 
     private void NavigateToPlayerOverview(PlayerBase player)
