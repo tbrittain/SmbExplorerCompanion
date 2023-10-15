@@ -24,6 +24,7 @@ public partial class PlayerOverviewView : IDisposable
         if (e.NewValue is not PlayerOverviewViewModel viewModel) return;
         viewModel.DrawPlayerGameStatsRadialPlot(PlayerGameStatsRadialPlot);
         viewModel.DrawPlayerGameStatsPercentilePlot(PlayerGameStatsPercentilePlot);
+        viewModel.DrawPlayerKpisPercentilePlot(PlayerKpisPercentilePlot);
     }
 
     public void Dispose()

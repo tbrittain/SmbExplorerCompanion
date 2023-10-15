@@ -16,11 +16,13 @@ public interface IGeneralPlayerRepository
 
     public Task<OneOf<GameStatDto, Exception>> GetLeagueAverageGameStats(int seasonId,
         bool isPitcher,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
 
     public Task<OneOf<PlayerGameStatPercentileDto, Exception>> GetPlayerGameStatPercentiles(int playerId,
         int seasonId,
         bool isPitcher,
+        int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
     
     public Task<OneOf<PlayerKpiPercentileDto, Exception>> GetPlayerKpiPercentiles(

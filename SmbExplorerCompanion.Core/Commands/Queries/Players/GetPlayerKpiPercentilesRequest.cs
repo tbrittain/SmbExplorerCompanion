@@ -7,7 +7,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetPlayerKpiPercentilesRequest : IRequest<OneOf<PlayerKpiPercentileDto, Exception>>
 {
-    public GetPlayerKpiPercentilesRequest(int playerId, int seasonId, bool isPitcher, int? pitcherRoleId)
+    public GetPlayerKpiPercentilesRequest(int playerId, int seasonId, bool isPitcher, int? pitcherRoleId = null)
     {
         PlayerId = playerId;
         SeasonId = seasonId;

@@ -76,7 +76,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
         var similarPlayerMapper = new SimilarPlayerMapping();
         SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
-        
+
         var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
             applicationContext.SelectedFranchiseId!.Value)).Result;
 
@@ -101,8 +101,8 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             .ToList();
         Seasons.AddRange(playerSeasons);
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
-        
-        GetLeagueAveragesForSeason().Wait();
+
+        GeneratePlots().Wait();
 
         PropertyChanged += OnPropertyChanged;
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
@@ -112,50 +112,74 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     {
         switch (e.PropertyName)
         {
+            case nameof(FilterToPitcherType):
             case nameof(SelectedSeason):
             {
                 if (SelectedSeason is null) return;
-                await GetLeagueAveragesForSeason();
+                await GeneratePlots();
                 break;
             }
         }
     }
 
-    private async Task GetLeagueAveragesForSeason()
+    private async Task GeneratePlots()
     {
         if (SelectedSeason is null)
         {
             MessageBox.Show("No season selected.");
             return;
         }
-        
+
         var leagueAverageResponse = await _mediator.Send(
-            new GetLeagueAverageGameStatsRequest(SelectedSeason.Id, PlayerOverview.IsPitcher));
+            new GetLeagueAverageGameStatsRequest(SelectedSeason.Id,
+                PlayerOverview.IsPitcher,
+                FilterToPitcherType ? PlayerOverview.PitcherRoleId : null));
         if (leagueAverageResponse.TryPickT1(out var exception, out var leagueAverage))
         {
             MessageBox.Show(exception.Message);
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
+
         LeagueAverageGameStats = leagueAverage;
-        
-        var playerGameStatPercentilesResponse = await _mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId, SelectedSeason.Id, PlayerOverview.IsPitcher));
+
+        var playerGameStatPercentilesResponse =
+            await _mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId,
+                SelectedSeason.Id,
+                PlayerOverview.IsPitcher,
+                FilterToPitcherType ? PlayerOverview.PitcherRoleId : null));
         if (playerGameStatPercentilesResponse.TryPickT1(out exception, out var playerGameStatPercentiles))
         {
             MessageBox.Show(exception.Message);
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
+
         PlayerGameStatPercentiles = playerGameStatPercentiles;
+
+        var playerKpiPercentilesResponse = await _mediator.Send(new GetPlayerKpiPercentilesRequest(PlayerId,
+            SelectedSeason.Id,
+            PlayerOverview.IsPitcher,
+            FilterToPitcherType ? PlayerOverview.PitcherRoleId : null));
+        if (playerKpiPercentilesResponse.TryPickT1(out exception, out var playerKpiPercentiles))
+        {
+            MessageBox.Show(exception.Message);
+            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+            return;
+        }
+
+        PlayerKpiPercentiles = playerKpiPercentiles;
 
         SeasonStats = PlayerOverview
             .GameStats
             .Single(x => x.SeasonId == SelectedSeason.Id);
 
-        if (_playerGameStatsRadialPlot is not null) 
+        if (_playerGameStatsRadialPlot is not null)
             DrawPlayerGameStatsRadialPlot(_playerGameStatsRadialPlot);
-        if (_playerGameStatsPercentilePlot is not null) 
+        if (_playerGameStatsPercentilePlot is not null)
             DrawPlayerGameStatsPercentilePlot(_playerGameStatsPercentilePlot);
+        if (_playerKpisPercentilePlot is not null)
+            DrawPlayerKpisPercentilePlot(_playerKpisPercentilePlot);
     }
 
     public bool HasAnyBatting => HasSeasonBatting || HasPlayoffBatting;
@@ -174,6 +198,8 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
     private WpfPlot? _playerGameStatsRadialPlot;
     private WpfPlot? _playerGameStatsPercentilePlot;
+    private WpfPlot? _playerKpisPercentilePlot;
+    private bool _filterToPitcherType;
 
     [RelayCommand]
     private void NavigateToPlayerOverviewPage(int playerId)
@@ -188,19 +214,27 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     private PlayerGameStatOverview SeasonStats { get; set; }
     private GameStatDto LeagueAverageGameStats { get; set; }
     private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; }
+    private PlayerKpiPercentileDto PlayerKpiPercentiles { get; set; }
 
     public ObservableCollection<Season> Seasons { get; } = new();
+
     public Season? SelectedSeason
     {
         get => _selectedSeason;
         set => SetField(ref _selectedSeason, value);
     }
 
+    public bool FilterToPitcherType
+    {
+        get => _filterToPitcherType;
+        set => SetField(ref _filterToPitcherType, value);
+    }
+
     public void DrawPlayerGameStatsRadialPlot(WpfPlot plot)
     {
         _playerGameStatsRadialPlot = plot;
         plot.Plot.Clear();
-        
+
         var power = SeasonStats.Power;
         var contact = SeasonStats.Contact;
         var speed = SeasonStats.Speed;
@@ -209,7 +243,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var velocity = SeasonStats.Velocity ?? 0;
         var junk = SeasonStats.Junk ?? 0;
         var accuracy = SeasonStats.Accuracy ?? 0;
-        
+
         var averagePower = LeagueAverageGameStats.Power;
         var averageContact = LeagueAverageGameStats.Contact;
         var averageSpeed = LeagueAverageGameStats.Speed;
@@ -253,19 +287,25 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             new() {Pattern = HatchStyle.StripedUpwardDiagonal},
             new() {Pattern = HatchStyle.StripedDownwardDiagonal},
         };
-        
+
         radarPlot.AxisType = RadarAxis.Polygon;
-        
+
         var isPitcher = PlayerOverview.IsPitcher;
         var leagueAverageText = isPitcher ? "League Average Pitcher" : "League Average Batter";
         radarPlot.GroupLabels = new[] {PlayerOverview.PlayerName, leagueAverageText};
         radarPlot.CategoryLabels = categoryLabels;
         radarPlot.ShowAxisValues = true;
-  
+
         plot.Height = 300;
         plot.Width = 300;
         plot.Plot.Grid(lineStyle: LineStyle.Dot);
-        plot.Plot.Title($"Player Attributes (Season {SeasonStats.SeasonNumber})");
+        var playerType =
+            FilterToPitcherType
+                ? PlayerOverview.PitcherRole
+                : PlayerOverview.IsPitcher
+                    ? "Pitcher"
+                    : "Batter";
+        plot.Plot.Title($"{playerType} Attributes (Season {SeasonStats.SeasonNumber})");
         plot.Plot.Legend();
         plot.Plot.AxisAuto();
         plot.Plot.AxisZoom(1.5, 1.5);
@@ -276,7 +316,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     {
         _playerGameStatsPercentilePlot = plot;
         plot.Plot.Clear();
-        
+
         var power = PlayerGameStatPercentiles.Power;
         var contact = PlayerGameStatPercentiles.Contact;
         var speed = PlayerGameStatPercentiles.Speed;
@@ -285,8 +325,6 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var velocity = PlayerGameStatPercentiles.Velocity ?? 0;
         var junk = PlayerGameStatPercentiles.Junk ?? 0;
         var accuracy = PlayerGameStatPercentiles.Accuracy ?? 0;
-        
-        plot.Plot.Palette = Palette.DarkPastel;
 
         double[] values;
         double[] labelPositions;
@@ -306,13 +344,13 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             labelPositions = new[] {0D, 1, 2, 3, 4};
             labels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
         }
-        
+
         List<ScottPlot.Plottable.Bar> bars = new();
         for (var i = 0; i < values.Length; i++)
         {
             var value = values[i];
-            
-            var clampValue = (int)Math.Round(Math.Clamp(value, 0, 99));
+
+            var clampValue = (int) Math.Round(Math.Clamp(value, 0, 100));
             ScottPlot.Plottable.Bar bar = new()
             {
                 Value = value,
@@ -330,12 +368,98 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
         plot.Height = 300;
         plot.Width = 350;
-        var playerType = PlayerOverview.IsPitcher ? "Pitcher" : "Batter";
+        var playerType =
+            FilterToPitcherType
+                ? PlayerOverview.PitcherRole
+                : PlayerOverview.IsPitcher
+                    ? "Pitcher"
+                    : "Batter";
         var title = $"{playerType} Attribute Percentiles (Season {SeasonStats.SeasonNumber})";
         plot.Plot.Title(title);
         plot.Render();
     }
-    
+
+    public void DrawPlayerKpisPercentilePlot(WpfPlot plot)
+    {
+        _playerKpisPercentilePlot = plot;
+        plot.Plot.Clear();
+
+        var hits = PlayerKpiPercentiles.Hits;
+        var homeRuns = PlayerKpiPercentiles.HomeRuns;
+        var battingAverage = PlayerKpiPercentiles.BattingAverage;
+        var stolenBases = PlayerKpiPercentiles.StolenBases;
+        var batterStrikeouts = PlayerKpiPercentiles.BatterStrikeouts;
+        var obp = PlayerKpiPercentiles.Obp;
+        var slg = PlayerKpiPercentiles.Slg;
+        var wins = PlayerKpiPercentiles.Wins;
+        var era = PlayerKpiPercentiles.Era;
+        var whip = PlayerKpiPercentiles.Whip;
+        var inningsPitched = PlayerKpiPercentiles.InningsPitched;
+        var pitcherStrikeoutsPerNine = PlayerKpiPercentiles.PitcherStrikeoutsPerNine;
+        var pitcherStrikeoutToWalkRatio = PlayerKpiPercentiles.PitcherStrikeoutToWalkRatio;
+
+        double[] values;
+        double[] labelPositions;
+        string[] labels;
+
+        if (PlayerOverview.IsPitcher)
+        {
+            // Use all of the values from batters below, but also add in the pitcher values
+            // Wins, ERA, WHIP, Innings Pitched, K/9, K/BB
+            // order by the pitcher values first, then the batter values
+            values = new[]
+            {
+                wins, era, whip, inningsPitched, pitcherStrikeoutsPerNine, pitcherStrikeoutToWalkRatio, hits, homeRuns, battingAverage,
+                stolenBases, batterStrikeouts, obp, slg
+            };
+            labelPositions = new[] {0D, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+            labels = new[]
+            {
+                "W", "ERA", "WHIP", "IP", "K/9", "K/BB", "Hits", "HR", "BA", "SB", "K",
+                "OBP", "SLG"
+            };
+        }
+        else
+        {
+            values = new[] {hits, homeRuns, battingAverage, stolenBases, batterStrikeouts, obp, slg};
+            labelPositions = new[] {0D, 1, 2, 3, 4, 5, 6};
+            labels = new[] {"H", "HR", "BA", "SB", "K", "OBP", "SLG"};
+        }
+
+        List<ScottPlot.Plottable.Bar> bars = new();
+        for (var i = 0; i < values.Length; i++)
+        {
+            var value = values[i];
+
+            var clampValue = (int) Math.Round(Math.Clamp(value, 0, 100));
+            ScottPlot.Plottable.Bar bar = new()
+            {
+                Value = value,
+                Position = i,
+                FillColor = GetValueColor(clampValue),
+                Label = value.ToString(CultureInfo.InvariantCulture),
+                LineWidth = 2,
+            };
+            bars.Add(bar);
+        }
+
+        plot.Plot.AddBarSeries(bars);
+        plot.Plot.SetAxisLimits(yMin: 0, yMax: 100);
+        plot.Plot.XTicks(positions: labelPositions, labels: labels);
+
+        plot.Height = 300;
+        plot.Width = 600;
+        var playerType =
+            FilterToPitcherType
+                ? PlayerOverview.PitcherRole
+                : PlayerOverview.IsPitcher
+                    ? "Pitcher"
+                    : "Batter";
+        var title = $"{playerType} Stat Percentiles (Season {SeasonStats.SeasonNumber})";
+        plot.Plot.Title(title);
+        plot.Render();
+    }
+
     private static Color GetValueColor(int value)
     {
         float weight;
@@ -344,8 +468,8 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             weight = value / 50f;
 
             // Interpolate between blue and white
-            var red = (int)(255 * weight);
-            var green = (int)(255 * weight);
+            var red = (int) (255 * weight);
+            var green = (int) (255 * weight);
             const int blue = 255;
 
             return Color.FromArgb(red, green, blue);
@@ -356,8 +480,8 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
             // Interpolate between white and red
             const int red = 255;
-            var green = (int)(255 * (1 - weight));
-            var blue = (int)(255 * (1 - weight));
+            var green = (int) (255 * (1 - weight));
+            var blue = (int) (255 * (1 - weight));
 
             return Color.FromArgb(red, green, blue);
         }

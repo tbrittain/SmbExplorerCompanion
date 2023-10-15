@@ -267,18 +267,35 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Orientation="Vertical">
-                    <ComboBox
-                        DockPanel.Dock="Left"
-                        Width="200"
-                        Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                        materialDesign:HintAssist.Hint="Season"
-                        ItemsSource="{Binding Seasons}"
-                        SelectedItem="{Binding SelectedSeason}"
-                        DisplayMemberPath="DisplaySeasonNumber" />
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox
+                            DockPanel.Dock="Left"
+                            Width="200"
+                            Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                            materialDesign:HintAssist.Hint="Season"
+                            ItemsSource="{Binding Seasons}"
+                            SelectedItem="{Binding SelectedSeason}"
+                            DisplayMemberPath="DisplaySeasonNumber" />
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <StackPanel.Visibility>
+                                <Binding Path="PlayerOverview.IsPitcher">
+                                    <Binding.Converter>
+                                        <StaticResource ResourceKey="BoolToVisibilityConverter" />
+                                    </Binding.Converter>
+                                </Binding>
+                            </StackPanel.Visibility>
+                            <Label Content="Filter to pitcher role" />
+                            <CheckBox
+                                IsChecked="{Binding FilterToPitcherType}" />
+                        </StackPanel>
+                    </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
                         <WpfPlot x:Name="PlayerGameStatsRadialPlot" />
                         <WpfPlot x:Name="PlayerGameStatsPercentilePlot" />
+                        <WpfPlot x:Name="PlayerKpisPercentilePlot" />
                     </StackPanel>
 
                 </StackPanel>
