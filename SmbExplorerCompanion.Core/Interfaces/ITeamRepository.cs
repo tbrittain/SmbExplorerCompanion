@@ -9,4 +9,6 @@ public interface ITeamRepository
     public Task<OneOf<IEnumerable<HistoricalTeamDto>, Exception>> GetHistoricalTeams(int? seasonId, CancellationToken cancellationToken);
     public Task<OneOf<TeamOverviewDto, Exception>> GetTeamOverview(int teamId, CancellationToken cancellationToken);
     public Task<OneOf<TeamSeasonDetailDto, Exception>> GetTeamSeasonDetail(int teamSeasonId, CancellationToken cancellationToken);
+    public Task<OneOf<HashSet<TeamScheduleBreakdown>, Exception>> GetTeamScheduleBreakdown(int teamSeasonId,
+        CancellationToken cancellationToken);
 }

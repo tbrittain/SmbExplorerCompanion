@@ -597,6 +597,63 @@ public class TeamRepository : ITeamRepository
         }
     }
 
+    public async Task<OneOf<HashSet<TeamScheduleBreakdown>, Exception>> GetTeamScheduleBreakdown(int teamSeasonId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var teamSeason = await _dbContext.SeasonTeamHistory
+                .Include(x => x.TeamNameHistory)
+                .Include(x => x.HomeSeasonSchedule)
+                .ThenInclude(x => x.AwayTeamHistory)
+                .ThenInclude(x => x.TeamNameHistory)
+                .Include(x => x.AwaySeasonSchedule)
+                .ThenInclude(x => x.HomeTeamHistory)
+                .ThenInclude(x => x.TeamNameHistory)
+                .Where(x => x.Id == teamSeasonId)
+                .SingleAsync(cancellationToken: cancellationToken);
+            
+            var gamesPlayed = teamSeason.HomeSeasonSchedule
+                .Concat(teamSeason.AwaySeasonSchedule)
+                .Where(x => x is {HomeScore: not null, AwayScore: not null})
+                .ToList();
+            
+            var teamScheduleBreakdowns = gamesPlayed
+                .Select(x =>
+                {
+                    if (x.HomeTeamHistoryId == teamSeasonId)
+                    {
+                        return new TeamScheduleBreakdown(
+                            teamSeasonId,
+                            teamSeason.TeamNameHistory.Name,
+                            x.AwayTeamHistoryId,
+                            x.AwayTeamHistory.TeamNameHistory.Name,
+                            x.Day,
+                            x.GlobalGameNumber,
+                            x.HomeScore!.Value,
+                            x.AwayScore!.Value);
+                    }
+
+                    return new TeamScheduleBreakdown(
+                        teamSeasonId,
+                        teamSeason.TeamNameHistory.Name,
+                        x.HomeTeamHistoryId,
+                        x.HomeTeamHistory.TeamNameHistory.Name,
+                        x.Day,
+                        x.GlobalGameNumber,
+                        x.AwayScore!.Value,
+                        x.HomeScore!.Value);
+                })
+                .OrderBy(x => x.Day)
+                .ToHashSet();
+            
+            return teamScheduleBreakdowns;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
     // We will only call this method if the playoffs completed so that we do not need to return partial playoff completion results
     private async Task<List<TeamPlayoffRoundResultDto>> GetTeamPlayoffResults(int maxPlayoffSeries,
         IEnumerable<TeamPlayoffSchedule> homePlayoffSchedule,
