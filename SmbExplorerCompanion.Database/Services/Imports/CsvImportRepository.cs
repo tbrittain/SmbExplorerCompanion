@@ -8,7 +8,7 @@ using SmbExplorerCompanion.Core.ValueObjects.Progress;
 using SmbExplorerCompanion.Csv.Services;
 using SmbExplorerCompanion.Database.Entities;
 
-namespace SmbExplorerCompanion.Database.Services;
+namespace SmbExplorerCompanion.Database.Services.Imports;
 
 public class CsvImportRepository : ICsvImportRepository
 {

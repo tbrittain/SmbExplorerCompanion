@@ -55,9 +55,15 @@
                             MaxLength="20"
                             Width="300" />
                         <Button
+                            Margin="5, 0, 0, 0"
                             Width="100"
                             Content="Search"
                             Command="{Binding GetSearchResultsCommand}" />
+                        <Button
+                            Margin="5, 0, 0, 0"
+                            Width="150"
+                            Content="Random Player"
+                            Command="{Binding NavigateToRandomPlayerOverviewPageCommand}" />
                     </StackPanel>
                 </StackPanel>
 

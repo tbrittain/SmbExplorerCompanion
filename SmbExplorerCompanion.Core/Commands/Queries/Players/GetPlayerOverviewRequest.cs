@@ -17,14 +17,14 @@ public class GetPlayerOverviewRequest : IRequest<OneOf<PlayerOverviewDto, Except
     // ReSharper disable once UnusedType.Global
     internal class GetPlayerOverviewHandler : IRequestHandler<GetPlayerOverviewRequest, OneOf<PlayerOverviewDto, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
-        public GetPlayerOverviewHandler(IPlayerRepository playerRepository)
+        public GetPlayerOverviewHandler(IGeneralPlayerRepository generalPlayerRepository)
         {
-            _playerRepository = playerRepository;
+            _generalPlayerRepository = generalPlayerRepository;
         }
 
         public async Task<OneOf<PlayerOverviewDto, Exception>> Handle(GetPlayerOverviewRequest request, CancellationToken cancellationToken) =>
-            await _playerRepository.GetHistoricalPlayer(request.PlayerId, cancellationToken);
+            await _generalPlayerRepository.GetHistoricalPlayer(request.PlayerId, cancellationToken);
     }
 }

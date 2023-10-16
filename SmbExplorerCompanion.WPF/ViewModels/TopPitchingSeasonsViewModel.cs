@@ -11,7 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Players;
@@ -29,20 +28,18 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private readonly INavigationService _navigationService;
     private bool _isPlayoffs;
     private int _pageNumber = 1;
-    private PlayerBase? _selectedPlayer;
+    private PlayerSeasonBase? _selectedPlayer;
     private Season? _selectedSeason;
     private bool _onlyRookies;
     private PitcherRole? _selectedPitcherRole;
 
-    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
-
+        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);
@@ -158,7 +155,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
 
-    public PlayerBase? SelectedPlayer
+    public PlayerSeasonBase? SelectedPlayer
     {
         get => _selectedPlayer;
         set => SetField(ref _selectedPlayer, value);
@@ -244,11 +241,12 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
-    private void NavigateToPlayerOverview(PlayerBase player)
+    private void NavigateToPlayerOverview(PlayerSeasonBase player)
     {
         var parameters = new Tuple<string, object>[]
         {
-            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
+            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId),
+            new(PlayerOverviewViewModel.SeasonIdProp, player.SeasonId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }

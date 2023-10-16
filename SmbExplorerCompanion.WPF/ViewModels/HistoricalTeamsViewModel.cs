@@ -8,7 +8,6 @@ using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Mappings.Teams;
@@ -25,14 +24,13 @@ public class HistoricalTeamsViewModel : ViewModelBase
     private HistoricalTeam? _selectedHistoricalTeam;
     private Season? _selectedSeason;
 
-    public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         _mediator = mediator;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
+        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
 
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {

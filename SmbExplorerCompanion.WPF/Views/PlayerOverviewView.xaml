@@ -7,6 +7,7 @@
              xmlns:dataTemplateSelectors="clr-namespace:SmbExplorerCompanion.WPF.DataTemplateSelectors"
              xmlns:players="clr-namespace:SmbExplorerCompanion.WPF.Models.Players"
              xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}"
              x:Name="Control">
@@ -55,6 +56,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="350" />
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -258,6 +260,44 @@
                                 Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox
+                            DockPanel.Dock="Left"
+                            Width="200"
+                            Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                            materialDesign:HintAssist.Hint="Season"
+                            ItemsSource="{Binding Seasons}"
+                            SelectedItem="{Binding SelectedSeason}"
+                            DisplayMemberPath="DisplaySeasonNumber" />
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <StackPanel.Visibility>
+                                <Binding Path="PlayerOverview.IsPitcher">
+                                    <Binding.Converter>
+                                        <StaticResource ResourceKey="BoolToVisibilityConverter" />
+                                    </Binding.Converter>
+                                </Binding>
+                            </StackPanel.Visibility>
+                            <Label Content="Filter to pitcher role" />
+                            <CheckBox
+                                IsChecked="{Binding FilterToPitcherType}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <WpfPlot x:Name="PlayerGameStatsRadialPlot" />
+                        <WpfPlot x:Name="PlayerGameStatsPercentilePlot" />
+                        <WpfPlot x:Name="PlayerKpisPercentilePlot" />
+                    </StackPanel>
+
                 </StackPanel>
             </Grid>
 
@@ -751,6 +791,22 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="H/9"
+                                        Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="HR/9"
+                                        Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="K/9"
+                                        Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="K/BB"
+                                        Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
                                         Header="ER"
                                         Binding="{Binding EarnedRuns}"
                                         CanUserSort="True" />
@@ -921,6 +977,22 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="H/9"
+                                        Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="HR/9"
+                                        Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="K/9"
+                                        Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="False"
+                                        Header="K/BB"
+                                        Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
                                         Header="ER"
                                         Binding="{Binding EarnedRuns}"
                                         CanUserSort="True" />
@@ -1042,7 +1114,7 @@
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
-            
+
             <StackPanel Orientation="Vertical">
                 <TextBlock FontSize="16" FontWeight="SemiBold">Similar Players</TextBlock>
                 <ItemsControl

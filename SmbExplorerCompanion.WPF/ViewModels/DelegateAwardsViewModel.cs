@@ -13,7 +13,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Lookups;
@@ -33,14 +32,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
     private readonly IMediator _mediator;
     private Season? _selectedSeason;
 
-    public DelegateAwardsViewModel(IMediator mediator, IApplicationContext applicationContext)
+    public DelegateAwardsViewModel(IMediator mediator)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
-
+        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);

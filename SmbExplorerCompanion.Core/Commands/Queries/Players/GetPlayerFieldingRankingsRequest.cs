@@ -24,16 +24,16 @@ public class GetPlayerFieldingRankingsRequest : IRequest<OneOf<List<PlayerFieldi
     internal class GetPlayerFieldingRankingsHandler : IRequestHandler<GetPlayerFieldingRankingsRequest,
         OneOf<List<PlayerFieldingRankingDto>, Exception>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
-        public GetPlayerFieldingRankingsHandler(IPlayerRepository playerRepository)
+        public GetPlayerFieldingRankingsHandler(IGeneralPlayerRepository generalPlayerRepository)
         {
-            _playerRepository = playerRepository;
+            _generalPlayerRepository = generalPlayerRepository;
         }
 
         public async Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> Handle(GetPlayerFieldingRankingsRequest request,
             CancellationToken cancellationToken) =>
-            await _playerRepository.GetPlayerFieldingRankings(request.SeasonId,
+            await _generalPlayerRepository.GetPlayerFieldingRankings(request.SeasonId,
                 request.PrimaryPositionId,
                 request.PageNumber,
                 request.Limit,

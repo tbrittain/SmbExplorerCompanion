@@ -53,14 +53,31 @@
                 </StackPanel>
             </Grid>
 
+            <StackPanel Height="325">
+                <WpfPlot x:Name="TeamSchedulePlot" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox
+                            IsChecked="{Binding IncludeDivisionTeamsInPlot}" />
+                        <Label Content="Include entire division" />
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox
+                            IsChecked="{Binding IncludeMarginOfVictoryInPlot}" />
+                        <Label Content="Include margin of victory/loss" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
             <StackPanel>
                 <ScrollViewer>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition MaxHeight="600" />
+                            <RowDefinition Height="600" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition MaxHeight="300" />
+                            <RowDefinition Height="300" />
                         </Grid.RowDefinitions>
 
                         <TextBlock FontSize="14" Text="Season Batting" FontWeight="Bold" />
@@ -373,6 +390,22 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="H/9"
+                                    Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="HR/9"
+                                    Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="K/9"
+                                    Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="K/BB"
+                                    Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
                                     Header="ER"
                                     Binding="{Binding EarnedRuns}"
                                     CanUserSort="True" />
@@ -412,9 +445,9 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition MaxHeight="600" />
+                            <RowDefinition Height="600" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition MaxHeight="300" />
+                            <RowDefinition Height="300" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" FontSize="14" Text="Playoff Batting" FontWeight="Bold" />
@@ -726,6 +759,22 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="H/9"
+                                    Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="HR/9"
+                                    Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="K/9"
+                                    Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="K/BB"
+                                    Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
                                 <DataGridTextColumn
                                     Header="ER"
                                     Binding="{Binding EarnedRuns}"

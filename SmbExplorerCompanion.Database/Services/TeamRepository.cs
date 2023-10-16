@@ -12,13 +12,18 @@ public class TeamRepository : ITeamRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
-    private readonly IPlayerRepository _playerRepository;
+    private readonly IPositionPlayerSeasonRepository _positionPlayerSeasonRepository;
+    private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
 
-    public TeamRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext, IPlayerRepository playerRepository)
+    public TeamRepository(SmbExplorerCompanionDbContext dbContext,
+        IApplicationContext applicationContext,
+        IPositionPlayerSeasonRepository positionPlayerSeasonRepository,
+        IPitcherSeasonRepository pitcherSeasonRepository)
     {
         _dbContext = dbContext;
         _applicationContext = applicationContext;
-        _playerRepository = playerRepository;
+        _positionPlayerSeasonRepository = positionPlayerSeasonRepository;
+        _pitcherSeasonRepository = pitcherSeasonRepository;
     }
 
     public async Task<OneOf<IEnumerable<TeamDto>, Exception>> GetSeasonTeams(int seasonId, CancellationToken cancellationToken)
@@ -359,7 +364,9 @@ public class TeamRepository : ITeamRepository
                 .Include(x => x.PlayerSeasons)
                 .ThenInclude(x => x.PitchingStats)
                 .Include(player => player.PlayerSeasons)
-                .ThenInclude(playerSeason => playerSeason.ChampionshipWinner)
+                .ThenInclude(x => x.ChampionshipWinner)
+                .Include(player => player.PlayerSeasons)
+                .ThenInclude(x => x.Season)
                 .Where(x => x.PlayerSeasons
                     .Any(y => y.PlayerTeamHistory
                         .Any(z => z.SeasonTeamHistory != null && z.SeasonTeamHistory.TeamId == teamId)))
@@ -378,6 +385,9 @@ public class TeamRepository : ITeamRepository
                             .Any(z => z.SeasonTeamHistory is not null && z.SeasonTeamHistory.TeamId == teamId))
                         .ToList();
                     dto.NumSeasonsWithTeam = seasonsWithTeam.Count;
+                    dto.SeasonNumbers = seasonsWithTeam
+                        .Select(y => y.Season.Number)
+                        .ToList();
 
                     var isPitcher = x.PitcherRoleId is not null;
                     dto.IsPitcher = isPitcher;
@@ -534,7 +544,7 @@ public class TeamRepository : ITeamRepository
                     teamSeason.HomePlayoffSchedule,
                     teamSeason.AwayPlayoffSchedule);
 
-                var playoffPitchingResult = await _playerRepository.GetPitchingSeasons(
+                var playoffPitchingResult = await _pitcherSeasonRepository.GetPitchingSeasons(
                     seasonId: seasonId,
                     isPlayoffs: true,
                     teamId: teamId,
@@ -545,7 +555,7 @@ public class TeamRepository : ITeamRepository
 
                 teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
 
-                var playoffBattingResult = await _playerRepository.GetBattingSeasons(
+                var playoffBattingResult = await _positionPlayerSeasonRepository.GetBattingSeasons(
                     seasonId: seasonId,
                     isPlayoffs: true,
                     teamId: teamId,
@@ -557,7 +567,7 @@ public class TeamRepository : ITeamRepository
                 teamSeasonDetailDto.PlayoffBatting = playoffBattingSeasonDtos;
             }
 
-            var regularSeasonPitchingResult = await _playerRepository.GetPitchingSeasons(
+            var regularSeasonPitchingResult = await _pitcherSeasonRepository.GetPitchingSeasons(
                 seasonId: seasonId,
                 isPlayoffs: false,
                 teamId: teamId,
@@ -568,7 +578,7 @@ public class TeamRepository : ITeamRepository
 
             teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
 
-            var regularSeasonBattingResult = await _playerRepository.GetBattingSeasons(
+            var regularSeasonBattingResult = await _positionPlayerSeasonRepository.GetBattingSeasons(
                 seasonId: seasonId,
                 isPlayoffs: false,
                 teamId: teamId,
@@ -580,6 +590,92 @@ public class TeamRepository : ITeamRepository
             teamSeasonDetailDto.RegularSeasonBatting = regularBattingSeasonDtos;
 
             return teamSeasonDetailDto;
+        }
+        catch (Exception e)
+        {
+            return e;
+        }
+    }
+
+    public async Task<OneOf<DivisionScheduleBreakdownDto, Exception>> GetTeamScheduleBreakdown(int teamSeasonId,
+        bool includeDivision,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var seasonId = await _dbContext.SeasonTeamHistory
+                .Where(x => x.Id == teamSeasonId)
+                .Select(x => x.SeasonId)
+                .SingleAsync(cancellationToken: cancellationToken);
+            var teamSeasonIds = new List<int>(teamSeasonId);
+            if (includeDivision)
+            {
+                var divisionId = await _dbContext.SeasonTeamHistory
+                    .Where(x => x.Id == teamSeasonId)
+                    .Select(x => x.DivisionId)
+                    .SingleAsync(cancellationToken: cancellationToken);
+                
+                teamSeasonIds = await _dbContext.SeasonTeamHistory
+                    .Include(x => x.Division)
+                    .Where(x => x.SeasonId == seasonId)
+                    .Where(x => x.DivisionId == divisionId)
+                    .Select(x => x.Id)
+                    .ToListAsync(cancellationToken: cancellationToken);
+                teamSeasonIds = teamSeasonIds.Distinct().ToList();
+            }
+
+            var divisionScheduleBreakdown = new DivisionScheduleBreakdownDto();
+            foreach (var currentTeamSeasonId in teamSeasonIds)
+            {
+                var teamSeason = await _dbContext.SeasonTeamHistory
+                    .Include(x => x.TeamNameHistory)
+                    .Include(x => x.HomeSeasonSchedule)
+                    .ThenInclude(x => x.AwayTeamHistory)
+                    .ThenInclude(x => x.TeamNameHistory)
+                    .Include(x => x.AwaySeasonSchedule)
+                    .ThenInclude(x => x.HomeTeamHistory)
+                    .ThenInclude(x => x.TeamNameHistory)
+                    .Where(x => x.Id == currentTeamSeasonId)
+                    .SingleAsync(cancellationToken: cancellationToken);
+
+                var gamesPlayed = teamSeason.HomeSeasonSchedule
+                    .Concat(teamSeason.AwaySeasonSchedule)
+                    .Where(x => x is {HomeScore: not null, AwayScore: not null})
+                    .ToList();
+
+                var teamScheduleBreakdowns = gamesPlayed
+                    .Select(x =>
+                    {
+                        if (x.HomeTeamHistoryId == currentTeamSeasonId)
+                        {
+                            return new TeamScheduleBreakdownDto(
+                                x.HomeTeamHistoryId,
+                                x.HomeTeamHistory.TeamNameHistory.Name,
+                                x.AwayTeamHistoryId,
+                                x.AwayTeamHistory.TeamNameHistory.Name,
+                                x.Day,
+                                x.GlobalGameNumber,
+                                x.HomeScore!.Value,
+                                x.AwayScore!.Value);
+                        }
+
+                        return new TeamScheduleBreakdownDto(
+                            x.AwayTeamHistoryId,
+                            x.AwayTeamHistory.TeamNameHistory.Name,
+                            x.HomeTeamHistoryId,
+                            x.HomeTeamHistory.TeamNameHistory.Name,
+                            x.Day,
+                            x.GlobalGameNumber,
+                            x.AwayScore!.Value,
+                            x.HomeScore!.Value);
+                    })
+                    .OrderBy(x => x.Day)
+                    .ToHashSet();
+
+                divisionScheduleBreakdown.TeamScheduleBreakdowns.Add(teamScheduleBreakdowns);
+            }
+
+            return divisionScheduleBreakdown;
         }
         catch (Exception e)
         {

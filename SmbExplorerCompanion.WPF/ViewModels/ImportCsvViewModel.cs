@@ -38,8 +38,7 @@ public partial class ImportCsvViewModel : ViewModelBase
         _csvImportRepository = csvImportRepository;
         _applicationContext = applicationContext;
 
-        var seasonsResponse = mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
+        var seasonsResponse = mediator.Send(new GetSeasonsRequest()).Result;
 
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {

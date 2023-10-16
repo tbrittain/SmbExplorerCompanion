@@ -12,13 +12,18 @@ public class SummaryRepository : ISummaryRepository
 {
     private readonly SmbExplorerCompanionDbContext _context;
     private readonly IApplicationContext _applicationContext;
-    private readonly IPlayerRepository _playerRepository;
+    private readonly IPitcherCareerRepository _pitcherCareerRepository;
+    private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
 
-    public SummaryRepository(SmbExplorerCompanionDbContext context, IApplicationContext applicationContext, IPlayerRepository playerRepository)
+    public SummaryRepository(SmbExplorerCompanionDbContext context,
+        IApplicationContext applicationContext,
+        IPitcherCareerRepository pitcherCareerRepository,
+        IPositionPlayerCareerRepository positionPlayerCareerRepository)
     {
         _context = context;
         _applicationContext = applicationContext;
-        _playerRepository = playerRepository;
+        _pitcherCareerRepository = pitcherCareerRepository;
+        _positionPlayerCareerRepository = positionPlayerCareerRepository;
     }
 
     public Task<bool> HasFranchiseDataAsync(CancellationToken cancellationToken = default)
@@ -214,7 +219,7 @@ public class SummaryRepository : ISummaryRepository
                 franchiseSummaryDto.TopStrikeouts = topStrikeouts;
             }
 
-            var currentBattingGreatsResponse = await _playerRepository.GetBattingCareers(
+            var currentBattingGreatsResponse = await _positionPlayerCareerRepository.GetBattingCareers(
                 limit: 5,
                 onlyActivePlayers: true,
                 cancellationToken: cancellationToken);
@@ -224,7 +229,7 @@ public class SummaryRepository : ISummaryRepository
                 return exception;
             }
 
-            var currentPitchingGreatsResponse = await _playerRepository.GetPitchingCareers(
+            var currentPitchingGreatsResponse = await _pitcherCareerRepository.GetPitchingCareers(
                 limit: 5,
                 onlyActivePlayers: true,
                 cancellationToken: cancellationToken);
@@ -304,7 +309,7 @@ public class SummaryRepository : ISummaryRepository
                     var mostRecentSeasonTeamHistoryDtos = mostRecentSeasonTeamHistory
                         .Select(x =>
                         {
-                            var teamSummary = 
+                            var teamSummary =
                                 new TeamSummaryDto
                                 {
                                     Id = x.TeamId,
@@ -327,7 +332,7 @@ public class SummaryRepository : ISummaryRepository
                                         .Any(y => y.SeriesNumber == maxPlayoffSeries);
                                 teamSummary.IsChampion = x.ChampionshipWinner is not null;
                             }
-                            
+
                             return teamSummary;
                         })
                         .ToList();
