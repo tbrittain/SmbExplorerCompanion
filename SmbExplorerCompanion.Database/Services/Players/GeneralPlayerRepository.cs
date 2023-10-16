@@ -325,25 +325,25 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanPower = await queryable
-                .Where(x => power >= x.Power)
+                .Where(x => power > x.Power)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanContact = await queryable
-                .Where(x => contact >= x.Contact)
+                .Where(x => contact > x.Contact)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanSpeed = await queryable
-                .Where(x => speed >= x.Speed)
+                .Where(x => speed > x.Speed)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanFielding = await queryable
-                .Where(x => fielding >= x.Fielding)
+                .Where(x => fielding > x.Fielding)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
@@ -356,7 +356,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             if (!isPitcher)
             {
                 greaterThanArm = await queryable
-                    .Where(x => arm >= x.Arm)
+                    .Where(x => arm > x.Arm)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
@@ -364,19 +364,19 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             else
             {
                 greaterThanVelocity = await queryable
-                    .Where(x => velocity >= x.Velocity)
+                    .Where(x => velocity > x.Velocity)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 greaterThanJunk = await queryable
-                    .Where(x => junk >= x.Junk)
+                    .Where(x => junk > x.Junk)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 greaterThanAccuracy = await queryable
-                    .Where(x => accuracy >= x.Accuracy)
+                    .Where(x => accuracy > x.Accuracy)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
@@ -445,45 +445,45 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var greaterThanHits = await battingQueryable
-                    .Where(x => hits >= x.Hits)
+                    .Where(x => hits > x.Hits)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var greaterThanHomeRuns = await battingQueryable
-                    .Where(x => homeRuns >= x.HomeRuns)
+                    .Where(x => homeRuns > x.HomeRuns)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var greaterThanBattingAverage = await battingQueryable
-                    .Where(x => battingAverage >= x.BattingAverage)
+                    .Where(x => battingAverage > x.BattingAverage)
                     .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var greaterThanStolenBases = await battingQueryable
-                    .Where(x => stolenBases >= x.StolenBases)
+                    .Where(x => stolenBases > x.StolenBases)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var lessThanBatterStrikeouts = await battingQueryable
-                    .Where(x => batterStrikeouts <= x.Strikeouts)
+                    .Where(x => batterStrikeouts < x.Strikeouts)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var greaterThanObp = await battingQueryable
-                    .Where(x => obp >= x.Obp)
+                    .Where(x => obp > x.Obp)
                     .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var greaterThanSlg = await battingQueryable
-                    .Where(x => slg >= x.Slg)
+                    .Where(x => slg > x.Slg)
                     .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()

@@ -179,7 +179,8 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     {
         var parameters = new Tuple<string, object>[]
         {
-            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
+            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId),
+            new(PlayerOverviewViewModel.TeamSeasonIdProp, TeamSeasonId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }

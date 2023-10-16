@@ -11,7 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Lookups;
 using SmbExplorerCompanion.WPF.Mappings.Players;
@@ -34,15 +33,13 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private bool _onlyRookies;
     private PitcherRole? _selectedPitcherRole;
 
-    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
-
+        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);

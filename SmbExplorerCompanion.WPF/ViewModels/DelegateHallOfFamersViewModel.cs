@@ -10,7 +10,6 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Awards;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Players;
@@ -25,15 +24,12 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
     private readonly IMediator _mediator;
     private Season? _selectedSeason;
 
-    public DelegateHallOfFamersViewModel(IMediator mediator,
-        IApplicationContext applicationContext)
+    public DelegateHallOfFamersViewModel(IMediator mediator)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
-
+        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
         {
             MessageBox.Show(exception.Message);

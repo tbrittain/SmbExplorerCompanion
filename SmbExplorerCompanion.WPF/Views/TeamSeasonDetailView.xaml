@@ -58,7 +58,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <CheckBox
                         IsChecked="{Binding IncludeDivisionTeamsInPlot}" />
-                    <Label Content="All division" />
+                    <Label Content="Include entire division" />
                 </StackPanel>
             </StackPanel>
 

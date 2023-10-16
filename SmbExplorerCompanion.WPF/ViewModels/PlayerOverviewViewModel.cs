@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -15,7 +16,6 @@ using ScottPlot.Drawing;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
-using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Mappings.Seasons;
@@ -28,11 +28,12 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public partial class PlayerOverviewViewModel : ViewModelBase
 {
     public const string PlayerIdProp = "PlayerId";
+    public const string TeamSeasonIdProp = "TeamSeasonId";
     private readonly INavigationService _navigationService;
     private Season? _selectedSeason;
     private readonly ISender _mediator;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, IApplicationContext applicationContext)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -44,6 +45,24 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             const string message = "Could not get player id from navigation parameters.";
             MessageBox.Show(message);
             throw new Exception(message);
+        }
+
+        int? referredSeasonId = null;
+        ok = _navigationService.TryGetParameter<int>(TeamSeasonIdProp, out var teamSeasonId);
+        if (ok)
+        {
+            var seasonResponse = _mediator.Send(new GetSeasonByTeamHistoryRequest(teamSeasonId)).Result;
+            if (seasonResponse.TryPickT2(out var e, out var rest))
+            {
+                MessageBox.Show(e.Message);
+                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+                return;
+            }
+
+            if (rest.TryPickT0(out var season, out _))
+            {
+                referredSeasonId = season.Id;
+            }
         }
 
         PlayerId = playerId;
@@ -77,8 +96,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var similarPlayerMapper = new SimilarPlayerMapping();
         SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
+        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
 
         if (seasonsResponse.TryPickT1(out exception, out var seasons))
         {
@@ -100,7 +118,18 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             .Select(s => seasonMapper.FromDto(s))
             .ToList();
         Seasons.AddRange(playerSeasons);
-        SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+
+        if (referredSeasonId.HasValue)
+        {
+            SelectedSeason = Seasons.SingleOrDefault(x => x.Id == referredSeasonId);
+            Debug.Assert(SelectedSeason is not null);
+            SelectedSeason ??= Seasons.OrderByDescending(x => x.Number).First();
+        }
+        else
+        {
+            SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+        }
+        
 
         GeneratePlots().Wait();
 
