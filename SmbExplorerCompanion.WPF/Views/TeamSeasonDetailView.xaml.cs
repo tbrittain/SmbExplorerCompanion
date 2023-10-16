@@ -33,12 +33,9 @@ public partial class TeamSeasonDetailView : IDisposable
         var position = e.GetPosition(TeamSchedulePlot);
         var (mouseX, mouseY) = TeamSchedulePlot.Plot.GetCoordinate((float)position.X, (float)position.Y);
 
-        // Define a threshold for how close the cursor must be to a data point to show the tooltip
-        const double thresholdX = 1; // Example value, adjust as needed
-        const double thresholdY = 0.5; // Example value, adjust as needed
+        const double thresholdX = 1;
+        const double thresholdY = 0.5;
 
-        // Iterate over all data points and find the one nearest to the mouse
-        // Note: This is a simple linear search. For large datasets, a more efficient search strategy might be needed.
         TeamScheduleBreakdown? nearestPoint = null;
         var nearestDistance = double.MaxValue;
         
@@ -75,8 +72,7 @@ public partial class TeamSeasonDetailView : IDisposable
             var wasWin = nearestPoint.TeamScore > nearestPoint.OpponentTeamScore ? "win" : "lose";
             var annotationText = $"Game {nearestPoint.Day}: {nearestPoint.TeamName} {wasWin} against {nearestPoint.OpponentTeamName} {nearestPoint.TeamScore} - {nearestPoint.OpponentTeamScore}";
             _tooltip = TeamSchedulePlot.Plot.AddTooltip(annotationText, nearestPoint.Day, nearestPoint.WinsDelta);
-
-            // Redraw the plot to show the new annotation
+            
             TeamSchedulePlot.Plot.Render();
         }
         else
