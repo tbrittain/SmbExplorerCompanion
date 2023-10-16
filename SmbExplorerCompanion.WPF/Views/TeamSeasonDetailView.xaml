@@ -53,8 +53,13 @@
                 </StackPanel>
             </Grid>
 
-            <StackPanel Height="300">
+            <StackPanel Height="325">
                 <WpfPlot x:Name="TeamSchedulePlot" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <CheckBox
+                        IsChecked="{Binding IncludeDivisionTeamsInPlot}" />
+                    <Label Content="All division" />
+                </StackPanel>
             </StackPanel>
 
             <StackPanel>

@@ -625,7 +625,7 @@ public class TeamRepository : ITeamRepository
             }
 
             var divisionScheduleBreakdown = new DivisionScheduleBreakdownDto();
-            foreach (var id in teamSeasonIds)
+            foreach (var currentTeamSeasonId in teamSeasonIds)
             {
                 var teamSeason = await _dbContext.SeasonTeamHistory
                     .Include(x => x.TeamNameHistory)
@@ -635,7 +635,7 @@ public class TeamRepository : ITeamRepository
                     .Include(x => x.AwaySeasonSchedule)
                     .ThenInclude(x => x.HomeTeamHistory)
                     .ThenInclude(x => x.TeamNameHistory)
-                    .Where(x => x.Id == id)
+                    .Where(x => x.Id == currentTeamSeasonId)
                     .SingleAsync(cancellationToken: cancellationToken);
 
                 var gamesPlayed = teamSeason.HomeSeasonSchedule
@@ -646,11 +646,11 @@ public class TeamRepository : ITeamRepository
                 var teamScheduleBreakdowns = gamesPlayed
                     .Select(x =>
                     {
-                        if (x.HomeTeamHistoryId == teamSeasonId)
+                        if (x.HomeTeamHistoryId == currentTeamSeasonId)
                         {
                             return new TeamScheduleBreakdownDto(
-                                teamSeasonId,
-                                teamSeason.TeamNameHistory.Name,
+                                x.HomeTeamHistoryId,
+                                x.HomeTeamHistory.TeamNameHistory.Name,
                                 x.AwayTeamHistoryId,
                                 x.AwayTeamHistory.TeamNameHistory.Name,
                                 x.Day,
@@ -660,8 +660,8 @@ public class TeamRepository : ITeamRepository
                         }
 
                         return new TeamScheduleBreakdownDto(
-                            teamSeasonId,
-                            teamSeason.TeamNameHistory.Name,
+                            x.AwayTeamHistoryId,
+                            x.AwayTeamHistory.TeamNameHistory.Name,
                             x.HomeTeamHistoryId,
                             x.HomeTeamHistory.TeamNameHistory.Name,
                             x.Day,

@@ -21,6 +21,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     public const string SeasonTeamIdProp = "SeasonTeamId";
     private readonly INavigationService _navigationService;
     private PlayerBase? _selectedPlayer;
+    private bool _includeDivisionTeamsInPlot = true;
 
     public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator)
     {
@@ -80,10 +81,22 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                     NavigateToPlayerOverview(SelectedPlayer);
                 break;
             }
+            case nameof(IncludeDivisionTeamsInPlot):
+            {
+                if (_teamSchedulePlot is not null)
+                    DrawTeamSchedulePlot(_teamSchedulePlot);
+                break;
+            }
         }
     }
 
-    private List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
+    public bool IncludeDivisionTeamsInPlot
+    {
+        get => _includeDivisionTeamsInPlot;
+        set => SetField(ref _includeDivisionTeamsInPlot, value);
+    }
+
+    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
 
     private static List<HashSet<TeamScheduleBreakdown>> SetBreakdowns(List<HashSet<TeamScheduleBreakdownDto>> divisionSchedules)
     {
@@ -109,15 +122,28 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 
         return divisionScheduleBreakdowns;
     }
+    
+    private WpfPlot? _teamSchedulePlot;
 
     public void DrawTeamSchedulePlot(WpfPlot plot)
     {
+        _teamSchedulePlot = plot;
         plot.Plot.Clear();
         plot.Plot.Palette = Palette.Microcharts;
 
         var min = 0D;
         var max = 0D;
-        foreach (var breakdown in TeamScheduleBreakdowns)
+
+        var breakdowns = TeamScheduleBreakdowns;
+        if (!IncludeDivisionTeamsInPlot)
+        {
+            breakdowns = breakdowns
+                .Where(b => b
+                    .All(x => x.TeamHistoryId == TeamSeasonId))
+                .ToList();
+        }
+
+        foreach (var breakdown in breakdowns)
         {
             var teamScheduleBreakdowns = breakdown
                 .OrderBy(b => b.Day)
@@ -164,6 +190,6 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         set => SetField(ref _selectedPlayer, value);
     }
 
-    private int TeamSeasonId { get; }
+    public int TeamSeasonId { get; }
     public TeamSeasonDetail TeamSeasonDetail { get; set; }
 }
