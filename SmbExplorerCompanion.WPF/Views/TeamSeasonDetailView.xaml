@@ -56,9 +56,17 @@
             <StackPanel Height="325">
                 <WpfPlot x:Name="TeamSchedulePlot" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <CheckBox
-                        IsChecked="{Binding IncludeDivisionTeamsInPlot}" />
-                    <Label Content="Include entire division" />
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox
+                            IsChecked="{Binding IncludeDivisionTeamsInPlot}" />
+                        <Label Content="Include entire division" />
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox
+                            IsChecked="{Binding IncludeMarginOfVictoryInPlot}" />
+                        <Label Content="Include margin of victory/loss" />
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
 

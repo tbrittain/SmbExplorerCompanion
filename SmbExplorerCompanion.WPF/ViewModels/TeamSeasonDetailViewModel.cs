@@ -22,6 +22,8 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     private readonly INavigationService _navigationService;
     private PlayerBase? _selectedPlayer;
     private bool _includeDivisionTeamsInPlot = true;
+    private WpfPlot? _teamSchedulePlot;
+    private bool _includeMarginOfVictoryInPlot;
 
     public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator)
     {
@@ -81,6 +83,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                     NavigateToPlayerOverview(SelectedPlayer);
                 break;
             }
+            case nameof(IncludeMarginOfVictoryInPlot):
             case nameof(IncludeDivisionTeamsInPlot):
             {
                 if (_teamSchedulePlot is not null)
@@ -94,6 +97,12 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     {
         get => _includeDivisionTeamsInPlot;
         set => SetField(ref _includeDivisionTeamsInPlot, value);
+    }
+
+    public bool IncludeMarginOfVictoryInPlot
+    {
+        get => _includeMarginOfVictoryInPlot;
+        set => SetField(ref _includeMarginOfVictoryInPlot, value);
     }
 
     public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
@@ -122,8 +131,6 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 
         return divisionScheduleBreakdowns;
     }
-    
-    private WpfPlot? _teamSchedulePlot;
 
     public void DrawTeamSchedulePlot(WpfPlot plot)
     {
@@ -159,7 +166,25 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                 .Select(b => (double)b.WinsDelta)
                 .ToArray();
         
-            plot.Plot.AddScatterStep(xs: days, ys: steps, label: breakdown.First().TeamName, lineWidth: 2);
+            var scatterPlot = plot.Plot.AddScatterStep(xs: days, ys: steps, label: breakdown.First().TeamName, lineWidth: 2);
+            scatterPlot.MarkerShape = MarkerShape.filledCircle;
+            scatterPlot.MarkerSize = 2;
+
+            if (IncludeMarginOfVictoryInPlot)
+            {
+                var yErrPos = teamScheduleBreakdowns
+                    .Select(b => b.TeamScore > b.OpponentTeamScore ? b.TeamScore - b.OpponentTeamScore : 0D)
+                    .ToArray();
+                var yErrNeg = teamScheduleBreakdowns
+                    .Select(b => b.TeamScore < b.OpponentTeamScore ? b.OpponentTeamScore - b.TeamScore : 0D)
+                    .ToArray();
+
+                var xErrors = teamScheduleBreakdowns
+                    .Select(_ => 0D)
+                    .ToArray();
+                
+                plot.Plot.AddErrorBars(xs: days, ys: steps,xErrorsPositive: xErrors, xErrorsNegative: xErrors, yErrorsNegative: yErrNeg, yErrorsPositive: yErrPos);
+            }
         }
 
         plot.Plot.AddHorizontalLine(0, color: System.Drawing.Color.Black, style: LineStyle.Dash);
