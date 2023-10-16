@@ -28,7 +28,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private readonly INavigationService _navigationService;
     private bool _isPlayoffs;
     private int _pageNumber = 1;
-    private PlayerBase? _selectedPlayer;
+    private PlayerSeasonBase? _selectedPlayer;
     private Season? _selectedSeason;
     private bool _onlyRookies;
     private PitcherRole? _selectedPitcherRole;
@@ -155,7 +155,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
 
-    public PlayerBase? SelectedPlayer
+    public PlayerSeasonBase? SelectedPlayer
     {
         get => _selectedPlayer;
         set => SetField(ref _selectedPlayer, value);
@@ -241,11 +241,12 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
-    private void NavigateToPlayerOverview(PlayerBase player)
+    private void NavigateToPlayerOverview(PlayerSeasonBase player)
     {
         var parameters = new Tuple<string, object>[]
         {
-            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId)
+            new(PlayerOverviewViewModel.PlayerIdProp, player.PlayerId),
+            new(PlayerOverviewViewModel.SeasonIdProp, player.SeasonId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }

@@ -28,6 +28,7 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 public partial class PlayerOverviewViewModel : ViewModelBase
 {
     public const string PlayerIdProp = "PlayerId";
+    public const string SeasonIdProp = "SeasonId";
     public const string TeamSeasonIdProp = "TeamSeasonId";
     private readonly INavigationService _navigationService;
     private Season? _selectedSeason;
@@ -48,20 +49,28 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         }
 
         int? referredSeasonId = null;
-        ok = _navigationService.TryGetParameter<int>(TeamSeasonIdProp, out var teamSeasonId);
+        ok = _navigationService.TryGetParameter<int>(SeasonIdProp, out var seasonId);
         if (ok)
         {
-            var seasonResponse = _mediator.Send(new GetSeasonByTeamHistoryRequest(teamSeasonId)).Result;
-            if (seasonResponse.TryPickT2(out var e, out var rest))
+            referredSeasonId = seasonId;
+        }
+        else
+        {
+            ok = _navigationService.TryGetParameter<int>(TeamSeasonIdProp, out var teamSeasonId);
+            if (ok)
             {
-                MessageBox.Show(e.Message);
-                Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-                return;
-            }
+                var seasonResponse = _mediator.Send(new GetSeasonByTeamHistoryRequest(teamSeasonId)).Result;
+                if (seasonResponse.TryPickT2(out var e, out var rest))
+                {
+                    MessageBox.Show(e.Message);
+                    Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+                    return;
+                }
 
-            if (rest.TryPickT0(out var season, out _))
-            {
-                referredSeasonId = season.Id;
+                if (rest.TryPickT0(out var season, out _))
+                {
+                    referredSeasonId = season.Id;
+                }
             }
         }
 
@@ -287,12 +296,12 @@ public partial class PlayerOverviewViewModel : ViewModelBase
 
         if (PlayerOverview.IsPitcher)
         {
+            maxValues = new[] {99D, 99D, 99D, 99D, 99D, 99D, 99D};
             values = new double[,]
             {
                 {velocity, junk, accuracy, fielding, power, contact, speed},
                 {averageVelocity, averageJunk, averageAccuracy, averageFielding, averagePower, averageContact, averageSpeed}
             };
-            maxValues = new[] {99D, 99D, 99D, 99D, 99D, 99D, 99D};
             categoryLabels = new[]
             {
                 "Velocity", "Junk", "Accuracy", "Fielding", "Power", "Contact", "Speed"
@@ -300,12 +309,12 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         }
         else
         {
+            maxValues = new[] {99D, 99, 99, 99, 99};
             values = new double[,]
             {
                 {power, contact, speed, fielding, arm},
                 {averagePower, averageContact, averageSpeed, averageFielding, averageArm}
             };
-            maxValues = new[] {99D, 99D, 99D, 99D, 99D};
             categoryLabels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
         }
 
@@ -444,7 +453,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             labelPositions = new[] {0D, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
             labels = new[]
             {
-                "W", "ERA", "WHIP", "IP", "K/9", "K/BB", "Hits", "HR", "BA", "SB", "K",
+                "W", "ERA", "WHIP", "IP", "K/9", "K/BB", "Hits", "HR", "BA", "SB", "K%",
                 "OBP", "SLG"
             };
         }
@@ -452,7 +461,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         {
             values = new[] {hits, homeRuns, battingAverage, stolenBases, batterStrikeouts, obp, slg};
             labelPositions = new[] {0D, 1, 2, 3, 4, 5, 6};
-            labels = new[] {"H", "HR", "BA", "SB", "K", "OBP", "SLG"};
+            labels = new[] {"H", "HR", "BA", "SB", "K%", "OBP", "SLG"};
         }
 
         List<ScottPlot.Plottable.Bar> bars = new();
@@ -472,7 +481,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             bars.Add(bar);
         }
 
-        plot.Plot.AddBarSeries(bars);
+        plot.Plot.AddBarSeries(bars: bars);
         plot.Plot.SetAxisLimits(yMin: 0, yMax: 100);
         plot.Plot.XTicks(positions: labelPositions, labels: labels);
 

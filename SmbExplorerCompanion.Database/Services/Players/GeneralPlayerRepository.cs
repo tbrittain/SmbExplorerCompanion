@@ -425,6 +425,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             int numPlayers;
             if (playerBattingStats is not null && playerBattingStats.PlateAppearances > 0)
             {
+                var plateAppearances = playerBattingStats.PlateAppearances;
                 var hits = playerBattingStats.Hits;
                 var homeRuns = playerBattingStats.HomeRuns;
                 var battingAverage = playerBattingStats.BattingAverage ?? 0;
@@ -440,6 +441,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     .Where(x => x.PlayerSeason.PlayerId != playerId);
 
                 numPlayers = await battingQueryable
+                    .Select(x => x.PlayerSeason.PlayerId)
+                    .Distinct()
+                    .CountAsync(cancellationToken: cancellationToken);
+
+                var numQualifiedPlayers = await battingQueryable
+                    .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
@@ -470,7 +477,8 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     .CountAsync(cancellationToken: cancellationToken);
 
                 var lessThanBatterStrikeouts = await battingQueryable
-                    .Where(x => batterStrikeouts < x.Strikeouts)
+                    .Where(x => (batterStrikeouts / (double) plateAppearances) < (x.Strikeouts / (double) x.PlateAppearances))
+                    .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
@@ -491,11 +499,11 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
 
                 playerKpiPercentileDto.Hits = (int) Math.Round(greaterThanHits / (double) numPlayers * 100);
                 playerKpiPercentileDto.HomeRuns = (int) Math.Round(greaterThanHomeRuns / (double) numPlayers * 100);
-                playerKpiPercentileDto.BattingAverage = (int) Math.Round(greaterThanBattingAverage / (double) numPlayers * 100);
+                playerKpiPercentileDto.BattingAverage = (int) Math.Round(greaterThanBattingAverage / (double) numQualifiedPlayers * 100);
                 playerKpiPercentileDto.StolenBases = (int) Math.Round(greaterThanStolenBases / (double) numPlayers * 100);
-                playerKpiPercentileDto.BatterStrikeouts = (int) Math.Round(lessThanBatterStrikeouts / (double) numPlayers * 100);
-                playerKpiPercentileDto.Obp = (int) Math.Round(greaterThanObp / (double) numPlayers * 100);
-                playerKpiPercentileDto.Slg = (int) Math.Round(greaterThanSlg / (double) numPlayers * 100);
+                playerKpiPercentileDto.BatterStrikeouts = (int) Math.Round(lessThanBatterStrikeouts / (double) numQualifiedPlayers * 100);
+                playerKpiPercentileDto.Obp = (int) Math.Round(greaterThanObp / (double) numQualifiedPlayers * 100);
+                playerKpiPercentileDto.Slg = (int) Math.Round(greaterThanSlg / (double) numQualifiedPlayers * 100);
             }
 
             if (!isPitcher) return playerKpiPercentileDto;

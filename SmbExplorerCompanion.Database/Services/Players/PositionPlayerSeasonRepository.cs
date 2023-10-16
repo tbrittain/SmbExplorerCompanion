@@ -127,6 +127,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
                     PitcherRole = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRole.Name : null,
                     Chemistry = x.PlayerSeason.Player.Chemistry!.Name,
+                    SeasonId = x.PlayerSeason.SeasonId,
                     SeasonNumber = x.PlayerSeason.Season.Number,
                     AtBats = x.AtBats,
                     Hits = x.Hits,
