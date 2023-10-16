@@ -56,13 +56,13 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         var teamScheduleBreakdownResponse = mediator.Send(
             new GetTeamScheduleBreakdownRequest(TeamSeasonId)).Result;
         
-        if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var teamScheduleBreakdown))
+        if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var divisionScheduleBreakdown))
         {
             MessageBox.Show(exception.Message);
         }
         else
         {
-            TeamScheduleBreakdowns = SetBreakdowns(teamScheduleBreakdown);
+            TeamScheduleBreakdowns = SetBreakdowns(divisionScheduleBreakdown.TeamScheduleBreakdowns);
         }
 
         PropertyChanged += OnPropertyChanged;
@@ -83,48 +83,69 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
     }
 
-    public HashSet<TeamScheduleBreakdown> TeamScheduleBreakdowns { get; set; } = new();
+    private List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
 
-    private static HashSet<TeamScheduleBreakdown> SetBreakdowns(HashSet<TeamScheduleBreakdownDto> breakdownDtos)
+    private static List<HashSet<TeamScheduleBreakdown>> SetBreakdowns(List<HashSet<TeamScheduleBreakdownDto>> divisionSchedules)
     {
-        var breakdowns = new HashSet<TeamScheduleBreakdown>();
-        var wins = 0;
-        foreach (var dto in breakdownDtos)
+        var divisionScheduleBreakdowns = new List<HashSet<TeamScheduleBreakdown>>();
+        foreach (var teamSchedule in divisionSchedules)
         {
-            if (dto.TeamScore > dto.OpponentTeamScore)
-                wins++;
-            else if (dto.TeamScore < dto.OpponentTeamScore)
-                wins--;
-            var breakdown = new TeamScheduleBreakdown(dto.TeamHistoryId, dto.TeamName, dto.OpponentTeamHistoryId,
-                dto.OpponentTeamName, dto.Day, dto.GlobalGameNumber, dto.TeamScore, dto.OpponentTeamScore,
-                wins);
-            breakdowns.Add(breakdown);
+            var teamBreakdown = new HashSet<TeamScheduleBreakdown>();
+            var wins = 0;
+            foreach (var matchup in teamSchedule)
+            {
+                if (matchup.TeamScore > matchup.OpponentTeamScore)
+                    wins++;
+                else if (matchup.TeamScore < matchup.OpponentTeamScore)
+                    wins--;
+                var x = new TeamScheduleBreakdown(matchup.TeamHistoryId, matchup.TeamName, matchup.OpponentTeamHistoryId,
+                    matchup.OpponentTeamName, matchup.Day, matchup.GlobalGameNumber, matchup.TeamScore, matchup.OpponentTeamScore,
+                    wins);
+                teamBreakdown.Add(x);
+            }
+
+            divisionScheduleBreakdowns.Add(teamBreakdown);
         }
 
-        return breakdowns;
+        return divisionScheduleBreakdowns;
     }
 
     public void DrawTeamSchedulePlot(WpfPlot plot)
     {
         plot.Plot.Clear();
+        plot.Plot.Palette = Palette.Microcharts;
+
+        var min = 0D;
+        var max = 0D;
+        foreach (var breakdown in TeamScheduleBreakdowns)
+        {
+            var teamScheduleBreakdowns = breakdown
+                .OrderBy(b => b.Day)
+                .ToHashSet();
         
-        var teamScheduleBreakdowns = TeamScheduleBreakdowns
-            .OrderBy(b => b.Day)
-            .ToHashSet();
+            var days = teamScheduleBreakdowns
+                .Select(b => (double)b.Day)
+                .ToArray();
+            min = Math.Min(min, days.Min());
+            max = Math.Max(max, days.Max());
+            
+            var steps = teamScheduleBreakdowns
+                .Select(b => (double)b.WinsDelta)
+                .ToArray();
         
-        var days = teamScheduleBreakdowns.Select(b => (double)b.Day).ToArray();
-        var steps = teamScheduleBreakdowns.Select(b => (double)b.WinsDelta).ToArray();
-        
-        plot.Plot.AddScatterStep(xs: days, ys: steps, label: "Games >.500", lineWidth: 2);
+            plot.Plot.AddScatterStep(xs: days, ys: steps, label: breakdown.First().TeamName, lineWidth: 2);
+        }
+
         plot.Plot.AddHorizontalLine(0, color: System.Drawing.Color.Black, style: LineStyle.Dash);
         plot.Height = 300;
         plot.Width = 1000;
-        plot.Plot.SetAxisLimits(xMin: days.Min(), xMax: days.Max());
+        plot.Plot.SetAxisLimits(xMin: min, xMax: max);
         
         plot.Plot.XAxis.TickLabelStyle(rotation: 45);
         plot.Plot.XAxis.Label("Day");
         plot.Plot.YAxis.Label("Games >.500");
         plot.Plot.Title("Team Schedule");
+        plot.Plot.Legend(location: Alignment.LowerLeft);
         plot.Render();
     }
 

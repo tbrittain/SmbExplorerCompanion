@@ -597,56 +597,85 @@ public class TeamRepository : ITeamRepository
         }
     }
 
-    public async Task<OneOf<HashSet<TeamScheduleBreakdownDto>, Exception>> GetTeamScheduleBreakdown(int teamSeasonId, CancellationToken cancellationToken)
+    public async Task<OneOf<DivisionScheduleBreakdownDto, Exception>> GetTeamScheduleBreakdown(int teamSeasonId,
+        bool includeDivision,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var teamSeason = await _dbContext.SeasonTeamHistory
-                .Include(x => x.TeamNameHistory)
-                .Include(x => x.HomeSeasonSchedule)
-                .ThenInclude(x => x.AwayTeamHistory)
-                .ThenInclude(x => x.TeamNameHistory)
-                .Include(x => x.AwaySeasonSchedule)
-                .ThenInclude(x => x.HomeTeamHistory)
-                .ThenInclude(x => x.TeamNameHistory)
+            var seasonId = await _dbContext.SeasonTeamHistory
                 .Where(x => x.Id == teamSeasonId)
+                .Select(x => x.SeasonId)
                 .SingleAsync(cancellationToken: cancellationToken);
-            
-            var gamesPlayed = teamSeason.HomeSeasonSchedule
-                .Concat(teamSeason.AwaySeasonSchedule)
-                .Where(x => x is {HomeScore: not null, AwayScore: not null})
-                .ToList();
-            
-            var teamScheduleBreakdowns = gamesPlayed
-                .Select(x =>
-                {
-                    if (x.HomeTeamHistoryId == teamSeasonId)
+            var teamSeasonIds = new List<int>(teamSeasonId);
+            if (includeDivision)
+            {
+                var divisionId = await _dbContext.SeasonTeamHistory
+                    .Where(x => x.Id == teamSeasonId)
+                    .Select(x => x.DivisionId)
+                    .SingleAsync(cancellationToken: cancellationToken);
+                
+                teamSeasonIds = await _dbContext.SeasonTeamHistory
+                    .Include(x => x.Division)
+                    .Where(x => x.SeasonId == seasonId)
+                    .Where(x => x.DivisionId == divisionId)
+                    .Select(x => x.Id)
+                    .ToListAsync(cancellationToken: cancellationToken);
+                teamSeasonIds = teamSeasonIds.Distinct().ToList();
+            }
+
+            var divisionScheduleBreakdown = new DivisionScheduleBreakdownDto();
+            foreach (var id in teamSeasonIds)
+            {
+                var teamSeason = await _dbContext.SeasonTeamHistory
+                    .Include(x => x.TeamNameHistory)
+                    .Include(x => x.HomeSeasonSchedule)
+                    .ThenInclude(x => x.AwayTeamHistory)
+                    .ThenInclude(x => x.TeamNameHistory)
+                    .Include(x => x.AwaySeasonSchedule)
+                    .ThenInclude(x => x.HomeTeamHistory)
+                    .ThenInclude(x => x.TeamNameHistory)
+                    .Where(x => x.Id == id)
+                    .SingleAsync(cancellationToken: cancellationToken);
+
+                var gamesPlayed = teamSeason.HomeSeasonSchedule
+                    .Concat(teamSeason.AwaySeasonSchedule)
+                    .Where(x => x is {HomeScore: not null, AwayScore: not null})
+                    .ToList();
+
+                var teamScheduleBreakdowns = gamesPlayed
+                    .Select(x =>
                     {
+                        if (x.HomeTeamHistoryId == teamSeasonId)
+                        {
+                            return new TeamScheduleBreakdownDto(
+                                teamSeasonId,
+                                teamSeason.TeamNameHistory.Name,
+                                x.AwayTeamHistoryId,
+                                x.AwayTeamHistory.TeamNameHistory.Name,
+                                x.Day,
+                                x.GlobalGameNumber,
+                                x.HomeScore!.Value,
+                                x.AwayScore!.Value);
+                        }
+
                         return new TeamScheduleBreakdownDto(
                             teamSeasonId,
                             teamSeason.TeamNameHistory.Name,
-                            x.AwayTeamHistoryId,
-                            x.AwayTeamHistory.TeamNameHistory.Name,
+                            x.HomeTeamHistoryId,
+                            x.HomeTeamHistory.TeamNameHistory.Name,
                             x.Day,
                             x.GlobalGameNumber,
-                            x.HomeScore!.Value,
-                            x.AwayScore!.Value);
-                    }
+                            x.AwayScore!.Value,
+                            x.HomeScore!.Value);
+                    })
+                    .OrderBy(x => x.Day)
+                    .ToHashSet();
 
-                    return new TeamScheduleBreakdownDto(
-                        teamSeasonId,
-                        teamSeason.TeamNameHistory.Name,
-                        x.HomeTeamHistoryId,
-                        x.HomeTeamHistory.TeamNameHistory.Name,
-                        x.Day,
-                        x.GlobalGameNumber,
-                        x.AwayScore!.Value,
-                        x.HomeScore!.Value);
-                })
-                .OrderBy(x => x.Day)
-                .ToHashSet();
-            
-            return teamScheduleBreakdowns;
+                divisionScheduleBreakdown.TeamScheduleBreakdowns.Add(teamScheduleBreakdowns);
+            }
+
+            return divisionScheduleBreakdown;
         }
         catch (Exception e)
         {
