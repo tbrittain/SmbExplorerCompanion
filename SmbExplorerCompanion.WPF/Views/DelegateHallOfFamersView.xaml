@@ -57,6 +57,7 @@
                                 Header="Seasons"
                                 Binding="{Binding DisplaySeasons}" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="Age"
                                 SortMemberPath="Age"
@@ -251,6 +252,7 @@
                                 Header="Seasons"
                                 Binding="{Binding DisplaySeasons}" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 CanUserSort="True"
                                 Header="Age"
                                 SortMemberPath="Age"
