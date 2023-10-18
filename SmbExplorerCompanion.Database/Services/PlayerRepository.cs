@@ -1229,19 +1229,27 @@ public class PlayerRepository : IPlayerRepository
                 EraMinus =
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
-                    /
-                    x.PlayerSeasons
-                        .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.InningsPitched ?? 1)),
+                        .Sum(y => (y.InningsPitched ?? 0)) > 0
+                        ? (x.PlayerSeasons
+                               .SelectMany(y => y.PitchingStats)
+                               .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
+                           /
+                           x.PlayerSeasons
+                               .SelectMany(y => y.PitchingStats)
+                               .Sum(y => (y.InningsPitched ?? 0)))
+                        : 0,
                 FipMinus =
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.FipMinus ?? 0) * (y.InningsPitched ?? 0))
-                    /
-                    x.PlayerSeasons
-                        .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.InningsPitched ?? 1)),
+                        .Sum(y => (y.InningsPitched ?? 0)) > 0
+                        ? x.PlayerSeasons
+                              .SelectMany(y => y.PitchingStats)
+                              .Sum(y => (y.FipMinus ?? 0) * (y.InningsPitched ?? 0))
+                          /
+                          x.PlayerSeasons
+                              .SelectMany(y => y.PitchingStats)
+                              .Sum(y => (y.InningsPitched ?? 0))
+                        : 0,
                 Awards = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
                     .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
