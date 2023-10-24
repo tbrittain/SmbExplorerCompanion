@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
@@ -62,17 +63,32 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             .Where(x => x.RunsBattedIn == maxRbi)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        var maxQualifyingBattingAverage = await battingIQueryable
+        var topBattingAverageHitters = await battingIQueryable
             .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
             .Where(x => x.BattingAverage != null)
-            .MaxAsync(x => x.BattingAverage, cancellationToken: cancellationToken);
-
-        const double delta = 0.001;
-        var topBattingAverageHitters = await battingIQueryable
-            .Where(x => x.BattingAverage != null && Math.Abs(x.BattingAverage.Value - maxQualifyingBattingAverage!.Value) < delta)
-            .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
             .OrderByDescending(x => x.BattingAverage)
+            .Take(1)
             .ToListAsync(cancellationToken: cancellationToken);
+
+        if (!topBattingAverageHitters.Any())
+        {
+            var avgPlateAppearances = await battingIQueryable
+                .Where(x => x.BattingAverage != null)
+                .AverageAsync(x => x.PlateAppearances, cancellationToken: cancellationToken);
+
+            topBattingAverageHitters = await battingIQueryable
+                .Where(x => x.PlateAppearances >= (int) avgPlateAppearances)
+                .Where(x => x.BattingAverage != null)
+                .OrderByDescending(x => x.BattingAverage)
+                .Take(1)
+                .ToListAsync(cancellationToken: cancellationToken);
+            
+            Debug.Assert(topBattingAverageHitters.Any(), nameof(topBattingAverageHitters) + ".Any()");
+            if (!topBattingAverageHitters.Any())
+            {
+                throw new Exception("No players found with enough plate appearances to qualify for the batting title");
+            }
+        }
 
         // here, we need to check if a single player is the leader for all 3 categories, for which they will
         // be the triple crown winner. if they share an individual category with another player, we will still give
@@ -151,16 +167,30 @@ public class AwardDelegationRepository : IAwardDelegationRepository
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var minEarnedRunAverage = await pitchingIQueryable
-            .Where(x => x.InningsPitched >= season.NumGamesRegularSeason * 1.0)
-            .Where(x => x.EarnedRunAverage != null)
-            .MinAsync(x => x.EarnedRunAverage, cancellationToken: cancellationToken);
-
         var topEarnedRunAveragePitchers = await pitchingIQueryable
-            .Where(x => x.EarnedRunAverage != null && Math.Abs(x.EarnedRunAverage.Value - minEarnedRunAverage!.Value) < delta)
             .Where(x => x.InningsPitched >= season.NumGamesRegularSeason * 1.0)
             .OrderBy(x => x.EarnedRunAverage)
+            .Take(1)
             .ToListAsync(cancellationToken: cancellationToken);
+
+        if (!topEarnedRunAveragePitchers.Any())
+        {
+            var avgInningsPitched = await pitchingIQueryable
+                .Where(x => x.EarnedRunAverage != null)
+                .AverageAsync(x => x.InningsPitched, cancellationToken: cancellationToken);
+
+            topEarnedRunAveragePitchers = await pitchingIQueryable
+                .Where(x => x.InningsPitched >= avgInningsPitched)
+                .OrderBy(x => x.EarnedRunAverage)
+                .Take(1)
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            Debug.Assert(topEarnedRunAveragePitchers.Any(), nameof(topEarnedRunAveragePitchers) + ".Any()");
+            if (!topEarnedRunAveragePitchers.Any())
+            {
+                throw new Exception("No players found with enough innings pitched to qualify for the ERA title");
+            }
+        }
 
         var maxWins = await pitchingIQueryable
             .MaxAsync(x => x.Wins, cancellationToken: cancellationToken);
