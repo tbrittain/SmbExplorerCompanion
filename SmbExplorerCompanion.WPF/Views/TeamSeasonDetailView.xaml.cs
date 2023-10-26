@@ -11,43 +11,50 @@ namespace SmbExplorerCompanion.WPF.Views;
 
 public partial class TeamSeasonDetailView : IDisposable
 {
+    private Tooltip? _tooltip;
+
     public TeamSeasonDetailView()
     {
         InitializeComponent();
-        
+
         SeasonBattersDataGrid.Sorting += DataGridDefaultSortBehavior.DataGridOnSorting;
         SeasonPitchersDataGrid.Sorting += DataGridDefaultSortBehavior.DataGridOnSorting;
         PlayoffBattersDataGrid.Sorting += DataGridDefaultSortBehavior.DataGridOnSorting;
         PlayoffPitchersDataGrid.Sorting += DataGridDefaultSortBehavior.DataGridOnSorting;
-        
+
         DataContextChanged += OnDataContextChanged;
         TeamSchedulePlot.MouseMove += TeamSchedulePlotOnMouseMove;
     }
-    
-    private Tooltip? _tooltip;
+
+    public void Dispose()
+    {
+        SeasonBattersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
+        SeasonPitchersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
+        PlayoffBattersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
+        PlayoffPitchersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
+        GC.SuppressFinalize(this);
+    }
 
     private void TeamSchedulePlotOnMouseMove(object sender, MouseEventArgs e)
     {
         if (DataContext is not TeamSeasonDetailViewModel viewModel) return;
 
         var position = e.GetPosition(TeamSchedulePlot);
-        var (mouseX, mouseY) = TeamSchedulePlot.Plot.GetCoordinate((float)position.X, (float)position.Y);
+        var (mouseX, mouseY) = TeamSchedulePlot.Plot.GetCoordinate((float) position.X, (float) position.Y);
 
         const double thresholdX = 1;
         const double thresholdY = 0.5;
 
         TeamScheduleBreakdown? nearestPoint = null;
         var nearestDistance = double.MaxValue;
-        
+
         var breakdowns = viewModel.TeamScheduleBreakdowns;
         if (!viewModel.IncludeDivisionTeamsInPlot)
-        {
             breakdowns = breakdowns
                 .Where(b => b
                     .All(x => x.TeamHistoryId == viewModel.TeamSeasonId))
                 .ToList();
-        }
-        
+
         foreach (var breakdown in breakdowns.SelectMany(x => x))
         {
             var distanceX = Math.Abs(breakdown.Day - mouseX);
@@ -70,9 +77,10 @@ public partial class TeamSeasonDetailView : IDisposable
             }
 
             var wasWin = nearestPoint.TeamScore > nearestPoint.OpponentTeamScore ? "win" : "lose";
-            var annotationText = $"Game {nearestPoint.Day}: {nearestPoint.TeamName} {wasWin} against {nearestPoint.OpponentTeamName} {nearestPoint.TeamScore} - {nearestPoint.OpponentTeamScore}";
+            var annotationText =
+                $"Game #{nearestPoint.GlobalGameNumber} (Day {nearestPoint.Day}): {nearestPoint.TeamName} {wasWin} against {nearestPoint.OpponentTeamName} {nearestPoint.TeamScore} - {nearestPoint.OpponentTeamScore}";
             _tooltip = TeamSchedulePlot.Plot.AddTooltip(annotationText, nearestPoint.Day, nearestPoint.WinsDelta);
-            
+
             TeamSchedulePlot.Plot.Render();
         }
         else
@@ -82,6 +90,7 @@ public partial class TeamSeasonDetailView : IDisposable
                 TeamSchedulePlot.Plot.Remove(_tooltip);
                 _tooltip = null;
             }
+
             TeamSchedulePlot.Plot.Render();
         }
     }
@@ -90,14 +99,5 @@ public partial class TeamSeasonDetailView : IDisposable
     {
         if (e.NewValue is not TeamSeasonDetailViewModel viewModel) return;
         viewModel.DrawTeamSchedulePlot(TeamSchedulePlot);
-    }
-
-    public void Dispose()
-    {
-        SeasonBattersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
-        SeasonPitchersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
-        PlayoffBattersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
-        PlayoffPitchersDataGrid.Sorting -= DataGridDefaultSortBehavior.DataGridOnSorting;
-        GC.SuppressFinalize(this);
     }
 }
