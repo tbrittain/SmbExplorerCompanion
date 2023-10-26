@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -20,10 +20,10 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 {
     public const string SeasonTeamIdProp = "SeasonTeamId";
     private readonly INavigationService _navigationService;
-    private PlayerBase? _selectedPlayer;
     private bool _includeDivisionTeamsInPlot = true;
-    private WpfPlot? _teamSchedulePlot;
     private bool _includeMarginOfVictoryInPlot;
+    private PlayerBase? _selectedPlayer;
+    private WpfPlot? _teamSchedulePlot;
 
     public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator)
     {
@@ -55,23 +55,40 @@ public class TeamSeasonDetailViewModel : ViewModelBase
             var mapper = new TeamSeasonDetailMapping();
             TeamSeasonDetail = mapper.FromTeamSeasonDetailDto(teamSeasonDetail);
         }
-        
+
         var teamScheduleBreakdownResponse = mediator.Send(
             new GetTeamScheduleBreakdownRequest(TeamSeasonId)).Result;
-        
-        if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var divisionScheduleBreakdown))
-        {
-            MessageBox.Show(exception.Message);
-        }
-        else
-        {
-            TeamScheduleBreakdowns = SetBreakdowns(divisionScheduleBreakdown.TeamScheduleBreakdowns);
-        }
+
+        if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var divisionScheduleBreakdown)) MessageBox.Show(exception.Message);
+        else TeamScheduleBreakdowns = SetBreakdowns(divisionScheduleBreakdown.TeamScheduleBreakdowns);
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
+
+    public bool IncludeDivisionTeamsInPlot
+    {
+        get => _includeDivisionTeamsInPlot;
+        set => SetField(ref _includeDivisionTeamsInPlot, value);
+    }
+
+    public bool IncludeMarginOfVictoryInPlot
+    {
+        get => _includeMarginOfVictoryInPlot;
+        set => SetField(ref _includeMarginOfVictoryInPlot, value);
+    }
+
+    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
+
+    public PlayerBase? SelectedPlayer
+    {
+        get => _selectedPlayer;
+        set => SetField(ref _selectedPlayer, value);
+    }
+
+    public int TeamSeasonId { get; }
+    public TeamSeasonDetail TeamSeasonDetail { get; set; }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -93,20 +110,6 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
     }
 
-    public bool IncludeDivisionTeamsInPlot
-    {
-        get => _includeDivisionTeamsInPlot;
-        set => SetField(ref _includeDivisionTeamsInPlot, value);
-    }
-
-    public bool IncludeMarginOfVictoryInPlot
-    {
-        get => _includeMarginOfVictoryInPlot;
-        set => SetField(ref _includeMarginOfVictoryInPlot, value);
-    }
-
-    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
-
     private static List<HashSet<TeamScheduleBreakdown>> SetBreakdowns(List<HashSet<TeamScheduleBreakdownDto>> divisionSchedules)
     {
         var divisionScheduleBreakdowns = new List<HashSet<TeamScheduleBreakdown>>();
@@ -120,8 +123,14 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                     wins++;
                 else if (matchup.TeamScore < matchup.OpponentTeamScore)
                     wins--;
-                var x = new TeamScheduleBreakdown(matchup.TeamHistoryId, matchup.TeamName, matchup.OpponentTeamHistoryId,
-                    matchup.OpponentTeamName, matchup.Day, matchup.GlobalGameNumber, matchup.TeamScore, matchup.OpponentTeamScore,
+                var x = new TeamScheduleBreakdown(matchup.TeamHistoryId,
+                    matchup.TeamName,
+                    matchup.OpponentTeamHistoryId,
+                    matchup.OpponentTeamName,
+                    matchup.Day,
+                    matchup.GlobalGameNumber,
+                    matchup.TeamScore,
+                    matchup.OpponentTeamScore,
                     wins);
                 teamBreakdown.Add(x);
             }
@@ -143,30 +152,28 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 
         var breakdowns = TeamScheduleBreakdowns;
         if (!IncludeDivisionTeamsInPlot)
-        {
             breakdowns = breakdowns
                 .Where(b => b
                     .All(x => x.TeamHistoryId == TeamSeasonId))
                 .ToList();
-        }
 
         foreach (var breakdown in breakdowns)
         {
             var teamScheduleBreakdowns = breakdown
                 .OrderBy(b => b.Day)
                 .ToHashSet();
-        
+
             var days = teamScheduleBreakdowns
-                .Select(b => (double)b.Day)
+                .Select(b => (double) b.Day)
                 .ToArray();
             min = Math.Min(min, days.Min());
             max = Math.Max(max, days.Max());
-            
+
             var steps = teamScheduleBreakdowns
-                .Select(b => (double)b.WinsDelta)
+                .Select(b => (double) b.WinsDelta)
                 .ToArray();
-        
-            var scatterPlot = plot.Plot.AddScatterStep(xs: days, ys: steps, label: breakdown.First().TeamName, lineWidth: 2);
+
+            var scatterPlot = plot.Plot.AddScatterStep(days, steps, label: breakdown.First().TeamName, lineWidth: 2);
             scatterPlot.MarkerShape = MarkerShape.filledCircle;
             scatterPlot.MarkerSize = 2;
 
@@ -182,16 +189,16 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                 var xErrors = teamScheduleBreakdowns
                     .Select(_ => 0D)
                     .ToArray();
-                
-                plot.Plot.AddErrorBars(xs: days, ys: steps,xErrorsPositive: xErrors, xErrorsNegative: xErrors, yErrorsNegative: yErrNeg, yErrorsPositive: yErrPos);
+
+                plot.Plot.AddErrorBars(days, steps, xErrors, xErrors, yErrorsNegative: yErrNeg, yErrorsPositive: yErrPos);
             }
         }
 
-        plot.Plot.AddHorizontalLine(0, color: System.Drawing.Color.Black, style: LineStyle.Dash);
+        plot.Plot.AddHorizontalLine(0, Color.Black, style: LineStyle.Dash);
         plot.Height = 300;
         plot.Width = 1000;
-        plot.Plot.SetAxisLimits(xMin: min, xMax: max);
-        
+        plot.Plot.SetAxisLimits(min, max);
+
         plot.Plot.XAxis.TickLabelStyle(rotation: 45);
         plot.Plot.XAxis.Label("Day");
         plot.Plot.YAxis.Label("Games >.500");
@@ -209,13 +216,4 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }
-
-    public PlayerBase? SelectedPlayer
-    {
-        get => _selectedPlayer;
-        set => SetField(ref _selectedPlayer, value);
-    }
-
-    public int TeamSeasonId { get; }
-    public TeamSeasonDetail TeamSeasonDetail { get; set; }
 }
