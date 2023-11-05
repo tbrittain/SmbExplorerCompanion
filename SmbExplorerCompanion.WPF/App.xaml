@@ -61,6 +61,10 @@
             <DataTemplate DataType="{x:Type viewModels:DelegateHallOfFamersViewModel}">
                 <views:DelegateHallOfFamersView />
             </DataTemplate>
+            
+            <DataTemplate DataType="{x:Type viewModels:TeamManagementViewModel}">
+                <views:TeamManagementView />
+            </DataTemplate>
 
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="LightBlue" SecondaryColor="Blue" />
