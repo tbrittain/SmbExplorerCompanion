@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.WPF.Mappings.Teams;
@@ -10,7 +11,7 @@ using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
-public class TeamOverviewViewModel : ViewModelBase
+public partial class TeamOverviewViewModel : ViewModelBase
 {
     public const string TeamIdProp = "TeamId";
     private readonly INavigationService _navigationService;
@@ -101,6 +102,17 @@ public class TeamOverviewViewModel : ViewModelBase
             new(TeamSeasonDetailViewModel.SeasonTeamIdProp, teamSeason.SeasonTeamId)
         };
         _navigationService.NavigateTo<TeamSeasonDetailViewModel>(parameters);
+    }
+
+    [RelayCommand]
+    private void NavigateToTeamManagementPage()
+    {
+        var parameters = new Tuple<string, object>[]
+        {
+            new(TeamManagementViewModel.TeamIdProp, TeamId)
+        };
+
+        _navigationService.NavigateTo<TeamManagementViewModel>(parameters);
     }
 
     protected override void Dispose(bool disposing)

@@ -149,11 +149,6 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="14" Text="Most recent season:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
-                    <TextBlock Text="{Binding FranchiseSummary.MostRecentSeasonNumber}" FontSize="14" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal">
                     <TextBlock FontSize="14" Text="# HoFers:" FontWeight="Bold" Padding="0 ,0 , 5, 0" />
                     <TextBlock Text="{Binding FranchiseSummary.NumHallOfFamers}" FontSize="14" />
                 </StackPanel>

@@ -12,6 +12,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
+                    <ColumnDefinition Width="100" />
                 </Grid.ColumnDefinitions>
 
                 <!-- TODO This will be a team logo -->
@@ -54,6 +55,12 @@
                     </StackPanel>
 
                 </StackPanel>
+
+                <Button
+                    VerticalAlignment="Top"
+                    Grid.Column="2"
+                    Content="Edit team"
+                    Command="{Binding NavigateToTeamManagementPageCommand}" />
             </Grid>
 
             <ScrollViewer>
