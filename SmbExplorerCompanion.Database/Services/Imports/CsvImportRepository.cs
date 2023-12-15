@@ -78,15 +78,13 @@ public class CsvImportRepository : ICsvImportRepository
         Season season;
         if (selectedSeason.Id == default)
         {
-            var hasAtLeastOneSeason = await _dbContext.Seasons
-                .AnyAsync(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value,
-                    cancellationToken: cancellationToken);
+            var atLeastOneSeasonExists = await _dbContext.Seasons
+                .AnyAsync(cancellationToken: cancellationToken);
 
             var maxSeasonId = 0;
-            if (hasAtLeastOneSeason)
+            if (atLeastOneSeasonExists)
             {
                 maxSeasonId = await _dbContext.Seasons
-                    .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
                     .MaxAsync(x => x.Id, cancellationToken: cancellationToken);
             }
 
