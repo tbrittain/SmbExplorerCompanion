@@ -466,6 +466,7 @@ public class CsvMappingRepository
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
                                           .ThenInclude(x => x.PitchingStats)
+                                          .Where(x => x.Player.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
                                           .SingleOrDefaultAsync(x => x.GameId == csvPitchingStat.PlayerId, cancellationToken)
                                       ?? throw new Exception($"No player found with the given player ID {csvPitchingStat.PlayerId}");
 
@@ -611,6 +612,7 @@ public class CsvMappingRepository
                                           .Include(x => x.Player)
                                           .ThenInclude(x => x.PlayerSeasons)
                                           .ThenInclude(x => x.BattingStats)
+                                          .Where(x => x.Player.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
                                           .SingleOrDefaultAsync(x => x.GameId == csvBattingStat.PlayerId, cancellationToken)
                                       ?? throw new Exception($"No player found with the given player ID {csvBattingStat.PlayerId}");
 
