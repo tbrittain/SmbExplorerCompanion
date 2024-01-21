@@ -366,6 +366,13 @@ public class CsvMappingRepository
                 player = playerGameIdHistory.Player;
             }
 
+            // update the player's name if it has changed
+            if (csvOverallPlayer.FirstName != player.FirstName || csvOverallPlayer.LastName != player.LastName)
+            {
+                player.FirstName = csvOverallPlayer.FirstName;
+                player.LastName = csvOverallPlayer.LastName;
+            }
+
             // here, going to search a player season matching the season for the given player
             // if it does not exist, create it
             var playerSeason = await _dbContext.PlayerSeasons
