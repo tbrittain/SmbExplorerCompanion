@@ -37,10 +37,11 @@ public class CsvImportRepository : ICsvImportRepository
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-        var season = await GetOrCreateSeason(selectedSeason, cancellationToken);
-
+        Season season;
         try
         {
+            season = await GetOrCreateSeason(selectedSeason, cancellationToken);
+            
             await ImportTeams(filePaths.Teams, channel, season, cancellationToken);
 
             await ImportOverallPlayers(filePaths.OverallPlayers, channel, season, cancellationToken);
@@ -58,6 +59,7 @@ public class CsvImportRepository : ICsvImportRepository
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
+            _dbContext.ChangeTracker.Clear();
             throw;
         }
         finally
@@ -115,10 +117,11 @@ public class CsvImportRepository : ICsvImportRepository
         foreach (var filePath in filePaths) ValidateFile(filePath);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-        var season = await GetOrCreateSeason(selectedSeason, cancellationToken);
 
         try
         {
+            var season = await GetOrCreateSeason(selectedSeason, cancellationToken);
+
             await ImportPlayoffStatsPitching(filePaths.PlayoffStatsPitching, channel, season, cancellationToken);
 
             await ImportPlayoffStatsBatting(filePaths.PlayoffStatsBatting, channel, season, cancellationToken);
@@ -130,6 +133,7 @@ public class CsvImportRepository : ICsvImportRepository
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
+            _dbContext.ChangeTracker.Clear();
             throw;
         }
         finally

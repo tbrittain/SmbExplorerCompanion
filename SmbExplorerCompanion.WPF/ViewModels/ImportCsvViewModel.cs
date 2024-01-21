@@ -58,7 +58,7 @@ public partial class ImportCsvViewModel : ViewModelBase
         {
             SetField(ref _selectedSeason, value);
             AddSeasonCommand.NotifyCanExecuteChanged();
-            
+
             OverallPlayersCsvPath = string.Empty;
             PlayoffBattingCsvPath = string.Empty;
             PlayoffPitchingCsvPath = string.Empty;
@@ -221,11 +221,37 @@ public partial class ImportCsvViewModel : ViewModelBase
                 Number = SelectedSeason!.Number
             };
 
-            var task = Task.Run(() => _csvImportRepository.ImportSeason(filePaths, progressChannel.Writer, coreSeason, default));
+            var hasError = false;
+            var task = Task.Run(() => _csvImportRepository
+                    .ImportSeason(filePaths, progressChannel.Writer, coreSeason, default))
+                .ContinueWith(t =>
+                {
+                    if (!t.IsFaulted) return t.Result;
+                    hasError = true;
 
-            await foreach (var progress in progressChannel.Reader.ReadAllAsync()) 
+                    var exceptionMessage = t.Exception!.Message;
+                    if (t.Exception is { } aggregateException)
+                    {
+                        // concat all inner exceptions into one string
+                        var messages = aggregateException.InnerExceptions
+                            .Select(e => e.Message);
+
+                        exceptionMessage = string.Join(Environment.NewLine, messages);
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show(exceptionMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+
+                    return t.Result;
+                });
+
+            await foreach (var progress in progressChannel.Reader.ReadAllAsync())
                 ImportProgress.Add(progress);
             await task;
+
+            if (hasError) return;
 
             if (SelectedSeason.IsNewSeason)
             {
@@ -272,11 +298,35 @@ public partial class ImportCsvViewModel : ViewModelBase
                 Number = SelectedSeason!.Number
             };
 
-            var task = Task.Run(() => _csvImportRepository.ImportPlayoffs(filePaths, progressChannel.Writer, coreSeason, default));
+            var hasError = false;
+            var task = Task.Run(() => _csvImportRepository
+                    .ImportPlayoffs(filePaths, progressChannel.Writer, coreSeason, default))
+                .ContinueWith(t =>
+                {
+                    if (!t.IsFaulted) return;
+                    hasError = true;
 
-            await foreach (var progress in progressChannel.Reader.ReadAllAsync()) 
+                    var exceptionMessage = t.Exception!.Message;
+                    if (t.Exception is { } aggregateException)
+                    {
+                        // concat all inner exceptions into one string
+                        var messages = aggregateException.InnerExceptions
+                            .Select(e => e.Message);
+
+                        exceptionMessage = string.Join(Environment.NewLine, messages);
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show(exceptionMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                });
+
+            await foreach (var progress in progressChannel.Reader.ReadAllAsync())
                 ImportProgress.Add(progress);
             await task;
+
+            if (hasError) return;
 
             MessageBox.Show("Successfully imported playoff data!");
         }
