@@ -4,6 +4,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -18,7 +19,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
     }
 
     public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetBattingSeasons(
-        int? seasonId = null,
+        SeasonRange? seasons = null,
         bool isPlayoffs = false,
         int? pageNumber = null,
         string? orderBy = null,

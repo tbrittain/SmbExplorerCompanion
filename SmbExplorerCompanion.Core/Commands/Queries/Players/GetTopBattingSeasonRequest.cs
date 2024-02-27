@@ -2,13 +2,14 @@
 using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeasonDto>, Exception>>
 {
     public GetTopBattingSeasonRequest(
-        int? seasonId = null,
+        SeasonRange? seasons = null,
         bool isPlayoffs = false,
         int? pageNumber = null,
         string? orderBy = null,
@@ -21,7 +22,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
         bool onlyUserAssignableAwards = false)
     {
         OnlyUserAssignableAwards = onlyUserAssignableAwards;
-        SeasonId = seasonId;
+        Seasons = seasons;
         OnlyRookies = onlyRookies;
         IsPlayoffs = isPlayoffs;
         PageNumber = pageNumber;
@@ -33,7 +34,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
         IncludeChampionAwards = includeChampionAwards;
     }
 
-    private int? SeasonId { get; }
+    private SeasonRange? Seasons { get; }
     private bool IsPlayoffs { get; }
     private int? PageNumber { get; }
     private string? OrderBy { get; }
@@ -58,7 +59,7 @@ public class GetTopBattingSeasonRequest : IRequest<OneOf<List<PlayerBattingSeaso
         public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> Handle(GetTopBattingSeasonRequest request,
             CancellationToken cancellationToken) =>
             await _positionPlayerSeasonRepository.GetBattingSeasons(
-                seasonId: request.SeasonId,
+                seasons: request.Seasons,
                 isPlayoffs: request.IsPlayoffs,
                 pageNumber: request.PageNumber,
                 orderBy: request.OrderBy,

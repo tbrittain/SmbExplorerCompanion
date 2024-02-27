@@ -1,12 +1,13 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
 using OneOf;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface IPitcherSeasonRepository
 {
     public Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetPitchingSeasons(
-        int? seasonId = null,
+        SeasonRange? seasons = null,
         bool isPlayoffs = false,
         int? pageNumber = null,
         string? orderBy = null,
