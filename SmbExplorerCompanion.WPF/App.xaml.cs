@@ -50,6 +50,7 @@ public partial class App
             .AddCore()
             .AddDatabase()
             .AddHttpClient()
+            .AddMemoryCache()
             .AddSingleton<IHttpService, HttpService>()
             .AddSingleton<MainWindow>(serviceProvider => new MainWindow
             {
