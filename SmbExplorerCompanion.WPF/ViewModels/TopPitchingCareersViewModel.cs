@@ -36,7 +36,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
 
         PropertyChanged += OnPropertyChanged;
         
-        var pitcherRolesResponse = _mediator.Send(new GetAllPitcherRolesRequest()).Result;
+        var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
         if (pitcherRolesResponse.TryPickT1(out var exception, out var pitcherRoles))
         {
             MessageBox.Show(exception.Message);

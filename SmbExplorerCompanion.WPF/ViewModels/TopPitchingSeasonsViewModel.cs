@@ -58,7 +58,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Id = default
         });
 
-        var pitcherRolesResponse = _mediator.Send(new GetAllPitcherRolesRequest()).Result;
+        var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
         if (pitcherRolesResponse.TryPickT1(out exception, out var pitcherRoles))
         {
             MessageBox.Show(exception.Message);

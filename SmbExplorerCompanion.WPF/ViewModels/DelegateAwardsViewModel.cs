@@ -67,7 +67,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         PitchingAwards.AddRange(AllAwards.Where(a => a.IsPitchingAward));
         FieldingAwards.AddRange(AllAwards.Where(a => a.IsFieldingAward));
         
-        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out exception, out var positions))
         {
             MessageBox.Show(exception.Message);

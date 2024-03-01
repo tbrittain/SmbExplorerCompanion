@@ -80,19 +80,6 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 .ThenInclude(x => x.Awards)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.Chemistry)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.BatHandedness)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.ThrowHandedness)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.PrimaryPosition)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.PitcherRole)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Season)
                 .Include(x => x.PlayerSeason)
@@ -122,11 +109,11 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                         .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : x.PlayerSeason.Salary,
-                    BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
-                    ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
-                    PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
-                    PitcherRole = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRole.Name : null,
-                    Chemistry = x.PlayerSeason.Player.Chemistry!.Name,
+                    BatHandednessId = x.PlayerSeason.Player.BatHandednessId,
+                    ThrowHandednessId = x.PlayerSeason.Player.ThrowHandednessId,
+                    PrimaryPositionId = x.PlayerSeason.Player.PrimaryPositionId,
+                    PitcherRoleId = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRoleId : null,
+                    ChemistryId = x.PlayerSeason.Player.ChemistryId,
                     SeasonId = x.PlayerSeason.SeasonId,
                     SeasonNumber = x.PlayerSeason.Season.Number,
                     AtBats = x.AtBats,
@@ -168,7 +155,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     PlateAppearances = x.PlateAppearances,
                     CaughtStealing = x.CaughtStealing,
                     TotalBases = x.TotalBases,
-                    SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
+                    SecondaryPositionId = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPositionId,
                     Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name))
                 })
                 .OrderBy(orderBy)

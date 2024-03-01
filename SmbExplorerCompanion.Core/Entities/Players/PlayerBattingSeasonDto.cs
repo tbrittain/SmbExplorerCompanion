@@ -30,7 +30,7 @@ public class PlayerBattingSeasonDto : PlayerSeasonDto
     public int PlateAppearances { get; set; }
     public int CaughtStealing { get; set; }
     public int TotalBases { get; set; }
-    public string? SecondaryPosition { get; set; } = string.Empty;
+    public int? SecondaryPositionId { get; set; }
     public string Traits { get; set; } = string.Empty;
     public int GamesPlayed { get; set; }
 }

@@ -58,7 +58,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             Id = default
         });
         
-        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out exception, out var positions))
         {
             MessageBox.Show(exception.Message);

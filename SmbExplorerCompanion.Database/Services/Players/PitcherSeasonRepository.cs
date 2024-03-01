@@ -122,11 +122,6 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                         .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : x.PlayerSeason.Salary,
-                    BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
-                    ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
-                    PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
-                    PitcherRole = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRole.Name : null,
-                    Chemistry = x.PlayerSeason.Player.Chemistry!.Name,
                     SeasonId = x.PlayerSeason.SeasonId,
                     SeasonNumber = x.PlayerSeason.Season.Number,
                     Wins = x.Wins,

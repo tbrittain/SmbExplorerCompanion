@@ -312,11 +312,6 @@ public class PitcherCareerRepository : IPitcherCareerRepository
     private IQueryable<Player> GetCareerPitchingIQueryable()
     {
         return _dbContext.Players
-            .Include(x => x.Chemistry)
-            .Include(x => x.BatHandedness)
-            .Include(x => x.ThrowHandedness)
-            .Include(x => x.PrimaryPosition)
-            .Include(x => x.PitcherRole)
             .Include(x => x.PlayerSeasons)
             .ThenInclude(x => x.Season)
             .Include(x => x.PlayerSeasons)
@@ -340,15 +335,10 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                         .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : y.Salary),
-                PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
                 PitcherRoleId = x.PitcherRoleId,
-                BatHandedness = x.BatHandedness.Name,
                 BatHandednessId = x.BatHandednessId,
-                ThrowHandedness = x.ThrowHandedness.Name,
                 ThrowHandednessId = x.ThrowHandednessId,
-                PrimaryPosition = x.PrimaryPosition.Name,
                 PrimaryPositionId = x.PrimaryPositionId,
-                Chemistry = x.Chemistry!.Name,
                 ChemistryId = x.ChemistryId,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
