@@ -17,8 +17,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Services;
@@ -114,8 +112,6 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
         var applicableSeasonIds = overview
             .GameStats
             .Select(x => x.SeasonId)
@@ -124,7 +120,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var playerSeasons = seasons
             .Where(x => applicableSeasonIds.Contains(x.Id))
             .OrderBy(x => x.Number)
-            .Select(s => seasonMapper.FromDto(s))
+            .Select(s => s.FromCore())
             .ToList();
         Seasons.AddRange(playerSeasons);
 

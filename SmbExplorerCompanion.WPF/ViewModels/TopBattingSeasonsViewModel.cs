@@ -12,9 +12,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
@@ -47,9 +44,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
 
@@ -72,11 +67,11 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             Name = "All"
         };
         Positions.Add(allPosition);
-        var positionMapper = new PositionMapping();
+
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
-            .Select(p => positionMapper.FromPositionDto(p)));
-        
+            .Select(p => p.FromCore()));
+
         SelectedPosition = allPosition;
 
         GetTopBattingSeason().Wait();

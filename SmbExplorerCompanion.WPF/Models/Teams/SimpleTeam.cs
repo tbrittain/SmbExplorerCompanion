@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Teams;
+﻿using SmbExplorerCompanion.Core.Entities.Teams;
+
+namespace SmbExplorerCompanion.WPF.Models.Teams;
 
 public class SimpleTeam
 {
@@ -9,4 +11,19 @@ public class SimpleTeam
     public string ConferenceName { get; set; } = string.Empty;
     public int TeamId { get; set; }
     public string TeamName { get; set; } = string.Empty;
+}
+
+public static class SimpleTeamExtensions
+{
+    public static SimpleTeam FromCore(this TeamDto teamDto)
+    {
+        return new SimpleTeam
+        {
+            SeasonTeamId = teamDto.SeasonTeamId,
+            SeasonId = teamDto.SeasonId,
+            SeasonNumber = teamDto.SeasonNumber,
+            DivisionName = teamDto.DivisionName,
+            ConferenceName = teamDto.ConferenceName
+        };
+    }
 }

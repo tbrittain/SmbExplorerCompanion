@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -9,7 +8,6 @@ using MediatR;
 using ScottPlot;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.Entities.Teams;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Teams;
 using SmbExplorerCompanion.WPF.Services;

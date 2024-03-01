@@ -12,9 +12,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
@@ -47,9 +44,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
 

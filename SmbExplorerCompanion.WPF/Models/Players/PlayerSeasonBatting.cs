@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 
@@ -28,4 +30,51 @@ public class PlayerSeasonBatting : PlayerSeasonBase
     public int Strikeouts { get; set; }
     public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
+}
+
+public static class PlayerSeasonBattingExtensions
+{
+    public static PlayerSeasonBatting FromCore(this PlayerBattingSeasonDto x)
+    {
+        return new PlayerSeasonBatting
+        {
+            PlayerId = x.PlayerId,
+            PlayerName = x.PlayerName,
+            IsPitcher = x.IsPitcher,
+            TotalSalary = x.TotalSalary,
+            BatHandednessId = x.BatHandednessId,
+            ThrowHandednessId = x.ThrowHandednessId,
+            PrimaryPositionId = x.PrimaryPositionId,
+            PitcherRoleId = x.PitcherRoleId,
+            ChemistryId = x.ChemistryId,
+            WeightedOpsPlusOrEraMinus = x.WeightedOpsPlusOrEraMinus,
+            SeasonId = x.SeasonId,
+            SeasonNumber = x.SeasonNumber,
+            TeamNames = x.TeamNames,
+            Age = x.Age,
+            AtBats = x.AtBats,
+            Hits = x.Hits,
+            Singles = x.Singles,
+            Doubles = x.Doubles,
+            Triples = x.Triples,
+            HomeRuns = x.HomeRuns,
+            Walks = x.Walks,
+            BattingAverage = x.BattingAverage,
+            Runs = x.Runs,
+            RunsBattedIn = x.RunsBattedIn,
+            StolenBases = x.StolenBases,
+            HitByPitch = x.HitByPitch,
+            SacrificeHits = x.SacrificeHits,
+            SacrificeFlies = x.SacrificeFlies,
+            Obp = x.Obp,
+            Slg = x.Slg,
+            Ops = x.Ops,
+            OpsPlus = x.OpsPlus,
+            Errors = x.Errors,
+            Strikeouts = x.Strikeouts,
+            Awards = x.Awards
+                .Select(y => y.FromCore())
+                .ToObservableCollection()
+        };
+    }
 }

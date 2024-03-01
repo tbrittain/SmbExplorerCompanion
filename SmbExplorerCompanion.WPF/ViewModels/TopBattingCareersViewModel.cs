@@ -11,8 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
@@ -49,10 +47,9 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             Name = "All"
         };
         Positions.Add(allPosition);
-        var positionMapper = new PositionMapping();
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
-            .Select(p => positionMapper.FromPositionDto(p)));
+            .Select(p => p.FromCore()));
         
         SelectedPosition = allPosition;
 

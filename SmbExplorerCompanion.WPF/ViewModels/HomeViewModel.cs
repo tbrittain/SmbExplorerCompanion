@@ -15,8 +15,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Search;
-using SmbExplorerCompanion.WPF.Mappings.Summary;
 using SmbExplorerCompanion.WPF.Models.Search;
 using SmbExplorerCompanion.WPF.Models.Summary;
 using SmbExplorerCompanion.WPF.Services;
@@ -157,12 +155,8 @@ public partial class HomeViewModel : ViewModelBase
             return;
         }
 
-        var searchResultMapper = new SearchResultMapping();
-        var searchResults = searchResultDtos
-            .Select(searchResultMapper.FromSearchResultDto)
-            .ToList();
-
-        var groupedSearchResults = searchResults
+        var groupedSearchResults = searchResultDtos
+            .Select(x => x.FromCore())
             .GroupBy(searchResult => searchResult.Type)
             .Select(group => new ObservableGroup<SearchResultType, SearchResult>(group.Key, group))
             .ToList();

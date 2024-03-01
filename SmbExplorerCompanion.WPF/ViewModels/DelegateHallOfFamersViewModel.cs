@@ -12,8 +12,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 
@@ -37,9 +35,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         GetHallOfFamers().Wait();
@@ -95,13 +91,11 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             return;
         }
 
-        var battingMapper = new PlayerCareerMapping();
         TopBattingCareers.AddRange(retiredPlayers.BattingCareers
-            .Select(b => battingMapper.FromBattingDto(b)));
+            .Select(b => b.FromCore()));
 
-        var pitchingMapper = new PlayerCareerMapping();
         TopPitchingCareers.AddRange(retiredPlayers.PitchingCareers
-            .Select(p => pitchingMapper.FromPitchingDto(p)));
+            .Select(p => p.FromCore()));
 
         SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

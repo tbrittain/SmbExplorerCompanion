@@ -11,8 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
@@ -50,9 +48,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        var pitcherRoleMapper = new PitcherRoleMapping();
         PitcherRoles.AddRange(pitcherRoles.Select(p => pitcherRoleMapper.FromDto(p)));
-        
+
         SelectedPitcherRole = allPitcherRole;
 
         GetTopPitchingCareers().Wait();

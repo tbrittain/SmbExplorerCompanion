@@ -8,7 +8,7 @@ public class PlayerDetailBase : PlayerBase
     public int ThrowHandednessId { get; set; }
     public int PrimaryPositionId { get; set; }
     public int? PitcherRoleId { get; set; }
-    public int ChemistryId { get; set; }
+    public int? ChemistryId { get; set; }
     public double WeightedOpsPlusOrEraMinus { get; set; }
     public string DisplayPrimaryPosition => IsPitcher ? $"{PrimaryPosition} ({PitcherRole})" : PrimaryPosition;
 }

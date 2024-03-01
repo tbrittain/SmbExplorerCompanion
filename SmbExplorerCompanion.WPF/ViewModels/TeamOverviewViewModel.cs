@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Teams;
 using SmbExplorerCompanion.WPF.Services;
 
