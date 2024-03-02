@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
-using SmbExplorerCompanion.Core.Entities.Lookups;
-using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.WPF.Models.Lookups;
+using Chemistry = SmbExplorerCompanion.WPF.Models.Lookups.Chemistry;
+using PitcherRole = SmbExplorerCompanion.WPF.Models.Lookups.PitcherRole;
+using Position = SmbExplorerCompanion.WPF.Models.Lookups.Position;
 
 namespace SmbExplorerCompanion.WPF.Services;
 
-public class LookupsContext : ILookupsContext
+public class LookupsContext
 {
     private readonly IMemoryCache _memoryCache;
     private readonly IMediator _mediator;
@@ -19,98 +22,118 @@ public class LookupsContext : ILookupsContext
         _mediator = mediator;
     }
 
-    public async Task<IReadOnlyList<PitcherRoleDto>> GetPitcherRoles()
+    public async Task<IReadOnlyList<PitcherRole>> GetPitcherRoles()
     {
         const string key = "PitcherRoles";
         if (_memoryCache.TryGetValue(key, out var pitcherRoles) && 
-            pitcherRoles is List<PitcherRoleDto> pitcherRolesList)
+            pitcherRoles is List<PitcherRole> x)
         {
-            return pitcherRolesList;
+            return x;
         }
 
         var result = await _mediator.Send(new GetPitcherRolesRequest());
-        if (result.TryPickT1(out var exception, out pitcherRolesList))
+        if (result.TryPickT1(out var exception, out var pitcherRolesList))
         {
             throw exception;
         }
 
-        _memoryCache.Set(key, pitcherRolesList);
-        return pitcherRolesList;
+        x = pitcherRolesList
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
     }
 
-    public async Task<IReadOnlyList<ChemistryDto>> GetChemistryTypes()
+    public async Task<IReadOnlyList<Chemistry>> GetChemistryTypes()
     {
         const string key = "Chemistry";
         if (_memoryCache.TryGetValue(key, out var chemistry) && 
-            chemistry is List<ChemistryDto> chemistryList)
+            chemistry is List<Chemistry> x)
         {
-            return chemistryList;
+            return x;
         }
 
         var result = await _mediator.Send(new GetChemistryRequest());
-        if (result.TryPickT1(out var exception, out chemistryList))
+        if (result.TryPickT1(out var exception, out var chemistryList))
         {
             throw exception;
         }
 
-        _memoryCache.Set(key, chemistryList);
-        return chemistryList;
+        x = chemistryList
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
     }
 
-    public async Task<IReadOnlyList<PositionDto>> GetPositions()
+    public async Task<IReadOnlyList<Position>> GetPositions()
     {
         const string key = "Positions";
         if (_memoryCache.TryGetValue(key, out var positions) && 
-            positions is List<PositionDto> positionsList)
+            positions is List<Position> x)
         {
-            return positionsList;
+            return x;
         }
 
         var result = await _mediator.Send(new GetPositionsRequest());
-        if (result.TryPickT1(out var exception, out positionsList))
+        if (result.TryPickT1(out var exception, out var positionsList))
         {
             throw exception;
         }
 
-        _memoryCache.Set(key, positionsList);
-        return positionsList;
+        x = positionsList
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
     }
 
-    public async Task<IReadOnlyList<BatHandednessDto>> GetBatHandednessTypes()
+    public async Task<IReadOnlyList<BatHandedness>> GetBatHandednessTypes()
     {
         const string key = "BatHandedness";
         if (_memoryCache.TryGetValue(key, out var batHandedness) && 
-            batHandedness is List<BatHandednessDto> batHandednessTypes)
+            batHandedness is List<BatHandedness> x)
         {
-            return batHandednessTypes;
+            return x;
         }
 
         var result = await _mediator.Send(new GetBatHandednessRequest());
-        if (result.TryPickT1(out var exception, out batHandednessTypes))
+        if (result.TryPickT1(out var exception, out var batHandednessTypes))
         {
             throw exception;
         }
 
-        _memoryCache.Set(key, batHandednessTypes);
-        return batHandednessTypes;
+        x = batHandednessTypes
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
     }
 
-    public async Task<IReadOnlyList<ThrowHandednessDto>> GetThrowHandednessTypes()
+    public async Task<IReadOnlyList<ThrowHandedness>> GetThrowHandednessTypes()
     {
         const string key = "ThrowHandedness";
         if (_memoryCache.TryGetValue(key, out var throwHandedness) && 
-            throwHandedness is List<ThrowHandednessDto> throwHandednessTypes)
+            throwHandedness is List<ThrowHandedness> x)
         {
-            return throwHandednessTypes;
+            return x;
         }
 
         var result = await _mediator.Send(new GetThrowHandednessRequest());
-        if (result.TryPickT1(out var exception, out throwHandednessTypes))
+        if (result.TryPickT1(out var exception, out var throwHandednessTypes))
         {
             throw exception;
         }
 
-        _memoryCache.Set(key, throwHandednessTypes);
-        return throwHandednessTypes;
+        x = throwHandednessTypes
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
     }
 }

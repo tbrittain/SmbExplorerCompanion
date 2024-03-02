@@ -72,7 +72,7 @@ public partial class App
             .AddTransient<DelegateHallOfFamersViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
-            .AddSingleton<ILookupsContext, LookupsContext>()
+            .AddSingleton<LookupsContext>()
             // NavigationService calls this Func to get the ViewModel instance
             .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
                 viewModelType => (ViewModelBase) serviceProvider.GetRequiredService(viewModelType));
