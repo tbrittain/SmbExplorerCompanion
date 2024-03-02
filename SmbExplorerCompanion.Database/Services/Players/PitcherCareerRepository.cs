@@ -303,7 +303,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             .Select(x => new SimilarPlayerDto
             {
                 PlayerId = x.PlayerId,
-                Name = x.PlayerName,
+                PlayerName = x.PlayerName,
                 SimilarityScore = x.SimilarityScore
             })
             .ToList();

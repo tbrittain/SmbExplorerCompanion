@@ -229,9 +229,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         }
 
         TopSeasonBatters.Clear();
-
-        var mapper = new PlayerSeasonMapping();
-        TopSeasonBatters.AddRange(topBatters.Select(b => mapper.FromBattingDto(b)));
+        TopSeasonBatters.AddRange(topBatters.Select(b => b.FromCore()));
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();

@@ -50,8 +50,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
         else
         {
-            var mapper = new TeamSeasonDetailMapping();
-            TeamSeasonDetail = mapper.FromTeamSeasonDetailDto(teamSeasonDetail);
+            TeamSeasonDetail = teamSeasonDetail.FromCore();
         }
         
         var teamScheduleBreakdownResponse = mediator.Send(

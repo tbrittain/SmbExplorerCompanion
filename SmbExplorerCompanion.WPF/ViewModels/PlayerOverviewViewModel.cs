@@ -32,7 +32,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     private Season? _selectedSeason;
     private readonly ISender _mediator;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, LookupsCache lc)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -84,8 +84,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var mapper = new PlayerOverviewMapping();
-        var overview = mapper.FromDto(playerOverview);
+        var overview = playerOverview.FromCore(lc);
         PlayerOverview = overview;
         SeasonStats = overview
             .GameStats
@@ -100,11 +99,9 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var similarPlayerMapper = new SimilarPlayerMapping();
-        SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
+        SimilarPlayers.AddRange(similarPlayers.Select(x => x.FromCore()));
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-
         if (seasonsResponse.TryPickT1(out exception, out var seasons))
         {
             MessageBox.Show(exception.Message);

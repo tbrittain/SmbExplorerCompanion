@@ -2,9 +2,7 @@
 
 namespace SmbExplorerCompanion.WPF.Models.Lookups;
 
-public record PitcherRole : LookupBase
-{
-}
+public record PitcherRole : LookupBase;
 
 public static class PitcherRoleExtensions
 {

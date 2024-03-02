@@ -48,7 +48,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        PitcherRoles.AddRange(pitcherRoles.Select(p => pitcherRoleMapper.FromDto(p)));
+        PitcherRoles.AddRange(pitcherRoles.Select(p => p.FromCore()));
 
         SelectedPitcherRole = allPitcherRole;
 

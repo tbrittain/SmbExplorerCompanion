@@ -1135,7 +1135,7 @@
                                              ElementName="Control" />
                                 </Button.Command>
                                 <StackPanel Orientation="Vertical">
-                                    <Label Content="{Binding Name}" />
+                                    <Label Content="{Binding PlayerName}" />
                                     <Label Content="{Binding SimilarityScoreString}" />
                                 </StackPanel>
                             </Button>

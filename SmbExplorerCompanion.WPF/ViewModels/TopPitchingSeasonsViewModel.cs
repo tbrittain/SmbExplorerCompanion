@@ -67,8 +67,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        var pitcherRoleMapper = new PitcherRoleMapping();
-        PitcherRoles.AddRange(pitcherRoles.Select(p => pitcherRoleMapper.FromDto(p)));
+        PitcherRoles.AddRange(pitcherRoles.Select(p => p.FromCore()));
 
         SelectedPitcherRole = allPitcherRole;
 
@@ -96,7 +95,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         get => _selectedSeason;
         set
         {
-            if (value is not null && (value?.Id == default(int) || value?.Id == MinSeasonId))
+            if (value is not null && (value.Id == default || value.Id == MinSeasonId))
             {
                 ShortCircuitOnlyRookiesRefresh = true;
                 OnlyRookies = false;
@@ -227,9 +226,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         }
 
         TopSeasonPitchers.Clear();
-
-        var mapper = new PlayerSeasonMapping();
-        TopSeasonPitchers.AddRange(topPitchers.Select(p => mapper.FromPitchingDto(p)));
+        TopSeasonPitchers.AddRange(topPitchers.Select(p => p.FromCore()));
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();

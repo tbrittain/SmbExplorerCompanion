@@ -165,10 +165,8 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         }
 
         TopBattingCareers.Clear();
+        TopBattingCareers.AddRange(topPlayers.Select(b => b.FromCore()));
 
-        var mapper = new PlayerCareerMapping();
-        TopBattingCareers.AddRange(topPlayers.Select(b => mapper.FromBattingDto(b)));
-        
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

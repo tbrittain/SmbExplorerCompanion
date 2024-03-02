@@ -2,30 +2,21 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
-public class PlayerOverview
+public class PlayerOverview : PlayerCareerBase
 {
-    public int PlayerId { get; set; }
-    public string PlayerName { get; set; } = string.Empty;
-    public bool IsPitcher { get; set; }
-    public int TotalSalary { get; set; }
     public string BatHandedness { get; set; } = string.Empty;
     public string ThrowHandedness { get; set; } = string.Empty;
     public string PrimaryPosition { get; set; } = string.Empty;
-    public int? PitcherRoleId { get; set; }
     public string? PitcherRole { get; set; }
     public string Chemistry { get; set; } = string.Empty;
-    public double WeightedOpsPlusOrEraMinus { get; set; }
-    public int StartSeasonNumber { get; set; }
-    public int EndSeasonNumber { get; set; }
-    public bool IsRetired { get; set; }
-    public int NumSeasons { get; set; }
     public int NumChampionships { get; set; }
-    public bool IsHallOfFamer { get; set; }
     public string CurrentTeam { get; set; } = string.Empty;
     public int? CurrentTeamId { get; set; }
     public List<PlayerAward> Awards { get; set; } = new();
@@ -70,5 +61,47 @@ public class PlayerOverview
 
             return sb.ToString();
         }
+    }
+}
+
+public static class PlayerOverviewExtensions
+{
+    public static PlayerOverview FromCore(this PlayerOverviewDto x, LookupsCache lc)
+    {
+        var overview = new PlayerOverview
+        {
+            PlayerId = x.PlayerId,
+            PlayerName = x.PlayerName,
+            IsPitcher = x.IsPitcher,
+            TotalSalary = x.TotalSalary,
+            BatHandednessId = x.BatHandednessId,
+            ThrowHandednessId = x.ThrowHandednessId,
+            PrimaryPositionId = x.PrimaryPositionId,
+            PitcherRoleId = x.PitcherRoleId,
+            ChemistryId = x.ChemistryId,
+            WeightedOpsPlusOrEraMinus = x.WeightedOpsPlusOrEraMinus,
+            StartSeasonNumber = x.StartSeasonNumber,
+            EndSeasonNumber = x.EndSeasonNumber,
+            IsRetired = x.IsRetired,
+            Age = x.Age,
+            RetiredCurrentAge = x.RetiredCurrentAge,
+            IsHallOfFamer = x.IsHallOfFamer,
+            NumSeasons = x.NumSeasons,
+            NumChampionships = x.NumChampionships,
+            CurrentTeamId = x.CurrentTeamId,
+            CurrentTeam = x.CurrentTeam,
+            Awards = x.Awards.Select(y => y.FromCore()).ToList(),
+            CareerBatting = x.CareerBatting.FromCore(),
+            CareerPitching = x.CareerPitching.FromCore(),
+            PlayerSeasonBatting = x.PlayerSeasonBatting.Select(y => y.FromCore()).ToObservableCollection(),
+            PlayerSeasonPitching = x.PlayerSeasonPitching.Select(y => y.FromCore()).ToObservableCollection(),
+            PlayerPlayoffBatting = x.PlayerPlayoffBatting.Select(y => y.FromCore()).ToObservableCollection(),
+            PlayerPlayoffPitching = x.PlayerPlayoffPitching.Select(y => y.FromCore()).ToObservableCollection(),
+            GameStats = x.GameStats.Select(y => y.FromCore()).ToObservableCollection()
+        };
+        
+        // TODO: hydrate the lookups with the cache here
+
+        return overview;
     }
 }
