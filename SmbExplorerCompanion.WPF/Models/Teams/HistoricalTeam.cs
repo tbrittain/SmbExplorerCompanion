@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Teams;
+﻿using SmbExplorerCompanion.Core.Entities.Teams;
+
+namespace SmbExplorerCompanion.WPF.Models.Teams;
 
 public class HistoricalTeam
 {
@@ -34,4 +36,38 @@ public class HistoricalTeam
     public int NumHomeRuns { get; set; }
     public double BattingAverage { get; set; }
     public double EarnedRunAverage { get; set; }
+}
+
+public static class HistoricalTeamExtensions
+{
+    public static HistoricalTeam FromCore(this HistoricalTeamDto x)
+    {
+        return new HistoricalTeam
+        {
+            TeamId = x.TeamId,
+            SeasonTeamId = x.SeasonTeamId,
+            NumGames = x.NumGames,
+            NumRegularSeasonWins = x.NumRegularSeasonWins,
+            NumRegularSeasonLosses = x.NumRegularSeasonLosses,
+            WinLossPct = x.WinLossPct,
+            GamesOver500 = x.GamesOver500,
+            NumPlayoffWins = x.NumPlayoffWins,
+            NumPlayoffLosses = x.NumPlayoffLosses,
+            WinDiffFromPrevSeason = x.WinDiffFromPrevSeason,
+            ChampionshipDroughtSeasons = x.ChampionshipDroughtSeasons,
+            NumDivisionsWon = x.NumDivisionsWon,
+            NumConferenceTitles = x.NumConferenceTitles,
+            NumChampionships = x.NumChampionships,
+            NumPlayoffAppearances = x.NumPlayoffAppearances,
+            NumPlayers = x.NumPlayers,
+            NumHallOfFamers = x.NumHallOfFamers,
+            NumRunsScored = x.NumRunsScored,
+            NumRunsAllowed = x.NumRunsAllowed,
+            NumAtBats = x.NumAtBats,
+            NumHits = x.NumHits,
+            NumHomeRuns = x.NumHomeRuns,
+            BattingAverage = x.BattingAverage,
+            EarnedRunAverage = x.EarnedRunAverage
+        };
+    }
 }

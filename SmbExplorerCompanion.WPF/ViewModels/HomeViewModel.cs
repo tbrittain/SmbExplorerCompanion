@@ -85,8 +85,7 @@ public partial class HomeViewModel : ViewModelBase
 
         if (rest.TryPickT0(out var franchiseSummaryDto, out _))
         {
-            var franchiseSummaryMapper = new FranchiseSummaryMapping();
-            FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
+            FranchiseSummary = franchiseSummaryDto.FromCore();
         }
 
         var conferenceSummaryResult = await _mediator.Send(new GetLeagueSummaryRequest());
@@ -99,8 +98,7 @@ public partial class HomeViewModel : ViewModelBase
 
         if (rest2.TryPickT0(out var leagueSummaryDto, out _))
         {
-            var conferenceSummaryMapper = new ConferenceSummaryMapping();
-            Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
+            Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
         }
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
