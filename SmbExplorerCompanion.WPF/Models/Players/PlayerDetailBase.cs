@@ -1,4 +1,7 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Players;
+﻿using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.WPF.Services;
+
+namespace SmbExplorerCompanion.WPF.Models.Players;
 
 public class PlayerDetailBase : PlayerBase
 {
@@ -10,5 +13,19 @@ public class PlayerDetailBase : PlayerBase
     public int? PitcherRoleId { get; set; }
     public int? ChemistryId { get; set; }
     public double WeightedOpsPlusOrEraMinus { get; set; }
-    public string DisplayPrimaryPosition => IsPitcher ? $"{PrimaryPosition} ({PitcherRole})" : PrimaryPosition;
+    public required string DisplayPrimaryPosition { get; set; }
+}
+
+public static class PlayerDetailBaseExtensions
+{
+    public static string GetDisplayPrimaryPosition(this PlayerDetailBaseDto original, LookupSearchService lss)
+    {
+        var isPitcher = original.IsPitcher;
+        var primaryPosition = lss.GetPositionById(original.PrimaryPositionId).Result;
+        var pitcherRole = original.PitcherRoleId.HasValue 
+            ? lss.GetPitcherRoleById(original.PitcherRoleId.Value).Result 
+            : null;
+
+        return isPitcher ? $"{primaryPosition!.Name} ({pitcherRole!.Name})" : primaryPosition!.Name;
+    }
 }

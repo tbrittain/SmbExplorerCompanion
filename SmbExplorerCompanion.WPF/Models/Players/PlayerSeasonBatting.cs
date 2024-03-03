@@ -3,6 +3,7 @@ using System.Linq;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
@@ -34,7 +35,7 @@ public class PlayerSeasonBatting : PlayerSeasonBase
 
 public static class PlayerSeasonBattingExtensions
 {
-    public static PlayerSeasonBatting FromCore(this PlayerBattingSeasonDto x)
+    public static PlayerSeasonBatting FromCore(this PlayerBattingSeasonDto x, LookupSearchService lss)
     {
         return new PlayerSeasonBatting
         {
@@ -74,7 +75,8 @@ public static class PlayerSeasonBattingExtensions
             Strikeouts = x.Strikeouts,
             Awards = x.Awards
                 .Select(y => y.FromCore())
-                .ToObservableCollection()
+                .ToObservableCollection(),
+            DisplayPrimaryPosition = x.GetDisplayPrimaryPosition(lss)
         };
     }
 }

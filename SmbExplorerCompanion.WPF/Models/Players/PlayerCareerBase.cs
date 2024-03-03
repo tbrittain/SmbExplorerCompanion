@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
@@ -39,7 +40,7 @@ public class PlayerCareerBase : PlayerDetailBase
 
 public static class PlayerCareerBaseExtensions
 {
-    public static PlayerCareerBase FromCore(this PlayerCareerBaseDto x)
+    public static PlayerCareerBase FromCore(this PlayerCareerBaseDto x, LookupSearchService lss)
     {
         return new PlayerCareerBase
         {
@@ -59,6 +60,7 @@ public static class PlayerCareerBaseExtensions
             Age = x.Age,
             RetiredCurrentAge = x.RetiredCurrentAge,
             IsHallOfFamer = x.IsHallOfFamer,
+            DisplayPrimaryPosition = x.GetDisplayPrimaryPosition(lss)
         };
     }
 }

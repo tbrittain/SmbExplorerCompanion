@@ -3,6 +3,7 @@ using System.Linq;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
@@ -33,7 +34,7 @@ public class PlayerPitchingCareer : PlayerCareerBase
 
 public static class PlayerPitchingCareerExtensions
 {
-    public static PlayerPitchingCareer FromCore(this PlayerCareerPitchingDto x)
+    public static PlayerPitchingCareer FromCore(this PlayerCareerPitchingDto x, LookupSearchService lss)
     {
         return new PlayerPitchingCareer
         {
@@ -74,7 +75,8 @@ public static class PlayerPitchingCareerExtensions
             Shutouts = x.Shutouts,
             Awards = x.Awards
                 .Select(y => y.FromCore())
-                .ToList()
+                .ToList(),
+            DisplayPrimaryPosition = x.GetDisplayPrimaryPosition(lss)
         };
     }
 }

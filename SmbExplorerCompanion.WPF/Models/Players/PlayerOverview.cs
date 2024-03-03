@@ -66,7 +66,7 @@ public class PlayerOverview : PlayerCareerBase
 
 public static class PlayerOverviewExtensions
 {
-    public static PlayerOverview FromCore(this PlayerOverviewDto x, LookupSearchService lcLookupSearchService)
+    public static PlayerOverview FromCore(this PlayerOverviewDto x, LookupSearchService lss)
     {
         var overview = new PlayerOverview
         {
@@ -91,13 +91,14 @@ public static class PlayerOverviewExtensions
             CurrentTeamId = x.CurrentTeamId,
             CurrentTeam = x.CurrentTeam,
             Awards = x.Awards.Select(y => y.FromCore()).ToList(),
-            CareerBatting = x.CareerBatting.FromCore(),
+            CareerBatting = x.CareerBatting.FromCore(lss),
             CareerPitching = x.CareerPitching.FromCore(),
             PlayerSeasonBatting = x.PlayerSeasonBatting.Select(y => y.FromCore()).ToObservableCollection(),
             PlayerSeasonPitching = x.PlayerSeasonPitching.Select(y => y.FromCore()).ToObservableCollection(),
             PlayerPlayoffBatting = x.PlayerPlayoffBatting.Select(y => y.FromCore()).ToObservableCollection(),
             PlayerPlayoffPitching = x.PlayerPlayoffPitching.Select(y => y.FromCore()).ToObservableCollection(),
-            GameStats = x.GameStats.Select(y => y.FromCore()).ToObservableCollection()
+            GameStats = x.GameStats.Select(y => y.FromCore()).ToObservableCollection(),
+            DisplayPrimaryPosition = x.GetDisplayPrimaryPosition(lss)
         };
         
         // TODO: hydrate the lookups with the cache here
