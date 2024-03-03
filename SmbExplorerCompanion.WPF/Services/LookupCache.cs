@@ -11,12 +11,12 @@ using Position = SmbExplorerCompanion.WPF.Models.Lookups.Position;
 
 namespace SmbExplorerCompanion.WPF.Services;
 
-public class LookupsCache
+public class LookupCache
 {
     private readonly IMemoryCache _memoryCache;
     private readonly IMediator _mediator;
 
-    public LookupsCache(IMemoryCache memoryCache, IMediator mediator)
+    public LookupCache(IMemoryCache memoryCache, IMediator mediator)
     {
         _memoryCache = memoryCache;
         _mediator = mediator;

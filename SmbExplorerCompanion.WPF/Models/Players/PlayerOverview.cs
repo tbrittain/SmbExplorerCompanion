@@ -66,7 +66,7 @@ public class PlayerOverview : PlayerCareerBase
 
 public static class PlayerOverviewExtensions
 {
-    public static PlayerOverview FromCore(this PlayerOverviewDto x, LookupsCache lc)
+    public static PlayerOverview FromCore(this PlayerOverviewDto x, LookupSearchService lcLookupSearchService)
     {
         var overview = new PlayerOverview
         {

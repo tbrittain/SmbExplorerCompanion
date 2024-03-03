@@ -40,8 +40,7 @@ public class TeamOverviewViewModel : ViewModelBase
         }
         else
         {
-            var mapper = new TeamOverviewMapping();
-            TeamOverview = mapper.FromDto(teamOverview);
+            TeamOverview = teamOverview.FromCore();
         }
 
         PropertyChanged += OnPropertyChanged;

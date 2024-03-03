@@ -166,9 +166,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         }
 
         TopPitchingCareers.Clear();
-
-        var mapper = new PlayerCareerMapping();
-        TopPitchingCareers.AddRange(topPlayers.Select(b => mapper.FromPitchingDto(b)));
+        TopPitchingCareers.AddRange(topPlayers.Select(x => x.FromCore()));
         
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
