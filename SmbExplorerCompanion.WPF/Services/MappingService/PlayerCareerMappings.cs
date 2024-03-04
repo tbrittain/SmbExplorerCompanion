@@ -15,10 +15,16 @@ public partial class MappingService
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
-        var position = await _lookupSearchService.GetPositionById(primaryPositionId);
+        var position = primaryPositionId != default 
+            ? await _lookupSearchService.GetPositionById(primaryPositionId) 
+            : default;
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
+        
+        var awards = x.Awards
+            .Select(y => y.FromCore())
+            .ToList();
 
         return new PlayerBattingCareer
         {
@@ -58,10 +64,8 @@ public partial class MappingService
             OpsPlus = x.OpsPlus,
             Errors = x.Errors,
             Strikeouts = x.Strikeouts,
-            Awards = x.Awards
-                .Select(y => y.FromCore())
-                .ToList(),
-            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
+            Awards = awards,
+            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
     }
 
@@ -70,7 +74,9 @@ public partial class MappingService
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
-        var position = await _lookupSearchService.GetPositionById(primaryPositionId);
+        var position = primaryPositionId != default 
+            ? await _lookupSearchService.GetPositionById(primaryPositionId) 
+            : default;
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
@@ -115,7 +121,7 @@ public partial class MappingService
             Awards = x.Awards
                 .Select(y => y.FromCore())
                 .ToList(),
-            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
+            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
     }
     
@@ -143,6 +149,7 @@ public partial class MappingService
             WeightedOpsPlusOrEraMinus = x.WeightedOpsPlusOrEraMinus,
             StartSeasonNumber = x.StartSeasonNumber,
             EndSeasonNumber = x.EndSeasonNumber,
+            NumSeasons = x.NumSeasons,
             IsRetired = x.IsRetired,
             Age = x.Age,
             RetiredCurrentAge = x.RetiredCurrentAge,

@@ -104,7 +104,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                             .OrderBy(y => y.Order)
                             .Where(y => y.SeasonTeamHistory != null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
-                    IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
+                    IsPitcher = x.PlayerSeason.Player.PitcherRoleId != null,
                     TotalSalary = x.PlayerSeason.PlayerTeamHistory
                         .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
@@ -112,7 +112,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     BatHandednessId = x.PlayerSeason.Player.BatHandednessId,
                     ThrowHandednessId = x.PlayerSeason.Player.ThrowHandednessId,
                     PrimaryPositionId = x.PlayerSeason.Player.PrimaryPositionId,
-                    PitcherRoleId = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRoleId : null,
+                    PitcherRoleId = x.PlayerSeason.Player.PitcherRoleId,
                     ChemistryId = x.PlayerSeason.Player.ChemistryId,
                     SeasonId = x.PlayerSeason.SeasonId,
                     SeasonNumber = x.PlayerSeason.Season.Number,

@@ -1,7 +1,4 @@
-﻿using SmbExplorerCompanion.Core.Entities.Players;
-using SmbExplorerCompanion.WPF.Services;
-
-namespace SmbExplorerCompanion.WPF.Models.Players;
+﻿namespace SmbExplorerCompanion.WPF.Models.Players;
 
 public class PlayerDetailBase : PlayerBase
 {

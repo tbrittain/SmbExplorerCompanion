@@ -117,7 +117,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                             .OrderBy(y => y.Order)
                             .Where(y => y.SeasonTeamHistory != null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
-                    IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
+                    IsPitcher = x.PlayerSeason.Player.PitcherRoleId != null,
                     TotalSalary = x.PlayerSeason.PlayerTeamHistory
                         .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0

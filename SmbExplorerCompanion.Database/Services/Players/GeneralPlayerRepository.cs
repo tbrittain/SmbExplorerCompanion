@@ -643,7 +643,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         playerOverview.PlayerId = player.Id;
         playerOverview.PlayerName = $"{player.FirstName} {player.LastName}";
         playerOverview.IsHallOfFamer = player.IsHallOfFamer;
-        playerOverview.IsPitcher = player.PitcherRole is not null;
+        playerOverview.IsPitcher = player.PitcherRoleId is not null;
         playerOverview.TotalSalary = player.PlayerSeasons
             .Sum(x => x.PlayerTeamHistory
                 .Single(y => y.Order == 1).SeasonTeamHistoryId == null
@@ -652,7 +652,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         playerOverview.BatHandednessId = player.BatHandednessId;
         playerOverview.ThrowHandednessId = player.ThrowHandednessId;
         playerOverview.PrimaryPositionId = player.PrimaryPositionId;
-        playerOverview.PitcherRoleId = player.PitcherRole?.Id;
+        playerOverview.PitcherRoleId = player.PitcherRoleId;
         playerOverview.ChemistryId = player.ChemistryId;
         playerOverview.NumSeasons = player.PlayerSeasons.Count;
         playerOverview.Awards = player.PlayerSeasons

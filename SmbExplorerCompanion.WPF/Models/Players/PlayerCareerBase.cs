@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using SmbExplorerCompanion.Core.Entities.Players;
-using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 

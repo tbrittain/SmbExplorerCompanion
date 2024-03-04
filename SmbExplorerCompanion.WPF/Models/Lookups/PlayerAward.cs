@@ -14,16 +14,20 @@ public record PlayerAward : PlayerAwardBase
 
 public static class PlayerAwardExtensions
 {
-    public static PlayerAward FromCore(this PlayerAwardDto playerAwardDto)
+    public static PlayerAward FromCore(this PlayerAwardDto x)
     {
         return new PlayerAward
         {
-            OriginalName = playerAwardDto.OriginalName,
-            IsBuiltIn = playerAwardDto.IsBuiltIn,
-            IsBattingAward = playerAwardDto.IsBattingAward,
-            IsPitchingAward = playerAwardDto.IsPitchingAward,
-            IsFieldingAward = playerAwardDto.IsFieldingAward,
-            IsPlayoffAward = playerAwardDto.IsPlayoffAward
+            Id = x.Id,
+            Name = x.Name,
+            Importance = x.Importance,
+            OmitFromGroupings = x.OmitFromGroupings,
+            OriginalName = x.OriginalName,
+            IsBuiltIn = x.IsBuiltIn,
+            IsBattingAward = x.IsBattingAward,
+            IsPitchingAward = x.IsPitchingAward,
+            IsFieldingAward = x.IsFieldingAward,
+            IsPlayoffAward = x.IsPlayoffAward,
         };
     }
 }

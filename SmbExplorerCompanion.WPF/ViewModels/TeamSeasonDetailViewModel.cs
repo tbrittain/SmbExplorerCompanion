@@ -22,13 +22,11 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     private bool _includeDivisionTeamsInPlot = true;
     private WpfPlot? _teamSchedulePlot;
     private bool _includeMarginOfVictoryInPlot;
-    private readonly MappingService _mappingService;
 
     public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
-        _mappingService = mappingService;
 
         var ok = _navigationService.TryGetParameter<int>(SeasonTeamIdProp, out var teamSeasonId);
         if (!ok)
@@ -52,7 +50,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
         else
         {
-            TeamSeasonDetail = _mappingService.FromCore(teamSeasonDetail).Result;
+            TeamSeasonDetail = mappingService.FromCore(teamSeasonDetail).Result;
         }
 
         var teamScheduleBreakdownResponse = mediator.Send(

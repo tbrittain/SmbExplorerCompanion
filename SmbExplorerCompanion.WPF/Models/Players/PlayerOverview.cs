@@ -2,10 +2,8 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
-using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 

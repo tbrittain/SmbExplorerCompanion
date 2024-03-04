@@ -36,7 +36,3 @@ public class FranchiseSummary
 
     public ObservableCollection<PlayerCareerBase> CurrentGreats { get; set; } = new();
 }
-
-public static class FranchiseSummaryExtensions
-{
-}

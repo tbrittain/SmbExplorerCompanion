@@ -15,7 +15,9 @@ public partial class MappingService
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
-        var position = await _lookupSearchService.GetPositionById(primaryPositionId);
+        var position = primaryPositionId != default
+            ? await _lookupSearchService.GetPositionById(primaryPositionId)
+            : default;
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
@@ -59,7 +61,7 @@ public partial class MappingService
             Awards = x.Awards
                 .Select(y => y.FromCore())
                 .ToObservableCollection(),
-            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
+            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
     }
 
@@ -68,7 +70,9 @@ public partial class MappingService
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
-        var position = await _lookupSearchService.GetPositionById(primaryPositionId);
+        var position = primaryPositionId != default
+            ? await _lookupSearchService.GetPositionById(primaryPositionId)
+            : default;
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
@@ -116,7 +120,7 @@ public partial class MappingService
             Awards = x.Awards
                 .Select(y => y.FromCore())
                 .ToObservableCollection(),
-            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
+            DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
     }
 }

@@ -22,7 +22,7 @@ public partial class MappingService
             MostRecentMvpPlayerId = x.MostRecentMvpPlayerId,
             MostRecentMvpPlayerName = x.MostRecentMvpPlayerName,
             MostRecentCyYoungPlayerId = x.MostRecentCyYoungPlayerId,
-            MostRecentCyYoungPlayerName = x.MostRecentMvpPlayerName,
+            MostRecentCyYoungPlayerName = x.MostRecentCyYoungPlayerName,
             TopHomeRuns = x.TopHomeRuns.FromCore(),
             TopHits = x.TopHits.FromCore(),
             TopRunsBattedIn = x.TopRunsBattedIn.FromCore(),
