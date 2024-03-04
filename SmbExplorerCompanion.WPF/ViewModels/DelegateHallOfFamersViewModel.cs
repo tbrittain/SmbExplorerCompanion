@@ -14,6 +14,7 @@ using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
@@ -21,11 +22,13 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
     private Season? _selectedSeason;
+    private readonly MappingService _mappingService;
 
-    public DelegateHallOfFamersViewModel(IMediator mediator)
+    public DelegateHallOfFamersViewModel(IMediator mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -91,11 +94,15 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             return;
         }
 
-        TopBattingCareers.AddRange(retiredPlayers.BattingCareers
-            .Select(b => b.FromCore()));
+        var mappedBattingCareers = retiredPlayers.BattingCareers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopBattingCareers.AddRange(mappedBattingCareers);
 
-        TopPitchingCareers.AddRange(retiredPlayers.PitchingCareers
-            .Select(p => p.FromCore()));
+        var mappedPitchingCareers = retiredPlayers.PitchingCareers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopPitchingCareers.AddRange(mappedPitchingCareers);
 
         SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

@@ -29,12 +29,14 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private Season? _selectedSeason;
     private bool _onlyRookies;
     private PitcherRole? _selectedPitcherRole;
+    private readonly MappingService _mappingService;
 
-    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService)
+    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -226,7 +228,10 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         }
 
         TopSeasonPitchers.Clear();
-        TopSeasonPitchers.AddRange(topPitchers.Select(p => p.FromCore()));
+        var mappedTopSeasonPitchers = topPitchers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonPitchers.AddRange(mappedTopSeasonPitchers);
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();

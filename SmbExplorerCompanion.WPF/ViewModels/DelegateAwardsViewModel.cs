@@ -19,19 +19,21 @@ using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Models.Teams;
+using SmbExplorerCompanion.WPF.Services;
 
-// ReSharper disable InconsistentNaming
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class DelegateAwardsViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
+    private readonly MappingService _mappingService;
     private Season? _selectedSeason;
 
-    public DelegateAwardsViewModel(IMediator mediator)
+    public DelegateAwardsViewModel(IMediator mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -129,8 +131,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonBatters.Clear();
-        TopSeasonBatters.AddRange(topSeasonBatters
-            .Select(s => s.FromCore()));
+        var mappedTopBatters = topSeasonBatters
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonBatters.AddRange(mappedTopBatters);
         
         if (TopSeasonBatters.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
@@ -149,9 +153,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonPitchers.Clear();
-        TopSeasonPitchers.AddRange(topSeasonPitchers
-            .Select(s => s.FromCore()));
-        
+        var mappedTopPitchers = topSeasonPitchers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonPitchers.AddRange(mappedTopPitchers);
         if (TopSeasonPitchers.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -170,9 +175,11 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonBattingRookies.Clear();
-        TopSeasonBattingRookies.AddRange(topSeasonBattingRookies
-            .Select(s => s.FromCore()));
-        
+        var mappedRookieBatters = topSeasonBattingRookies
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonBattingRookies.AddRange(mappedRookieBatters);
+
         if (TopSeasonBattingRookies.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -191,9 +198,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonPitchingRookies.Clear();
-        TopSeasonPitchingRookies.AddRange(topSeasonPitchingRookies
-            .Select(s => s.FromCore()));
-        
+        var mappedRookiePitchers = topSeasonPitchingRookies
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonPitchingRookies.AddRange(mappedRookiePitchers);
         if (TopSeasonPitchingRookies.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -216,7 +224,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topBattersPerTeamObservable = topBattersPerTeam
-                .Select(s => s.FromCore())
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result)
                 .ToList();
             
             // Automate the process of suggesting all-stars. We will use a proxy of if ANY awards have been added to the
@@ -249,7 +258,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topPitchersPerTeamObservable = topPitchersPerTeam
-                .Select(s => s.FromCore())
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result)
                 .ToList();
 
             if (!atLeastOneUserAwardAdded)
@@ -281,7 +291,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topBattersByPositionObservable = topBattersByPosition
-                .Select(s => s.FromCore())
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result)
                 .ToList();
 
             if (!atLeastOneUserAwardAdded)

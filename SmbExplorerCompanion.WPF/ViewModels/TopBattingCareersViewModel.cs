@@ -25,15 +25,17 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private int _pageNumber = 1;
     private PlayerBattingCareer? _selectedPlayer;
     private Position? _selectedPosition;
+    private readonly MappingService _mappingService;
 
-    public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator)
+    public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         _mediator = mediator;
+        _mappingService = mappingService;
 
         PropertyChanged += OnPropertyChanged;
-        
+
         var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out var exception, out var positions))
         {
@@ -50,7 +52,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
             .Select(p => p.FromCore()));
-        
+
         SelectedPosition = allPosition;
 
         GetTopBattingCareers().Wait();
@@ -63,7 +65,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         {
             if (value < 1) return;
             SetField(ref _pageNumber, value);
-            
+
             IncrementPageCommand.NotifyCanExecuteChanged();
             DecrementPageCommand.NotifyCanExecuteChanged();
         }
@@ -165,7 +167,10 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         }
 
         TopBattingCareers.Clear();
-        TopBattingCareers.AddRange(topPlayers.Select(b => b.FromCore()));
+        var topBattingCareers = topPlayers
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result);
+        TopBattingCareers.AddRange(topBattingCareers);
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();

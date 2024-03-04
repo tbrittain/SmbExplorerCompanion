@@ -29,12 +29,14 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     private Season? _selectedSeason;
     private bool _onlyRookies;
     private Position? _selectedPosition;
+    private readonly MappingService _mappingService;
 
-    public TopBattingSeasonsViewModel(IMediator mediator, INavigationService navigationService)
+    public TopBattingSeasonsViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -52,7 +54,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         {
             Id = default
         });
-        
+
         var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out exception, out var positions))
         {
@@ -77,7 +79,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         GetTopBattingSeason().Wait();
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -133,7 +135,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
-    
+
     public ObservableCollection<Position> Positions { get; } = new();
 
     public Position? SelectedPosition
@@ -229,7 +231,10 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         }
 
         TopSeasonBatters.Clear();
-        TopSeasonBatters.AddRange(topBatters.Select(b => b.FromCore()));
+        var topSeasonBatters = topBatters
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonBatters.AddRange(topSeasonBatters);
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();

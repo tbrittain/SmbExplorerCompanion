@@ -31,13 +31,18 @@ public partial class HomeViewModel : ViewModelBase
     private bool _canDisplayFranchiseSummary;
     private FranchiseSummary? _franchiseSummary;
     private readonly IApplicationContext _applicationContext;
+    private readonly MappingService _mappingService;
 
-    public HomeViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public HomeViewModel(IMediator mediator,
+        INavigationService navigationService,
+        IApplicationContext applicationContext,
+        MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
         _applicationContext = applicationContext;
+        _mappingService = mappingService;
 
         if (applicationContext.HasFranchiseData)
         {
@@ -85,7 +90,7 @@ public partial class HomeViewModel : ViewModelBase
 
         if (rest.TryPickT0(out var franchiseSummaryDto, out _))
         {
-            FranchiseSummary = franchiseSummaryDto.FromCore();
+            FranchiseSummary = await _mappingService.FromCore(franchiseSummaryDto);
         }
 
         var conferenceSummaryResult = await _mediator.Send(new GetLeagueSummaryRequest());
@@ -164,7 +169,7 @@ public partial class HomeViewModel : ViewModelBase
     }
 
     private bool HasSearched { get; set; }
-    
+
     public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
 
     [RelayCommand]
@@ -202,7 +207,7 @@ public partial class HomeViewModel : ViewModelBase
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
     }
-    
+
     [RelayCommand]
     private async Task NavigateToRandomPlayerOverviewPage()
     {
@@ -212,7 +217,7 @@ public partial class HomeViewModel : ViewModelBase
             MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
-        
+
         NavigateToPlayerOverviewPage(player.PlayerId);
     }
 

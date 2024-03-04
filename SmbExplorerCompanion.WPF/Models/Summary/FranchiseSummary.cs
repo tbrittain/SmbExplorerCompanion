@@ -39,29 +39,4 @@ public class FranchiseSummary
 
 public static class FranchiseSummaryExtensions
 {
-    public static FranchiseSummary FromCore(this FranchiseSummaryDto x)
-    {
-        return new FranchiseSummary
-        {
-            NumPlayers = x.NumPlayers,
-            NumSeasons = x.NumSeasons,
-            MostRecentSeasonNumber = x.MostRecentSeasonNumber,
-            NumHallOfFamers = x.NumHallOfFamers,
-            MostRecentChampionTeamId = x.MostRecentChampionTeamId,
-            MostRecentChampionTeamName = x.MostRecentChampionTeamName,
-            MostRecentMvpPlayerId = x.MostRecentMvpPlayerId,
-            MostRecentMvpPlayerName = x.MostRecentMvpPlayerName,
-            MostRecentCyYoungPlayerId = x.MostRecentCyYoungPlayerId,
-            MostRecentCyYoungPlayerName = x.MostRecentMvpPlayerName,
-            TopHomeRuns = x.TopHomeRuns.FromCore(),
-            TopHits = x.TopHits.FromCore(),
-            TopRunsBattedIn = x.TopRunsBattedIn.FromCore(),
-            TopWins = x.TopWins.FromCore(),
-            TopSaves = x.TopSaves.FromCore(),
-            TopStrikeouts = x.TopStrikeouts.FromCore(),
-            CurrentGreats = x.CurrentGreats
-                .Select(y => y.FromCore())
-                .ToObservableCollection()
-        };
-    }
 }

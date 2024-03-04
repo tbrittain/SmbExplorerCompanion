@@ -32,7 +32,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     private Season? _selectedSeason;
     private readonly ISender _mediator;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, LookupSearchService lss)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, LookupSearchService lss, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -84,7 +84,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var overview = playerOverview.FromCore(lss);
+        var overview = mappingService.FromCore(playerOverview).Result;
         PlayerOverview = overview;
         SeasonStats = overview
             .GameStats
@@ -131,7 +131,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         {
             SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         }
-        
+
 
         GeneratePlots().Wait();
 

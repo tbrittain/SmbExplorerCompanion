@@ -25,15 +25,17 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private int _pageNumber = 1;
     private PlayerPitchingCareer? _selectedPlayer;
     private PitcherRole? _selectedPitcherRole;
+    private readonly MappingService _mappingService;
 
-    public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService)
+    public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _mappingService = mappingService;
 
         PropertyChanged += OnPropertyChanged;
-        
+
         var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
         if (pitcherRolesResponse.TryPickT1(out var exception, out var pitcherRoles))
         {
@@ -53,7 +55,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         SelectedPitcherRole = allPitcherRole;
 
         GetTopPitchingCareers().Wait();
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -119,9 +121,9 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             }
         }
     }
-    
+
     private bool ShortCircuitPageNumberRefresh { get; set; }
-    
+
     private const int ResultsPerPage = 20;
     private bool CanSelectPreviousPage => PageNumber > 1;
 
@@ -166,8 +168,11 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         }
 
         TopPitchingCareers.Clear();
-        TopPitchingCareers.AddRange(topPlayers.Select(x => x.FromCore()));
-        
+        var mappedPitchingCareers = topPlayers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopPitchingCareers.AddRange(mappedPitchingCareers);
+
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

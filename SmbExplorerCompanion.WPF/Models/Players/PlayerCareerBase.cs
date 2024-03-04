@@ -37,30 +37,3 @@ public class PlayerCareerBase : PlayerDetailBase
 
     public string DisplayDescription => $"{NumSeasons} season{(NumSeasons == 1 ? "" : "s")} - {WeightedOpsPlusOrEraMinus:N1} smbWAR";
 }
-
-public static class PlayerCareerBaseExtensions
-{
-    public static PlayerCareerBase FromCore(this PlayerCareerBaseDto x, LookupSearchService lss)
-    {
-        return new PlayerCareerBase
-        {
-            PlayerId = x.PlayerId,
-            PlayerName = x.PlayerName,
-            IsPitcher = x.IsPitcher,
-            TotalSalary = x.TotalSalary,
-            BatHandednessId = x.BatHandednessId,
-            ThrowHandednessId = x.ThrowHandednessId,
-            PrimaryPositionId = x.PrimaryPositionId,
-            PitcherRoleId = x.PitcherRoleId,
-            ChemistryId = x.ChemistryId,
-            WeightedOpsPlusOrEraMinus = x.WeightedOpsPlusOrEraMinus,
-            StartSeasonNumber = x.StartSeasonNumber,
-            EndSeasonNumber = x.EndSeasonNumber,
-            IsRetired = x.IsRetired,
-            Age = x.Age,
-            RetiredCurrentAge = x.RetiredCurrentAge,
-            IsHallOfFamer = x.IsHallOfFamer,
-            DisplayPrimaryPosition = x.GetDisplayPrimaryPosition(lss)
-        };
-    }
-}

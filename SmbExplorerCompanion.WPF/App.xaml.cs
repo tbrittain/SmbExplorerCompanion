@@ -73,6 +73,7 @@ public partial class App
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
             .AddTransient<LookupSearchService>()
+            .AddTransient<MappingService>()
             .AddSingleton<LookupCache>()
             // NavigationService calls this Func to get the ViewModel instance
             .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
