@@ -136,4 +136,50 @@ public class LookupCache
         _memoryCache.Set(key, x);
         return x;
     }
+    
+    public async Task<IReadOnlyList<Trait>> GetTraits()
+    {
+        const string key = "Traits";
+        if (_memoryCache.TryGetValue(key, out var traits) && 
+            traits is List<Trait> x)
+        {
+            return x;
+        }
+
+        var result = await _mediator.Send(new GetTraitsRequest());
+        if (result.TryPickT1(out var exception, out var traitsList))
+        {
+            throw exception;
+        }
+
+        x = traitsList
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
+    }
+
+    public async Task<IReadOnlyList<PlayerAward>> GetPlayerAwards()
+    {
+        const string key = "PlayerAwards";
+        if (_memoryCache.TryGetValue(key, out var playerAwards) &&
+            playerAwards is List<PlayerAward> x)
+        {
+            return x;
+        }
+
+        var result = await _mediator.Send(GetPlayerAwardsRequest.AllAwards);
+        if (result.TryPickT1(out var exception, out var playerAwardsList))
+        {
+            throw exception;
+        }
+
+        x = playerAwardsList
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
+    }
 }

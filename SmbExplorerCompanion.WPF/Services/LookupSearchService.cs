@@ -42,4 +42,16 @@ public class LookupSearchService
         var batHandedness = await _lookupCache.GetBatHandednessTypes();
         return batHandedness.Single(x => x.Id == id);
     }
+
+    public async Task<Trait> GetTraitById(int id)
+    {
+        var traits = await _lookupCache.GetTraits();
+        return traits.Single(x => x.Id == id);
+    }
+
+    public async Task<PlayerAward> GetPlayerAwardById(int id)
+    {
+        var playerAwards = await _lookupCache.GetPlayerAwards();
+        return playerAwards.Single(x => x.Id == id);
+    }
 }
