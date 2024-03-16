@@ -1,12 +1,10 @@
 ﻿using MediatR;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Awards;
 
-public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
+public class AddPlayerAwardsRequest : IRequest
 {
     public AddPlayerAwardsRequest(List<PlayerAwardRequestDto> playerAwardRequestDtos, int seasonId)
     {
@@ -19,7 +17,7 @@ public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
     private List<PlayerAwardRequestDto> PlayerAwardRequestDtos { get; }
     
     // ReSharper disable once UnusedType.Global
-    internal class AddPlayerAwardsHandler : IRequestHandler<AddPlayerAwardsRequest, OneOf<Success, Exception>>
+    internal class AddPlayerAwardsHandler : IRequestHandler<AddPlayerAwardsRequest>
     {
         private readonly IAwardDelegationRepository _awardDelegationRepository;
 
@@ -28,9 +26,9 @@ public class AddPlayerAwardsRequest : IRequest<OneOf<Success, Exception>>
             _awardDelegationRepository = awardDelegationRepository;
         }
 
-        public async Task<OneOf<Success, Exception>> Handle(AddPlayerAwardsRequest request, CancellationToken cancellationToken)
+        public Task Handle(AddPlayerAwardsRequest request, CancellationToken cancellationToken)
         {
-            return await _awardDelegationRepository.AddRegularSeasonPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
+            return _awardDelegationRepository.AddRegularSeasonPlayerAwards(request.SeasonId, request.PlayerAwardRequestDtos, cancellationToken);
         }
     }
 }

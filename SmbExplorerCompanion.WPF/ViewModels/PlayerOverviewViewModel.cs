@@ -32,7 +32,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     private Season? _selectedSeason;
     private readonly ISender _mediator;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, LookupSearchService lss, MappingService mappingService)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -57,33 +57,15 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             ok = _navigationService.TryGetParameter<int>(TeamSeasonIdProp, out var teamSeasonId);
             if (ok)
             {
-                var seasonResponse = _mediator.Send(new GetSeasonByTeamHistoryRequest(teamSeasonId)).Result;
-                if (seasonResponse.TryPickT2(out var e, out var rest))
-                {
-                    MessageBox.Show(e.Message);
-                    Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-                    return;
-                }
-
-                if (rest.TryPickT0(out var season, out _))
-                {
-                    referredSeasonId = season.Id;
-                }
+                var season = _mediator.Send(new GetSeasonByTeamHistoryRequest(teamSeasonId)).Result;
+                if (season is not null) referredSeasonId = season.Id;
             }
         }
 
         PlayerId = playerId;
         _navigationService.ClearParameters();
 
-        var playerOverviewResponse = _mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
-        if (playerOverviewResponse.TryPickT1(out var exception, out var playerOverview))
-        {
-            MessageBox.Show(exception.Message);
-            PlayerOverview = new PlayerOverview();
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var playerOverview = _mediator.Send(new GetPlayerOverviewRequest(PlayerId)).Result;
         var overview = mappingService.FromCore(playerOverview).Result;
         PlayerOverview = overview;
         SeasonStats = overview
@@ -91,24 +73,10 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             .OrderByDescending(x => x.SeasonNumber)
             .First();
 
-        var similarPlayersResponse = _mediator.Send(new GetSimilarPlayersRequest(PlayerId, !PlayerOverview.IsPitcher)).Result;
-        if (similarPlayersResponse.TryPickT1(out exception, out var similarPlayers))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var similarPlayers = _mediator.Send(new GetSimilarPlayersRequest(PlayerId, !PlayerOverview.IsPitcher)).Result;
         SimilarPlayers.AddRange(similarPlayers.Select(x => x.FromCore()));
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-        if (seasonsResponse.TryPickT1(out exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         var applicableSeasonIds = overview
             .GameStats
             .Select(x => x.SeasonId)
@@ -131,7 +99,6 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         {
             SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         }
-
 
         GeneratePlots().Wait();
 
@@ -161,45 +128,21 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var leagueAverageResponse = await _mediator.Send(
+        LeagueAverageGameStats = await _mediator.Send(
             new GetLeagueAverageGameStatsRequest(SelectedSeason.Id,
                 PlayerOverview.IsPitcher,
                 FilterToPitcherType ? PlayerOverview.PitcherRoleId : null));
-        if (leagueAverageResponse.TryPickT1(out var exception, out var leagueAverage))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
 
-        LeagueAverageGameStats = leagueAverage;
-
-        var playerGameStatPercentilesResponse =
+        PlayerGameStatPercentiles =
             await _mediator.Send(new GetPlayerGameStatPercentilesRequest(PlayerId,
                 SelectedSeason.Id,
                 PlayerOverview.IsPitcher,
                 FilterToPitcherType ? PlayerOverview.PitcherRoleId : null));
-        if (playerGameStatPercentilesResponse.TryPickT1(out exception, out var playerGameStatPercentiles))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
 
-        PlayerGameStatPercentiles = playerGameStatPercentiles;
-
-        var playerKpiPercentilesResponse = await _mediator.Send(new GetPlayerKpiPercentilesRequest(PlayerId,
+        PlayerKpiPercentiles = await _mediator.Send(new GetPlayerKpiPercentilesRequest(PlayerId,
             SelectedSeason.Id,
             PlayerOverview.IsPitcher,
             FilterToPitcherType ? PlayerOverview.PitcherRoleId : null));
-        if (playerKpiPercentilesResponse.TryPickT1(out exception, out var playerKpiPercentiles))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        PlayerKpiPercentiles = playerKpiPercentiles;
 
         SeasonStats = PlayerOverview
             .GameStats

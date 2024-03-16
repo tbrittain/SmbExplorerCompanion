@@ -7,10 +7,10 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
-using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
@@ -31,21 +31,17 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     private Position? _selectedPosition;
     private readonly MappingService _mappingService;
 
-    public TopBattingSeasonsViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
+    public TopBattingSeasonsViewModel(IMediator mediator,
+        INavigationService navigationService,
+        MappingService mappingService,
+        LookupCache lookupCache)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
         _mappingService = mappingService;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
@@ -55,13 +51,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             Id = default
         });
 
-        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
-        if (positionsResponse.TryPickT1(out exception, out var positions))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
+        var positions = lookupCache.GetPositions().Result;
 
         var allPosition = new Position
         {
@@ -69,17 +59,11 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             Name = "All"
         };
         Positions.Add(allPosition);
-
-        Positions.AddRange(positions
-            .Where(x => x.IsPrimaryPosition)
-            .Select(p => p.FromCore()));
-
+        Positions.AddRange(positions.Where(x => x.IsPrimaryPosition));
         SelectedPosition = allPosition;
 
         GetTopBattingSeason().Wait();
-
         PropertyChanged += OnPropertyChanged;
-
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -214,8 +198,8 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     public async Task GetTopBattingSeason()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var topBattersResult = await _mediator.Send(new GetTopBattingSeasonRequest(
-            seasonId: SelectedSeason!.Id == default ? null : SelectedSeason!.Id,
+        var topBatters = await _mediator.Send(new GetTopBattingSeasonRequest(
+            seasons: SelectedSeason!.Id == default ? null : new SeasonRange(SelectedSeason!.Id),
             isPlayoffs: IsPlayoffs,
             pageNumber: PageNumber,
             orderBy: SortColumn,
@@ -223,12 +207,6 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             limit: ResultsPerPage,
             primaryPositionId: SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
             descending: true));
-
-        if (topBattersResult.TryPickT1(out var exception, out var topBatters))
-        {
-            Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return;
-        }
 
         TopSeasonBatters.Clear();
         var topSeasonBatters = topBatters

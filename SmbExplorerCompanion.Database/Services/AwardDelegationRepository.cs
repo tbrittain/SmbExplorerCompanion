@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.Database.Entities.Lookups;
@@ -264,7 +262,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
         }
     }
 
-    public async Task<OneOf<Success, Exception>> AddRegularSeasonPlayerAwards(int seasonId,
+    public async Task AddRegularSeasonPlayerAwards(int seasonId,
         List<PlayerAwardRequestDto> playerAwardRequestDtos,
         CancellationToken cancellationToken = default)
     {
@@ -291,7 +289,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             if (invalidAwardIds.Any())
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return new Exception($"Invalid award IDs: {string.Join(", ", invalidAwardIds)}");
+                throw new Exception($"Invalid award IDs: {string.Join(", ", invalidAwardIds)}");
             }
 
             var automaticallyAssignedAwards = regularSeasonAwards
@@ -306,7 +304,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             if (invalidAwardIds.Any())
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return new Exception($"Invalid award IDs, must be automatically " +
+                throw new Exception($"Invalid award IDs, must be automatically " +
                                      $"assigned by the system: {string.Join(", ", invalidAwardIds)}");
             }
 
@@ -335,39 +333,29 @@ public class AwardDelegationRepository : IAwardDelegationRepository
 
             await _dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return new Success();
         }
-        catch (Exception e)
+        catch
         {
             await transaction.RollbackAsync(cancellationToken);
-            return e;
+            throw;
         }
     }
 
-    public async Task<OneOf<Success, Exception>> AddHallOfFameAwards(List<PlayerHallOfFameRequestDto> players,
+    public async Task AddHallOfFameAwards(List<PlayerHallOfFameRequestDto> players,
         CancellationToken cancellationToken = default)
     {
-        try
+        var playerIds = players.Select(x => x.PlayerId).ToList();
+
+        var playerEntities = await _dbContext.Players
+            .Where(x => playerIds.Contains(x.Id))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        foreach (var player in players)
         {
-            var playerIds = players.Select(x => x.PlayerId).ToList();
-
-            var playerEntities = await _dbContext.Players
-                .Where(x => playerIds.Contains(x.Id))
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            foreach (var player in players)
-            {
-                var playerEntity = playerEntities.Single(x => x.Id == player.PlayerId);
-                playerEntity.IsHallOfFamer = player.IsHallOfFamer;
-            }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return new Success();
+            var playerEntity = playerEntities.Single(x => x.Id == player.PlayerId);
+            playerEntity.IsHallOfFamer = player.IsHallOfFamer;
         }
-        catch (Exception e)
-        {
-            return e;
-        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

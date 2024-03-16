@@ -116,30 +116,29 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private async Task CheckForUpdates()
     {
-        var updateResult = await _httpService.CheckForUpdates();
-
-        if (updateResult.TryPickT2(out var error, out var rest))
+        AppUpdateResult? appUpdateResult;
+        try
         {
-            MessageBox.Show($"Failed to check for updates: {error.Value}",
+            appUpdateResult = await _httpService.CheckForUpdates();
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"Failed to check for updates: {e.Message}",
                 "Update Check Failed",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             return;
         }
 
-        if (rest.TryPickT1(out _, out var appUpdateResult))
-        {
-            // No update available
-            return;
-        }
-
+        if (appUpdateResult is null) return;
+        
         AppUpdateResult = appUpdateResult;
 
-        if (appUpdateResult.Version.Major <= CurrentVersion.Major &&
-            appUpdateResult.Version.Minor <= CurrentVersion.Minor) return;
+        if (appUpdateResult.Value.Version.Major <= CurrentVersion.Major &&
+            appUpdateResult.Value.Version.Minor <= CurrentVersion.Minor) return;
 
-        var message = $"An update is available ({CurrentVersion} --> {appUpdateResult.Version}, released " +
-                      $"{appUpdateResult.DaysSinceRelease} days ago). Would you like open the release page?";
+        var message = $"An update is available ({CurrentVersion} --> {appUpdateResult.Value.Version}, released " +
+                      $"{appUpdateResult.Value.DaysSinceRelease} days ago). Would you like open the release page?";
 
         var messageBoxResult = MessageBox.Show(message,
             "Update Available",
@@ -148,7 +147,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         if (messageBoxResult != MessageBoxResult.Yes) return;
 
-        SafeProcess.Start(appUpdateResult.ReleasePageUrl);
+        SafeProcess.Start(appUpdateResult.Value.ReleasePageUrl);
     }
     
     public static string CurrentVersionString => $"Version {CurrentVersion}";

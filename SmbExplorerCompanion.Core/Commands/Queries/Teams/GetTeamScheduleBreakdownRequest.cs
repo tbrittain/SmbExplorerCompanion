@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Teams;
 
-public class GetTeamScheduleBreakdownRequest : IRequest<OneOf<DivisionScheduleBreakdownDto, Exception>>
+public class GetTeamScheduleBreakdownRequest : IRequest<DivisionScheduleBreakdownDto>
 {
     public GetTeamScheduleBreakdownRequest(int teamSeasonId, bool? includeDivision = null)
     {
@@ -18,7 +17,7 @@ public class GetTeamScheduleBreakdownRequest : IRequest<OneOf<DivisionScheduleBr
 
     // ReSharper disable once UnusedType.Global
     internal class GetTeamScheduleBreakdownHandler : IRequestHandler<GetTeamScheduleBreakdownRequest,
-        OneOf<DivisionScheduleBreakdownDto, Exception>>
+        DivisionScheduleBreakdownDto>
     {
         private readonly ITeamRepository _teamRepository;
 
@@ -27,7 +26,7 @@ public class GetTeamScheduleBreakdownRequest : IRequest<OneOf<DivisionScheduleBr
             _teamRepository = teamRepository;
         }
 
-        public async Task<OneOf<DivisionScheduleBreakdownDto, Exception>> Handle(GetTeamScheduleBreakdownRequest request,
+        public async Task<DivisionScheduleBreakdownDto> Handle(GetTeamScheduleBreakdownRequest request,
             CancellationToken cancellationToken) =>
             await _teamRepository.GetTeamScheduleBreakdown(request.TeamSeasonId, request.IncludeDivision, cancellationToken);
     }

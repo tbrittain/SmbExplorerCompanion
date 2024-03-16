@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
 
@@ -15,55 +13,22 @@ public class PitchTypesRepository : IRepository<PitchTypeDto>
         _context = context;
     }
 
-    public async Task<OneOf<IEnumerable<PitchTypeDto>, Exception>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PitchTypeDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var pitchTypes = await _context.PitchTypes
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+        var pitchTypes = await _context.PitchTypes
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
-            return pitchTypes
-                .Select(p => new PitchTypeDto
-                {
-                    Id = p.Id,
-                    Name = p.Name
-                })
-                .ToList();
-        }
-        catch (Exception e)
-        {
-            return e;
-        }
+        return pitchTypes
+            .Select(p => new PitchTypeDto
+            {
+                Id = p.Id,
+                Name = p.Name
+            })
+            .ToList();
     }
 
-    public Task<OneOf<PitchTypeDto, None, Exception>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PitchTypeDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PitchTypeDto, Exception>> AddAsync(PitchTypeDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<IEnumerable<PitchTypeDto>, Exception>> AddRangeAsync(IEnumerable<PitchTypeDto> entities,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PitchTypeDto, None, Exception>> UpdateAsync(PitchTypeDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PitchTypeDto, None, Exception>> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public Task<PitchTypeDto> AddAsync(PitchTypeDto entity, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }

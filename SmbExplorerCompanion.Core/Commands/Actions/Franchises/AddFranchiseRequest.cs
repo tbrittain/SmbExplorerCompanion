@@ -1,12 +1,10 @@
 ﻿using MediatR;
-using OneOf;
-using SmbExplorerCompanion.Core.Entities;
 using SmbExplorerCompanion.Core.Entities.Franchises;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Franchises;
 
-public class AddFranchiseRequest : IRequest<OneOf<FranchiseDto, Exception>>
+public class AddFranchiseRequest : IRequest<FranchiseDto>
 {
     public AddFranchiseRequest(string name)
     {
@@ -16,7 +14,7 @@ public class AddFranchiseRequest : IRequest<OneOf<FranchiseDto, Exception>>
     private string Name { get; }
     
     // ReSharper disable once UnusedType.Global
-    internal class AddFranchiseHandler : IRequestHandler<AddFranchiseRequest, OneOf<FranchiseDto, Exception>>
+    internal class AddFranchiseHandler : IRequestHandler<AddFranchiseRequest, FranchiseDto>
     {
         private readonly IRepository<FranchiseDto> _franchiseRepository;
 
@@ -25,13 +23,13 @@ public class AddFranchiseRequest : IRequest<OneOf<FranchiseDto, Exception>>
             _franchiseRepository = franchiseRepository;
         }
 
-        public async Task<OneOf<FranchiseDto, Exception>> Handle(AddFranchiseRequest request, CancellationToken cancellationToken)
+        public Task<FranchiseDto> Handle(AddFranchiseRequest request, CancellationToken cancellationToken)
         {
             var franchise = new FranchiseDto
             {
                 Name = request.Name
             };
-            return await _franchiseRepository.AddAsync(franchise, cancellationToken);
+            return _franchiseRepository.AddAsync(franchise, cancellationToken);
         }
     }
 }

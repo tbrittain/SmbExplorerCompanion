@@ -10,6 +10,7 @@ public record PlayerAward : PlayerAwardBase
     public bool IsPitchingAward { get; init; }
     public bool IsFieldingAward { get; init; }
     public bool IsPlayoffAward { get; init; }
+    public bool IsUserAssignable { get; init; }
 }
 
 public static class PlayerAwardExtensions
@@ -28,6 +29,7 @@ public static class PlayerAwardExtensions
             IsPitchingAward = x.IsPitchingAward,
             IsFieldingAward = x.IsFieldingAward,
             IsPlayoffAward = x.IsPlayoffAward,
+            IsUserAssignable = x.IsUserAssignable,
         };
     }
 }

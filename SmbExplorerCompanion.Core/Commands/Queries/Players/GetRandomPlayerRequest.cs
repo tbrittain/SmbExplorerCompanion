@@ -1,14 +1,13 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetRandomPlayerRequest : IRequest<OneOf<PlayerBaseDto, Exception>>
+public class GetRandomPlayerRequest : IRequest<PlayerBaseDto>
 {
     // ReSharper disable once UnusedType.Global
-    internal class GetRandomPlayerHandler : IRequestHandler<GetRandomPlayerRequest, OneOf<PlayerBaseDto, Exception>>
+    internal class GetRandomPlayerHandler : IRequestHandler<GetRandomPlayerRequest, PlayerBaseDto>
     {
         private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
@@ -17,7 +16,7 @@ public class GetRandomPlayerRequest : IRequest<OneOf<PlayerBaseDto, Exception>>
             _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<OneOf<PlayerBaseDto, Exception>> Handle(GetRandomPlayerRequest request, CancellationToken cancellationToken) =>
+        public async Task<PlayerBaseDto> Handle(GetRandomPlayerRequest request, CancellationToken cancellationToken) =>
             await _generalPlayerRepository.GetRandomPlayer();
     }
 }

@@ -7,10 +7,10 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
-using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
@@ -31,21 +31,17 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private PitcherRole? _selectedPitcherRole;
     private readonly MappingService _mappingService;
 
-    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
+    public TopPitchingSeasonsViewModel(IMediator mediator,
+        INavigationService navigationService,
+        MappingService mappingService,
+        LookupCache lookupCache)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
         _mappingService = mappingService;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
@@ -55,13 +51,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Id = default
         });
 
-        var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
-        if (pitcherRolesResponse.TryPickT1(out exception, out var pitcherRoles))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
+        var pitcherRoles = lookupCache.GetPitcherRoles().Result;
 
         var allPitcherRole = new PitcherRole
         {
@@ -69,14 +59,11 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        PitcherRoles.AddRange(pitcherRoles.Select(p => p.FromCore()));
-
+        PitcherRoles.AddRange(pitcherRoles);
         SelectedPitcherRole = allPitcherRole;
 
         GetTopPitchingSeason().Wait();
-
         PropertyChanged += OnPropertyChanged;
-        
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -211,8 +198,8 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     public async Task GetTopPitchingSeason()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var topPitchersResult = await _mediator.Send(new GetTopPitchingSeasonRequest(
-            seasonId: SelectedSeason!.Id == default ? null : SelectedSeason!.Id,
+        var topPitchers = await _mediator.Send(new GetTopPitchingSeasonRequest(
+            seasons: SelectedSeason!.Id == default ? null : new SeasonRange(SelectedSeason!.Id),
             isPlayoffs: IsPlayoffs,
             pageNumber: PageNumber,
             orderBy: SortColumn,
@@ -220,12 +207,6 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             onlyRookies: OnlyRookies,
             pitcherRoleId: SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
             descending: true));
-
-        if (topPitchersResult.TryPickT1(out var exception, out var topPitchers))
-        {
-            Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return;
-        }
 
         TopSeasonPitchers.Clear();
         var mappedTopSeasonPitchers = topPitchers

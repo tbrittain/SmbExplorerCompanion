@@ -1,15 +1,13 @@
 ﻿using MediatR;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Summary;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Summary;
 
-public class GetFranchiseSummaryRequest : IRequest<OneOf<FranchiseSummaryDto, None, Exception>>
+public class GetFranchiseSummaryRequest : IRequest<FranchiseSummaryDto?>
 {
     // ReSharper disable once UnusedType.Global
-    internal class GetFranchiseSummaryHandler : IRequestHandler<GetFranchiseSummaryRequest, OneOf<FranchiseSummaryDto, None, Exception>>
+    internal class GetFranchiseSummaryHandler : IRequestHandler<GetFranchiseSummaryRequest, FranchiseSummaryDto?>
     {
         private readonly ISummaryRepository _summaryRepository;
 
@@ -18,7 +16,7 @@ public class GetFranchiseSummaryRequest : IRequest<OneOf<FranchiseSummaryDto, No
             _summaryRepository = summaryRepository;
         }
 
-        public async Task<OneOf<FranchiseSummaryDto, None, Exception>> Handle(GetFranchiseSummaryRequest request,
+        public async Task<FranchiseSummaryDto?> Handle(GetFranchiseSummaryRequest request,
             CancellationToken cancellationToken) => await _summaryRepository.GetFranchiseSummaryAsync(cancellationToken);
     }
 }

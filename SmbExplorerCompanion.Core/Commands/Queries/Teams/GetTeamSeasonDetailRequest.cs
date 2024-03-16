@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Teams;
 
-public class GetTeamSeasonDetailRequest : IRequest<OneOf<TeamSeasonDetailDto, Exception>>
+public class GetTeamSeasonDetailRequest : IRequest<TeamSeasonDetailDto>
 {
     public GetTeamSeasonDetailRequest(int teamSeasonId)
     {
@@ -15,7 +14,7 @@ public class GetTeamSeasonDetailRequest : IRequest<OneOf<TeamSeasonDetailDto, Ex
     private int TeamSeasonId { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetTeamSeasonDetailHandler : IRequestHandler<GetTeamSeasonDetailRequest, OneOf<TeamSeasonDetailDto, Exception>>
+    internal class GetTeamSeasonDetailHandler : IRequestHandler<GetTeamSeasonDetailRequest, TeamSeasonDetailDto>
     {
         private readonly ITeamRepository _teamRepository;
 
@@ -24,7 +23,7 @@ public class GetTeamSeasonDetailRequest : IRequest<OneOf<TeamSeasonDetailDto, Ex
             _teamRepository = teamRepository;
         }
 
-        public async Task<OneOf<TeamSeasonDetailDto, Exception>> Handle(GetTeamSeasonDetailRequest request, CancellationToken cancellationToken)
+        public async Task<TeamSeasonDetailDto> Handle(GetTeamSeasonDetailRequest request, CancellationToken cancellationToken)
         {
             return await _teamRepository.GetTeamSeasonDetail(request.TeamSeasonId, cancellationToken);
         }

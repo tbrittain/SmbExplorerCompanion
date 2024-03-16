@@ -9,11 +9,11 @@ using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Actions.Awards;
-using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
@@ -29,20 +29,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
     private readonly MappingService _mappingService;
     private Season? _selectedSeason;
 
-    public DelegateAwardsViewModel(IMediator mediator, MappingService mappingService)
+    public DelegateAwardsViewModel(IMediator mediator, MappingService mappingService, LookupCache lookupCache)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _mappingService = mappingService;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.Add(new Season
         {
             Id = default
@@ -50,30 +43,16 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
-        var regularSeasonAwards = _mediator.Send(GetPlayerAwardsRequest.Default).Result;
-        if (regularSeasonAwards.TryPickT1(out exception, out var awards))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        AllAwards.AddRange(awards.Select(a => a.FromCore()));
+        var awards = lookupCache.GetPlayerAwards().Result;
+        AllAwards.AddRange(awards.Where(x => x.IsUserAssignable));
         BattingAwards.AddRange(AllAwards.Where(a => a.IsBattingAward));
         PitchingAwards.AddRange(AllAwards.Where(a => a.IsPitchingAward));
         FieldingAwards.AddRange(AllAwards.Where(a => a.IsFieldingAward));
-        
-        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
-        if (positionsResponse.TryPickT1(out exception, out var positions))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
+
+        var positions = lookupCache.GetPositions().Result;
 
         Positions.AddRange(positions
-            .Where(x => x.IsPrimaryPosition)
-            .Select(p => p.FromCore()));
+            .Where(x => x.IsPrimaryPosition));
 
         GetAwardNomineesForSeason().Wait();
 
@@ -103,14 +82,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
-        var seasonTeamsResponse = await _mediator.Send(
+        var seasonTeams = await _mediator.Send(
             new GetSeasonTeamsRequest(SelectedSeason.Id));
-
-        if (seasonTeamsResponse.TryPickT1(out var exception, out var seasonTeams))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
 
         SeasonTeams.Clear();
         SeasonTeams.AddRange(seasonTeams
@@ -118,17 +91,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             .OrderBy(x => x.TeamName));
 
         var atLeastOneUserAwardAdded = false;
-        var topSeasonBattersResponse = await _mediator.Send(
+        var topSeasonBatters = await _mediator.Send(
             new GetTopBattingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
-        if (topSeasonBattersResponse.TryPickT1(out exception, out var topSeasonBatters))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
 
         TopSeasonBatters.Clear();
         var mappedTopBatters = topSeasonBatters
@@ -139,18 +107,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         if (TopSeasonBatters.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
-        var topSeasonPitchersResponse = await _mediator.Send(
+        var topSeasonPitchers = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
-
-        if (topSeasonPitchersResponse.TryPickT1(out exception, out var topSeasonPitchers))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
 
         TopSeasonPitchers.Clear();
         var mappedTopPitchers = topSeasonPitchers
@@ -160,19 +122,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         if (TopSeasonPitchers.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
-        var topSeasonBattingRookiesResponse = await _mediator.Send(
+        var topSeasonBattingRookies = await _mediator.Send(
             new GetTopBattingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 onlyRookies: true,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
-
-        if (topSeasonBattingRookiesResponse.TryPickT1(out exception, out var topSeasonBattingRookies))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
 
         TopSeasonBattingRookies.Clear();
         var mappedRookieBatters = topSeasonBattingRookies
@@ -183,19 +139,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         if (TopSeasonBattingRookies.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
-        var topSeasonPitchingRookiesResponse = await _mediator.Send(
+        var topSeasonPitchingRookies = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 onlyRookies: true,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
-
-        if (topSeasonPitchingRookiesResponse.TryPickT1(out exception, out var topSeasonPitchingRookies))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
 
         TopSeasonPitchingRookies.Clear();
         var mappedRookiePitchers = topSeasonPitchingRookies
@@ -209,19 +159,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         TopPitchersPerTeam.Clear();
         foreach (var team in SeasonTeams)
         {
-            var topBattersPerTeamResponse = await _mediator.Send(
+            var topBattersPerTeam = await _mediator.Send(
                 new GetTopBattingSeasonRequest(
-                    seasonId: SelectedSeason.Id,
+                    seasons: new SeasonRange(SelectedSeason.Id),
                     teamId: team.TeamId,
                     limit: 5,
                     includeChampionAwards: false,
                     onlyUserAssignableAwards: true));
-
-            if (topBattersPerTeamResponse.TryPickT1(out exception, out var topBattersPerTeam))
-            {
-                MessageBox.Show(exception.Message);
-                return;
-            }
 
             var topBattersPerTeamObservable = topBattersPerTeam
                 .Select(async x => await _mappingService.FromCore(x))
@@ -243,19 +187,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
             TopBattersPerTeam.Add(new ObservableGroup<string, PlayerSeasonBatting>(team.TeamName, topBattersPerTeamObservable));
 
-            var topPitchersPerTeamResponse = await _mediator.Send(
+            var topPitchersPerTeam = await _mediator.Send(
                 new GetTopPitchingSeasonRequest(
-                    seasonId: SelectedSeason.Id,
+                    seasons: new SeasonRange(SelectedSeason.Id),
                     teamId: team.TeamId,
                     limit: 5,
                     includeChampionAwards: false,
                     onlyUserAssignableAwards: true));
-
-            if (topPitchersPerTeamResponse.TryPickT1(out exception, out var topPitchersPerTeam))
-            {
-                MessageBox.Show(exception.Message);
-                return;
-            }
 
             var topPitchersPerTeamObservable = topPitchersPerTeam
                 .Select(async x => await _mappingService.FromCore(x))
@@ -276,19 +214,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         TopBattersByPosition.Clear();
         foreach (var position in Positions)
         {
-            var topBattersByPositionResponse = await _mediator.Send(
+            var topBattersByPosition = await _mediator.Send(
                 new GetTopBattingSeasonRequest(
-                    seasonId: SelectedSeason.Id,
+                    seasons: new SeasonRange(SelectedSeason.Id),
                     primaryPositionId: position.Id,
                     limit: 5,
                     includeChampionAwards: false,
                     onlyUserAssignableAwards: true));
-
-            if (topBattersByPositionResponse.TryPickT1(out exception, out var topBattersByPosition))
-            {
-                MessageBox.Show(exception.Message);
-                return;
-            }
 
             var topBattersByPositionObservable = topBattersByPosition
                 .Select(async x => await _mappingService.FromCore(x))
@@ -424,16 +356,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         var request = new AddPlayerAwardsRequest(playerAwardRequestDtos.Distinct().ToList(), SelectedSeason.Id);
-        var response = await _mediator.Send(request);
+        await _mediator.Send(request);
         
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-
-        if (response.TryPickT1(out var exception, out _))
-        {
-            MessageBox.Show("Unable to add player awards. Please try again. " + exception.Message);
-            return;
-        }
-
         MessageBox.Show($"Player awards for Season {SelectedSeason.Number} added successfully!");
     }
 

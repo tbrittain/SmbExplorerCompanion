@@ -1,14 +1,13 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Seasons;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 
-public class GetSeasonsRequest : IRequest<OneOf<List<SeasonDto>, Exception>>
+public class GetSeasonsRequest : IRequest<List<SeasonDto>>
 {
     // ReSharper disable once UnusedType.Global
-    internal class GetSeasonsHandler : IRequestHandler<GetSeasonsRequest, OneOf<List<SeasonDto>, Exception>>
+    internal class GetSeasonsHandler : IRequestHandler<GetSeasonsRequest, List<SeasonDto>>
     {
         private readonly IRepository<SeasonDto> _seasonRepository;
 
@@ -17,13 +16,10 @@ public class GetSeasonsRequest : IRequest<OneOf<List<SeasonDto>, Exception>>
             _seasonRepository = seasonRepository;
         }
 
-        public async Task<OneOf<List<SeasonDto>, Exception>> Handle(GetSeasonsRequest request, CancellationToken cancellationToken)
+        public async Task<List<SeasonDto>> Handle(GetSeasonsRequest request, CancellationToken cancellationToken)
         {
             var seasonsResponse = await _seasonRepository.GetAllAsync(cancellationToken);
-            if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-                return exception;
-
-            return seasons.ToList();
+            return seasonsResponse.ToList();
         }
     }
 }

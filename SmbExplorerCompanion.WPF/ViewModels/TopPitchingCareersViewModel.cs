@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
-using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
@@ -27,7 +26,10 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private PitcherRole? _selectedPitcherRole;
     private readonly MappingService _mappingService;
 
-    public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
+    public TopPitchingCareersViewModel(IMediator mediator,
+        INavigationService navigationService,
+        MappingService mappingService,
+        LookupCache lookupCache)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
@@ -36,21 +38,14 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
 
         PropertyChanged += OnPropertyChanged;
 
-        var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
-        if (pitcherRolesResponse.TryPickT1(out var exception, out var pitcherRoles))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var pitcherRoles = lookupCache.GetPitcherRoles().Result;
         var allPitcherRole = new PitcherRole
         {
             Id = 0,
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        PitcherRoles.AddRange(pitcherRoles.Select(p => p.FromCore()));
+        PitcherRoles.AddRange(pitcherRoles);
 
         SelectedPitcherRole = allPitcherRole;
 
@@ -153,7 +148,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     public async Task GetTopPitchingCareers()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var topPitchersResult = await _mediator.Send(new GetTopPitchingCareersRequest(
+        var topPitchers = await _mediator.Send(new GetTopPitchingCareersRequest(
             pageNumber: PageNumber,
             limit: ResultsPerPage,
             orderBy: SortColumn,
@@ -161,14 +156,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             pitcherRoleId: SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id
         ));
 
-        if (topPitchersResult.TryPickT1(out var exception, out var topPlayers))
-        {
-            Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return;
-        }
-
         TopPitchingCareers.Clear();
-        var mappedPitchingCareers = topPlayers
+        var mappedPitchingCareers = topPitchers
             .Select(async x => await _mappingService.FromCore(x))
             .Select(x => x.Result);
         TopPitchingCareers.AddRange(mappedPitchingCareers);

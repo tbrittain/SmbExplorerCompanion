@@ -1,7 +1,5 @@
 ﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
@@ -21,7 +19,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         _dbContext = dbContext;
     }
 
-    public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
+    public async Task<List<PlayerCareerPitchingDto>> GetPitchingCareers(
         int? pageNumber = null,
         int? limit = null,
         string? orderBy = null,
@@ -55,175 +53,159 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        try
+        if (pitcherRoleId is not null)
         {
-            if (pitcherRoleId is not null)
-            {
-                var pitcherRole = await _dbContext.PitcherRoles
-                    .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken);
+            var pitcherRole = await _dbContext.PitcherRoles
+                .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken);
 
-                if (pitcherRole is null)
-                    return new ArgumentException($"No pitcher role found with Id {pitcherRoleId}");
-            }
-
-            var mostRecentSeason = await _dbContext.Seasons
-                .Include(x => x.SeasonTeamHistory)
-                .ThenInclude(x => x.Team)
-                .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
-                .OrderByDescending(x => x.Id)
-                .FirstAsync(cancellationToken);
-
-            var queryable = GetCareerPitchingIQueryable()
-                .Where(x => x.FranchiseId == franchiseId)
-                .Where(x => x.PitcherRole != null)
-                .Where(x => playerId == null || x.Id == playerId)
-                .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
-                .Where(x => !onlyActivePlayers || x.PlayerSeasons
-                    .OrderByDescending(y => y.Id)
-                    .First().SeasonId == mostRecentSeason.Id)
-                .Where(x => pitcherRoleId == null || x.PitcherRoleId == pitcherRoleId);
-
-            var playerPitchingDtos = await GetCareerPitchingDtos(queryable)
-                .OrderBy(orderBy)
-                .Skip(((pageNumber ?? 1) - 1) * limitValue)
-                .Take(limitValue)
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            foreach (var pitchingDto in playerPitchingDtos)
-            {
-                pitchingDto.IsRetired = pitchingDto.EndSeasonNumber < mostRecentSeason.Number;
-                {
-                    pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
-                }
-
-                pitchingDto.Era = pitchingDto.InningsPitched == 0
-                    ? 0
-                    : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
-                pitchingDto.Whip = pitchingDto.InningsPitched == 0
-                    ? 0
-                    : (pitchingDto.Walks + pitchingDto.Hits) / pitchingDto.InningsPitched;
-                pitchingDto.Fip = pitchingDto.InningsPitched == 0
-                    ? 0
-                    : (13 * pitchingDto.HomeRuns + 3 * (pitchingDto.Walks + pitchingDto.HitByPitch) -
-                       2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
-
-                if (pitchingDto.NumChampionships > 0)
-                {
-                    foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
-                    {
-                        pitchingDto.AwardIds.Add((int) VirtualAward.Champion);
-                    }
-                }
-
-                if (pitchingDto.IsHallOfFamer)
-                {
-                    pitchingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
-                }
-            }
-
-            return playerPitchingDtos;
+            if (pitcherRole is null)
+                throw new ArgumentException($"No pitcher role found with Id {pitcherRoleId}");
         }
-        catch (Exception e)
+
+        var mostRecentSeason = await _dbContext.Seasons
+            .Include(x => x.SeasonTeamHistory)
+            .ThenInclude(x => x.Team)
+            .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+            .OrderByDescending(x => x.Id)
+            .FirstAsync(cancellationToken);
+
+        var queryable = GetCareerPitchingIQueryable()
+            .Where(x => x.FranchiseId == franchiseId)
+            .Where(x => x.PitcherRole != null)
+            .Where(x => playerId == null || x.Id == playerId)
+            .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
+            .Where(x => !onlyActivePlayers || x.PlayerSeasons
+                .OrderByDescending(y => y.Id)
+                .First().SeasonId == mostRecentSeason.Id)
+            .Where(x => pitcherRoleId == null || x.PitcherRoleId == pitcherRoleId);
+
+        var playerPitchingDtos = await GetCareerPitchingDtos(queryable)
+            .OrderBy(orderBy)
+            .Skip(((pageNumber ?? 1) - 1) * limitValue)
+            .Take(limitValue)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        foreach (var pitchingDto in playerPitchingDtos)
         {
-            return e;
-        }
-    }
-
-    public async Task<OneOf<List<PlayerCareerPitchingDto>, None, Exception>> GetHallOfFameCandidates(int seasonId,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var season = await _dbContext.Seasons
-                .Where(x => x.Id == seasonId)
-                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-
-            if (season is null)
-                return new ArgumentException($"Season with id {seasonId} not found.");
-
-            var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-
-            var allFranchiseSeasons = await _dbContext.Seasons
-                .Where(x => x.FranchiseId == franchiseId)
-                .OrderBy(x => x.Id)
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            // Since the purpose of this method is to return player careers who have played in the past
-            // but not in the current season, we can return an empty list if the season provided is the minimum
-            // season for the franchise.
-            if (season.Id == allFranchiseSeasons.First().Id)
-                return new None();
-
-            var previousSeason = allFranchiseSeasons
-                .Where(x => x.Id < season.Id)
-                .OrderByDescending(x => x.Id)
-                .First();
-
-            var mostRecentSeason = allFranchiseSeasons
-                .OrderByDescending(x => x.Id)
-                .First();
-
-            // Here, we are going to get all of the player IDs that have a player season in the previous season,
-            // but lack one in the season queried
-
-            var retiredPlayers = await _dbContext.PlayerSeasons
-                .Where(x => x.SeasonId == previousSeason.Id)
-                .Select(x => x.PlayerId)
-                .Except(_dbContext.PlayerSeasons
-                    .Where(x => x.SeasonId == season.Id)
-                    .Select(x => x.PlayerId))
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            var pitchingQueryable = GetCareerPitchingIQueryable()
-                .Where(x => x.PitcherRoleId != null)
-                .Where(x => retiredPlayers.Contains(x.Id));
-
-            var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable, false)
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            foreach (var pitchingDto in pitchingDtos)
+            pitchingDto.IsRetired = pitchingDto.EndSeasonNumber < mostRecentSeason.Number;
             {
-                pitchingDto.IsRetired = true;
                 pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
-                pitchingDto.Era = pitchingDto.InningsPitched == 0
-                    ? 0
-                    : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
-                pitchingDto.Whip = pitchingDto.InningsPitched == 0
-                    ? 0
-                    : (pitchingDto.Walks + pitchingDto.Hits) / pitchingDto.InningsPitched;
-                pitchingDto.Fip = pitchingDto.InningsPitched == 0
-                    ? 0
-                    : (13 * pitchingDto.HomeRuns + 3 * (pitchingDto.Walks + pitchingDto.HitByPitch) -
-                       2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
-
-                if (pitchingDto.NumChampionships > 0)
-                    foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
-                    {
-                        pitchingDto.AwardIds.Add((int)VirtualAward.Champion);
-                    }
             }
 
-            return pitchingDtos
-                .OrderByDescending(x => x.WeightedOpsPlusOrEraMinus)
-                .ToList();
+            pitchingDto.Era = pitchingDto.InningsPitched == 0
+                ? 0
+                : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
+            pitchingDto.Whip = pitchingDto.InningsPitched == 0
+                ? 0
+                : (pitchingDto.Walks + pitchingDto.Hits) / pitchingDto.InningsPitched;
+            pitchingDto.Fip = pitchingDto.InningsPitched == 0
+                ? 0
+                : (13 * pitchingDto.HomeRuns + 3 * (pitchingDto.Walks + pitchingDto.HitByPitch) -
+                   2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
+
+            if (pitchingDto.NumChampionships > 0)
+            {
+                foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
+                {
+                    pitchingDto.AwardIds.Add((int) VirtualAward.Champion);
+                }
+            }
+
+            if (pitchingDto.IsHallOfFamer)
+            {
+                pitchingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
+            }
         }
-        catch (Exception e)
-        {
-            return e;
-        }
+
+        return playerPitchingDtos;
     }
 
-    public async Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(int playerId,
+    public async Task<List<PlayerCareerPitchingDto>> GetHallOfFameCandidates(int seasonId,
         CancellationToken cancellationToken = default)
     {
-        var playerCareerPitchingResult = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
-        if (playerCareerPitchingResult.TryPickT1(out var exception, out var playerCareer))
-            return exception;
+        var season = await _dbContext.Seasons
+            .Where(x => x.Id == seasonId)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (!playerCareer.Any())
-            return new Exception($"No player career found for player ID {playerId}");
+        if (season is null)
+            throw new ArgumentException($"Season with id {seasonId} not found.");
 
-        var playerCareerPitching = playerCareer.First();
+        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+
+        var allFranchiseSeasons = await _dbContext.Seasons
+            .Where(x => x.FranchiseId == franchiseId)
+            .OrderBy(x => x.Id)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        // Since the purpose of this method is to return player careers who have played in the past
+        // but not in the current season, we can return an empty list if the season provided is the minimum
+        // season for the franchise.
+        if (season.Id == allFranchiseSeasons.First().Id)
+            return new List<PlayerCareerPitchingDto>();
+
+        var previousSeason = allFranchiseSeasons
+            .Where(x => x.Id < season.Id)
+            .OrderByDescending(x => x.Id)
+            .First();
+
+        var mostRecentSeason = allFranchiseSeasons
+            .OrderByDescending(x => x.Id)
+            .First();
+
+        // Here, we are going to get all of the player IDs that have a player season in the previous season,
+        // but lack one in the season queried
+
+        var retiredPlayers = await _dbContext.PlayerSeasons
+            .Where(x => x.SeasonId == previousSeason.Id)
+            .Select(x => x.PlayerId)
+            .Except(_dbContext.PlayerSeasons
+                .Where(x => x.SeasonId == season.Id)
+                .Select(x => x.PlayerId))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var pitchingQueryable = GetCareerPitchingIQueryable()
+            .Where(x => x.PitcherRoleId != null)
+            .Where(x => retiredPlayers.Contains(x.Id));
+
+        var pitchingDtos = await GetCareerPitchingDtos(pitchingQueryable, false)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        foreach (var pitchingDto in pitchingDtos)
+        {
+            pitchingDto.IsRetired = true;
+            pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
+            pitchingDto.Era = pitchingDto.InningsPitched == 0
+                ? 0
+                : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
+            pitchingDto.Whip = pitchingDto.InningsPitched == 0
+                ? 0
+                : (pitchingDto.Walks + pitchingDto.Hits) / pitchingDto.InningsPitched;
+            pitchingDto.Fip = pitchingDto.InningsPitched == 0
+                ? 0
+                : (13 * pitchingDto.HomeRuns + 3 * (pitchingDto.Walks + pitchingDto.HitByPitch) -
+                   2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
+
+            if (pitchingDto.NumChampionships > 0)
+                foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
+                {
+                    pitchingDto.AwardIds.Add((int)VirtualAward.Champion);
+                }
+        }
+
+        return pitchingDtos
+            .OrderByDescending(x => x.WeightedOpsPlusOrEraMinus)
+            .ToList();
+    }
+
+    public async Task<List<SimilarPlayerDto>> GetSimilarPitchingCareers(int playerId,
+        CancellationToken cancellationToken = default)
+    {
+        var pitchingCareers = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+
+        if (!pitchingCareers.Any())
+            throw new Exception($"No player career found for player ID {playerId}");
+
+        var playerCareerPitching = pitchingCareers.First();
 
         var wins = playerCareerPitching.Wins;
         var losses = playerCareerPitching.Losses;
