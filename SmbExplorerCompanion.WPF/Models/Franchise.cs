@@ -1,7 +1,18 @@
-﻿namespace SmbExplorerCompanion.WPF.Models;
+﻿using SmbExplorerCompanion.Core.Entities.Franchises;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 
-public class Franchise
+namespace SmbExplorerCompanion.WPF.Models;
+
+public record Franchise : LookupBase;
+
+public static class FranchiseExtensions
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = default!;
+    public static Franchise FromCore(this FranchiseDto franchiseDto)
+    {
+        return new Franchise
+        {
+            Id = franchiseDto.Id,
+            Name = franchiseDto.Name
+        };
+    }
 }

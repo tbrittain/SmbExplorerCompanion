@@ -1,11 +1,24 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Search;
+using SmbExplorerCompanion.WPF.Models.Lookups;
 
 namespace SmbExplorerCompanion.WPF.Models.Search;
 
-public class SearchResult
+public record SearchResult : LookupBase
 {
     public SearchResultType Type { get; init; }
-    public string Name { get; init; } = default!;
     public string Description { get; init; } = default!;
-    public int Id { get; init; }
+}
+
+public static class SearchResultExtensions
+{
+    public static SearchResult FromCore(this SearchResultDto searchResultDto)
+    {
+        return new SearchResult
+        {
+            Id = searchResultDto.Id,
+            Name = searchResultDto.Name,
+            Description = searchResultDto.Description,
+            Type = searchResultDto.Type
+        };
+    }
 }

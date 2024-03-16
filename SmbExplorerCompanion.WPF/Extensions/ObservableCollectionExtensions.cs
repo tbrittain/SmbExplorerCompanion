@@ -13,8 +13,5 @@ public static class ObservableCollectionExtensions
         }
     }
 
-    public static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> items)
-    {
-        return new(items);
-    }
+    public static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> items) => new(items);
 }

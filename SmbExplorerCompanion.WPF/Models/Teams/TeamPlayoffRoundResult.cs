@@ -36,3 +36,20 @@ public class TeamPlayoffRoundResult
         }
     }
 }
+
+public static class TeamPlayoffRoundResultExtensions
+{
+    public static TeamPlayoffRoundResult FromCore(this TeamPlayoffRoundResultDto x)
+    {
+        return new TeamPlayoffRoundResult
+        {
+            Round = x.Round,
+            WonSeries = x.WonSeries,
+            SeriesNumber = x.SeriesNumber,
+            OpponentTeamName = x.OpponentTeamName,
+            OpponentSeasonTeamId = x.OpponentSeasonTeamId,
+            NumWins = x.NumWins,
+            NumLosses = x.NumLosses
+        };
+    }
+}

@@ -1,6 +1,9 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
@@ -30,6 +33,7 @@ public class PlayerSeasonPitching : PlayerSeasonBase
     public double HomeRunsPerNine { get; set; }
     public double StrikeoutsPerNine { get; set; }
     public double StrikeoutToWalkRatio { get; set; }
-    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
+    public string PitchTypes { get; set; } = string.Empty;
+    public ObservableCollection<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

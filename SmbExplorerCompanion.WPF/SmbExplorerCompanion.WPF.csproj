@@ -12,15 +12,15 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-      <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.1" />
+      <PackageReference Include="Extended.Wpf.Toolkit" Version="4.6.0" />
       <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.13">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-      <PackageReference Include="Riok.Mapperly" Version="3.3.0" />
       <PackageReference Include="ScottPlot.WPF" Version="4.1.68" />
       <PackageReference Include="ShowMeTheXAML.MSBuild" Version="2.0.0" />
     </ItemGroup>

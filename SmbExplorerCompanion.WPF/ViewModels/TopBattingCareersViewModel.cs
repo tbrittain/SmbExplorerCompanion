@@ -11,8 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
@@ -27,16 +25,18 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private int _pageNumber = 1;
     private PlayerBattingCareer? _selectedPlayer;
     private Position? _selectedPosition;
+    private readonly MappingService _mappingService;
 
-    public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator)
+    public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         _mediator = mediator;
+        _mappingService = mappingService;
 
         PropertyChanged += OnPropertyChanged;
-        
-        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+
+        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out var exception, out var positions))
         {
             MessageBox.Show(exception.Message);
@@ -49,11 +49,10 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             Name = "All"
         };
         Positions.Add(allPosition);
-        var positionMapper = new PositionMapping();
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
-            .Select(p => positionMapper.FromPositionDto(p)));
-        
+            .Select(p => p.FromCore()));
+
         SelectedPosition = allPosition;
 
         GetTopBattingCareers().Wait();
@@ -66,7 +65,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         {
             if (value < 1) return;
             SetField(ref _pageNumber, value);
-            
+
             IncrementPageCommand.NotifyCanExecuteChanged();
             DecrementPageCommand.NotifyCanExecuteChanged();
         }
@@ -168,10 +167,11 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         }
 
         TopBattingCareers.Clear();
+        var topBattingCareers = topPlayers
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result);
+        TopBattingCareers.AddRange(topBattingCareers);
 
-        var mapper = new PlayerCareerMapping();
-        TopBattingCareers.AddRange(topPlayers.Select(b => mapper.FromBattingDto(b)));
-        
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

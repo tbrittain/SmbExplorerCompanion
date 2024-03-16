@@ -7,25 +7,14 @@ using SmbExplorerCompanion.WPF.Models.Lookups;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
-public class PlayerOverview
+public class PlayerOverview : PlayerCareerBase
 {
-    public int PlayerId { get; set; }
-    public string PlayerName { get; set; } = string.Empty;
-    public bool IsPitcher { get; set; }
-    public int TotalSalary { get; set; }
     public string BatHandedness { get; set; } = string.Empty;
     public string ThrowHandedness { get; set; } = string.Empty;
     public string PrimaryPosition { get; set; } = string.Empty;
-    public int? PitcherRoleId { get; set; }
     public string? PitcherRole { get; set; }
     public string Chemistry { get; set; } = string.Empty;
-    public double WeightedOpsPlusOrEraMinus { get; set; }
-    public int StartSeasonNumber { get; set; }
-    public int EndSeasonNumber { get; set; }
-    public bool IsRetired { get; set; }
-    public int NumSeasons { get; set; }
     public int NumChampionships { get; set; }
-    public bool IsHallOfFamer { get; set; }
     public string CurrentTeam { get; set; } = string.Empty;
     public int? CurrentTeamId { get; set; }
     public List<PlayerAward> Awards { get; set; } = new();

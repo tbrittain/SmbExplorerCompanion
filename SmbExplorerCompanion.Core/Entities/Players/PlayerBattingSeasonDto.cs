@@ -24,13 +24,13 @@ public class PlayerBattingSeasonDto : PlayerSeasonDto
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
-    public List<PlayerAwardBaseDto> Awards { get; set; } = new();
+    public List<int> AwardIds { get; set; } = new();
     public bool IsChampion { get; set; }
     public int GamesBatting { get; set; }
     public int PlateAppearances { get; set; }
     public int CaughtStealing { get; set; }
     public int TotalBases { get; set; }
-    public string? SecondaryPosition { get; set; } = string.Empty;
-    public string Traits { get; set; } = string.Empty;
+    public int? SecondaryPositionId { get; set; }
+    public List<int> TraitIds { get; set; } = new();
     public int GamesPlayed { get; set; }
 }

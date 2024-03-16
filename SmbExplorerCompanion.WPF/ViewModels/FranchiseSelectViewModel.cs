@@ -11,7 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Franchises;
 using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings;
 using SmbExplorerCompanion.WPF.Models;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -41,10 +40,8 @@ public partial class FranchiseSelectViewModel : ViewModelBase
         }
         else
         {
-            var mapper = new FranchiseMapping();
             Franchises = franchises
-                .Select(x => mapper
-                    .FromDto(x))
+                .Select(x => x.FromCore())
                 .ToObservableCollection();
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         }
@@ -97,8 +94,7 @@ public partial class FranchiseSelectViewModel : ViewModelBase
             return;
         }
 
-        var mapper = new FranchiseMapping();
-        Franchises.Add(mapper.FromDto(franchise));
+        Franchises.Add(franchise.FromCore());
         SelectedFranchise = Franchises.First(x => x.Id == franchise.Id);
     }
 }

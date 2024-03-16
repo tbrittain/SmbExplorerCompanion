@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using OneOf;
 using OneOf.Types;
-using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -108,25 +108,17 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                        2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
 
                 if (pitchingDto.NumChampionships > 0)
+                {
                     foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
                     {
-                        pitchingDto.Awards.Add(new PlayerAwardBaseDto
-                        {
-                            Id = 0,
-                            Name = "Champion",
-                            Importance = 10,
-                            OmitFromGroupings = false
-                        });
+                        pitchingDto.AwardIds.Add((int) VirtualAward.Champion);
                     }
+                }
 
                 if (pitchingDto.IsHallOfFamer)
-                    pitchingDto.Awards.Add(new PlayerAwardBaseDto
-                    {
-                        Id = -1,
-                        Name = "Hall of Fame",
-                        Importance = 0,
-                        OmitFromGroupings = false
-                    });
+                {
+                    pitchingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
+                }
             }
 
             return playerPitchingDtos;
@@ -207,13 +199,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                 if (pitchingDto.NumChampionships > 0)
                     foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
                     {
-                        pitchingDto.Awards.Add(new PlayerAwardBaseDto
-                        {
-                            Id = 0,
-                            Name = "Champion",
-                            Importance = 10,
-                            OmitFromGroupings = false
-                        });
+                        pitchingDto.AwardIds.Add((int)VirtualAward.Champion);
                     }
             }
 
@@ -303,7 +289,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             .Select(x => new SimilarPlayerDto
             {
                 PlayerId = x.PlayerId,
-                Name = x.PlayerName,
+                PlayerName = x.PlayerName,
                 SimilarityScore = x.SimilarityScore
             })
             .ToList();
@@ -312,11 +298,6 @@ public class PitcherCareerRepository : IPitcherCareerRepository
     private IQueryable<Player> GetCareerPitchingIQueryable()
     {
         return _dbContext.Players
-            .Include(x => x.Chemistry)
-            .Include(x => x.BatHandedness)
-            .Include(x => x.ThrowHandedness)
-            .Include(x => x.PrimaryPosition)
-            .Include(x => x.PitcherRole)
             .Include(x => x.PlayerSeasons)
             .ThenInclude(x => x.Season)
             .Include(x => x.PlayerSeasons)
@@ -340,15 +321,10 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                         .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : y.Salary),
-                PitcherRole = x.PitcherRole != null ? x.PitcherRole.Name : null,
                 PitcherRoleId = x.PitcherRoleId,
-                BatHandedness = x.BatHandedness.Name,
                 BatHandednessId = x.BatHandednessId,
-                ThrowHandedness = x.ThrowHandedness.Name,
                 ThrowHandednessId = x.ThrowHandednessId,
-                PrimaryPosition = x.PrimaryPosition.Name,
                 PrimaryPositionId = x.PrimaryPositionId,
-                Chemistry = x.Chemistry!.Name,
                 ChemistryId = x.ChemistryId,
                 StartSeasonNumber = x.PlayerSeasons.Min(y => y.Season.Number),
                 EndSeasonNumber = x.PlayerSeasons.Max(y => y.Season.Number),
@@ -395,16 +371,10 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                               .SelectMany(y => y.PitchingStats)
                               .Sum(y => (y.InningsPitched ?? 0))
                         : 0,
-                Awards = x.PlayerSeasons
+                AwardIds = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
                     .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
-                    .Select(y => new PlayerAwardBaseDto
-                    {
-                        Id = y.Id,
-                        Name = y.Name,
-                        Importance = y.Importance,
-                        OmitFromGroupings = y.OmitFromGroupings
-                    })
+                    .Select(y => y.Id)
                     .ToList(),
                 IsHallOfFamer = x.IsHallOfFamer,
                 NumChampionships = x.PlayerSeasons

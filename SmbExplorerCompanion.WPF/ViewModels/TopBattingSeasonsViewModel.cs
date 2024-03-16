@@ -12,9 +12,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
@@ -32,12 +29,14 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     private Season? _selectedSeason;
     private bool _onlyRookies;
     private Position? _selectedPosition;
+    private readonly MappingService _mappingService;
 
-    public TopBattingSeasonsViewModel(IMediator mediator, INavigationService navigationService)
+    public TopBattingSeasonsViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -47,9 +46,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
 
@@ -57,8 +54,8 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         {
             Id = default
         });
-        
-        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+
+        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out exception, out var positions))
         {
             MessageBox.Show(exception.Message);
@@ -72,17 +69,17 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             Name = "All"
         };
         Positions.Add(allPosition);
-        var positionMapper = new PositionMapping();
+
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
-            .Select(p => positionMapper.FromPositionDto(p)));
-        
+            .Select(p => p.FromCore()));
+
         SelectedPosition = allPosition;
 
         GetTopBattingSeason().Wait();
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -138,7 +135,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
 
     public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
-    
+
     public ObservableCollection<Position> Positions { get; } = new();
 
     public Position? SelectedPosition
@@ -234,9 +231,10 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         }
 
         TopSeasonBatters.Clear();
-
-        var mapper = new PlayerSeasonMapping();
-        TopSeasonBatters.AddRange(topBatters.Select(b => mapper.FromBattingDto(b)));
+        var topSeasonBatters = topBatters
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonBatters.AddRange(topSeasonBatters);
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
