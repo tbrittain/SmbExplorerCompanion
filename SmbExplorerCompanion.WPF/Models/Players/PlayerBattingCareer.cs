@@ -29,6 +29,6 @@ public class PlayerBattingCareer : PlayerCareerBase
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
-    public List<PlayerAwardBase> Awards { get; set; } = new();
+    public List<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: false);
 }

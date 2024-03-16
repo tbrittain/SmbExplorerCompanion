@@ -28,6 +28,6 @@ public class PlayerPitchingCareer : PlayerCareerBase
     public double Era { get; set; }
     public double Fip { get; set; }
     public double Whip { get; set; }
-    public List<PlayerAwardBase> Awards { get; set; } = new();
+    public List<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: false);
 }

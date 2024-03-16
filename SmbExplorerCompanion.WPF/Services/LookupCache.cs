@@ -174,7 +174,7 @@ public class LookupCache
         {
             throw exception;
         }
-
+        
         x = playerAwardsList
             .Select(y => y.FromCore())
             .ToList();

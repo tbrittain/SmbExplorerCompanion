@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 
 // ReSharper disable once CheckNamespace
@@ -21,9 +20,10 @@ public partial class MappingService
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
-        
-        var awards = x.Awards
-            .Select(y => y.FromCore())
+
+        var awards = x.AwardIds
+            .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+            .Select(y => y.Result)
             .ToList();
 
         return new PlayerBattingCareer
@@ -118,8 +118,9 @@ public partial class MappingService
             FipMinus = x.FipMinus,
             CompleteGames = x.CompleteGames,
             Shutouts = x.Shutouts,
-            Awards = x.Awards
-                .Select(y => y.FromCore())
+            Awards = x.AwardIds
+                .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+                .Select(y => y.Result)
                 .ToList(),
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
@@ -193,7 +194,10 @@ public partial class MappingService
             NumChampionships = x.NumChampionships,
             CurrentTeamId = x.CurrentTeamId,
             CurrentTeam = x.CurrentTeam,
-            Awards = x.Awards.Select(y => y.FromCore()).ToList(),
+            Awards = x.AwardIds
+                .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+                .Select(y => y.Result)
+                .ToList(),
             CareerBatting = careerBatting,
             CareerPitching = careerPitching,
             PlayerSeasonBatting = x.PlayerSeasonBatting

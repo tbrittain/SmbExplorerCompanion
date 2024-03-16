@@ -4,6 +4,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -655,47 +656,21 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         playerOverview.PitcherRoleId = player.PitcherRoleId;
         playerOverview.ChemistryId = player.ChemistryId;
         playerOverview.NumSeasons = player.PlayerSeasons.Count;
-        playerOverview.Awards = player.PlayerSeasons
+        playerOverview.AwardIds = player.PlayerSeasons
             .SelectMany(x => x.Awards)
             .Where(x => !x.OmitFromGroupings)
-            .Select(x => new PlayerAwardDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Importance = x.Importance,
-                OmitFromGroupings = x.OmitFromGroupings,
-                OriginalName = x.OriginalName,
-                IsBattingAward = x.IsBattingAward,
-                IsBuiltIn = x.IsBuiltIn,
-                IsFieldingAward = x.IsFieldingAward,
-                IsPitchingAward = x.IsPitchingAward,
-                IsPlayoffAward = x.IsPlayoffAward,
-                IsUserAssignable = x.IsUserAssignable
-            })
+            .Select(x => x.Id)
             .ToList();
         playerOverview.NumChampionships = player.PlayerSeasons
             .Count(x => x.ChampionshipWinner is not null);
 
         if (player.IsHallOfFamer)
-            playerOverview.Awards.Add(new PlayerAwardDto
-            {
-                Id = -1,
-                Importance = -1,
-                Name = "Hall of Fame",
-                OriginalName = "Hall of Fame",
-                OmitFromGroupings = false
-            });
+            playerOverview.AwardIds.Add((int)VirtualAward.HallOfFame);
 
         if (playerOverview.NumChampionships > 0)
             foreach (var _ in Enumerable.Range(1, playerOverview.NumChampionships))
             {
-                playerOverview.Awards.Add(new PlayerAwardDto
-                {
-                    Id = 0,
-                    Name = "Champion",
-                    Importance = 10,
-                    OmitFromGroupings = false
-                });
+                playerOverview.AwardIds.Add((int)VirtualAward.Champion);
             }
 
         var startSeason = player.PlayerSeasons.MinBy(x => x.SeasonId)!.Season;

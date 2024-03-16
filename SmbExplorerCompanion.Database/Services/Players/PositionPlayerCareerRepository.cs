@@ -6,6 +6,7 @@ using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Database.Entities;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -110,25 +111,16 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                 battingDto.Ops = battingDto.Obp + battingDto.Slg;
 
                 if (battingDto.NumChampionships > 0)
+                {
                     foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
                     {
-                        battingDto.Awards.Add(new PlayerAwardBaseDto
-                        {
-                            Id = 0,
-                            Name = "Champion",
-                            Importance = 10,
-                            OmitFromGroupings = false
-                        });
+                        battingDto.AwardIds.Add((int) VirtualAward.Champion);
                     }
-
+                }
                 if (battingDto.IsHallOfFamer)
-                    battingDto.Awards.Add(new PlayerAwardBaseDto
-                    {
-                        Id = -1,
-                        Name = "Hall of Fame",
-                        Importance = 0,
-                        OmitFromGroupings = false
-                    });
+                {
+                    battingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
+                }
             }
 
             return playerBattingDtos;
@@ -211,16 +203,12 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                 battingDto.Ops = battingDto.Obp + battingDto.Slg;
 
                 if (battingDto.NumChampionships > 0)
+                {
                     foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
                     {
-                        battingDto.Awards.Add(new PlayerAwardBaseDto
-                        {
-                            Id = 0,
-                            Name = "Champion",
-                            Importance = 10,
-                            OmitFromGroupings = false
-                        });
+                        battingDto.AwardIds.Add((int) VirtualAward.Champion);
                     }
+                }
             }
 
             return battingDtos
@@ -394,16 +382,10 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                 SacrificeHits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeHits)),
                 SacrificeFlies = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
                 Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
-                Awards = x.PlayerSeasons
+                AwardIds = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
                     .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
-                    .Select(y => new PlayerAwardBaseDto
-                    {
-                        Id = y.Id,
-                        Name = y.Name,
-                        Importance = y.Importance,
-                        OmitFromGroupings = y.OmitFromGroupings
-                    })
+                    .Select(y => y.Id)
                     .ToList(),
                 IsHallOfFamer = x.IsHallOfFamer,
                 NumChampionships = x.PlayerSeasons

@@ -3,6 +3,7 @@ using OneOf;
 using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Shared.Enums;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
@@ -23,7 +24,7 @@ public class AwardRepository : IRepository<PlayerAwardDto>
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
-            return awards
+            var dtos = awards
                 .Select(p => new PlayerAwardDto
                 {
                     Id = p.Id,
@@ -39,6 +40,28 @@ public class AwardRepository : IRepository<PlayerAwardDto>
                     IsUserAssignable = p.IsUserAssignable
                 })
                 .ToList();
+
+            // add virtual awards, like Hall of Famer and Champion, which are not technically awards
+            // but treated like so in many places
+            dtos.Add(new PlayerAwardDto
+            {
+                Id = (int)VirtualAward.Champion,
+                Name = "Champion",
+                OriginalName = "Champion",
+                Importance = 10,
+                OmitFromGroupings = false,
+            });
+
+            dtos.Add(new PlayerAwardDto
+            {
+                Id = (int)VirtualAward.HallOfFame,
+                Importance = -1,
+                Name = "Hall of Fame",
+                OriginalName = "Hall of Fame",
+                OmitFromGroupings = false
+            });
+
+            return dtos;
         }
         catch (Exception e)
         {
@@ -61,7 +84,8 @@ public class AwardRepository : IRepository<PlayerAwardDto>
         throw new NotSupportedException();
     }
 
-    public Task<OneOf<IEnumerable<PlayerAwardDto>, Exception>> AddRangeAsync(IEnumerable<PlayerAwardDto> entities, CancellationToken cancellationToken = default)
+    public Task<OneOf<IEnumerable<PlayerAwardDto>, Exception>> AddRangeAsync(IEnumerable<PlayerAwardDto> entities,
+        CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }
