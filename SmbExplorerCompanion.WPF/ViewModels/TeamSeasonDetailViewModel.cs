@@ -40,30 +40,13 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 
         _navigationService.ClearParameters();
 
-        var teamSeasonDetailResponse = mediator.Send(
+        var teamSeasonDetail = mediator.Send(
             new GetTeamSeasonDetailRequest(TeamSeasonId)).Result;
+        TeamSeasonDetail = mappingService.FromCore(teamSeasonDetail).Result;
 
-        if (teamSeasonDetailResponse.TryPickT1(out var exception, out var teamSeasonDetail))
-        {
-            MessageBox.Show(exception.Message);
-            TeamSeasonDetail = new TeamSeasonDetail();
-        }
-        else
-        {
-            TeamSeasonDetail = mappingService.FromCore(teamSeasonDetail).Result;
-        }
-
-        var teamScheduleBreakdownResponse = mediator.Send(
+        var divisionScheduleBreakdown = mediator.Send(
             new GetTeamScheduleBreakdownRequest(TeamSeasonId)).Result;
-
-        if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var divisionScheduleBreakdown))
-        {
-            MessageBox.Show(exception.Message);
-        }
-        else
-        {
-            TeamScheduleBreakdowns = SetBreakdowns(divisionScheduleBreakdown.TeamScheduleBreakdowns);
-        }
+        TeamScheduleBreakdowns = SetBreakdowns(divisionScheduleBreakdown.TeamScheduleBreakdowns);
 
         PropertyChanged += OnPropertyChanged;
 
@@ -102,7 +85,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         set => SetField(ref _includeMarginOfVictoryInPlot, value);
     }
 
-    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; set; } = new();
+    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; }
 
     private static List<HashSet<TeamScheduleBreakdown>> SetBreakdowns(List<HashSet<TeamScheduleBreakdownDto>> divisionSchedules)
     {

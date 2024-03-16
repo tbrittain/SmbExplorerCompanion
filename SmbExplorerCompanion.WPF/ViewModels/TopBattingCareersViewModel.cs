@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
-using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
@@ -27,7 +26,10 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private Position? _selectedPosition;
     private readonly MappingService _mappingService;
 
-    public TopBattingCareersViewModel(INavigationService navigationService, IMediator mediator, MappingService mappingService)
+    public TopBattingCareersViewModel(INavigationService navigationService,
+        IMediator mediator,
+        MappingService mappingService,
+        LookupCache lookupCache)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -36,25 +38,16 @@ public partial class TopBattingCareersViewModel : ViewModelBase
 
         PropertyChanged += OnPropertyChanged;
 
-        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
-        if (positionsResponse.TryPickT1(out var exception, out var positions))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
-
+        var positions = lookupCache.GetPositions().Result;
         var allPosition = new Position
         {
             Id = 0,
             Name = "All"
         };
         Positions.Add(allPosition);
-        Positions.AddRange(positions
-            .Where(x => x.IsPrimaryPosition)
-            .Select(p => p.FromCore()));
+        Positions.AddRange(positions.Where(x => x.IsPrimaryPosition));
 
         SelectedPosition = allPosition;
-
         GetTopBattingCareers().Wait();
     }
 
@@ -152,7 +145,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     public async Task GetTopBattingCareers()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var topBattersResult = await _mediator.Send(new GetTopBattingCareersRequest(
+        var topPlayers = await _mediator.Send(new GetTopBattingCareersRequest(
             pageNumber: PageNumber,
             limit: ResultsPerPage,
             orderBy: SortColumn,
@@ -160,16 +153,10 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             primaryPositionId: SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id
         ));
 
-        if (topBattersResult.TryPickT1(out var exception, out var topPlayers))
-        {
-            Application.Current.Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-            return;
-        }
-
         TopBattingCareers.Clear();
         var topBattingCareers = topPlayers
-                .Select(async x => await _mappingService.FromCore(x))
-                .Select(x => x.Result);
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
         TopBattingCareers.AddRange(topBattingCareers);
 
         IncrementPageCommand.NotifyCanExecuteChanged();

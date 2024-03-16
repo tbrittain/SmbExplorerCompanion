@@ -32,16 +32,8 @@ public class TeamOverviewViewModel : ViewModelBase
         TeamId = teamId;
         _navigationService.ClearParameters();
 
-        var teamOverviewResponse = mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
-        if (teamOverviewResponse.TryPickT1(out var exception, out var teamOverview))
-        {
-            MessageBox.Show(exception.Message);
-            TeamOverview = new TeamOverview();
-        }
-        else
-        {
-            TeamOverview = teamOverview.FromCore();
-        }
+        var teamOverview = mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
+        TeamOverview = teamOverview.FromCore();
 
         PropertyChanged += OnPropertyChanged;
         

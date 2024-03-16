@@ -37,15 +37,7 @@ public partial class ImportCsvViewModel : ViewModelBase
         _csvImportRepository = csvImportRepository;
         _applicationContext = applicationContext;
 
-        var seasonsResponse = mediator.Send(new GetSeasonsRequest()).Result;
-
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var seasons = mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
     }
 

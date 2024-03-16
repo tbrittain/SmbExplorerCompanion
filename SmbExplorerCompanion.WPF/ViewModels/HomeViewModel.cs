@@ -80,32 +80,13 @@ public partial class HomeViewModel : ViewModelBase
 
     private async Task GetFranchiseSummary()
     {
-        var franchiseSummaryResult = await _mediator.Send(new GetFranchiseSummaryRequest());
-        if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
+        var franchiseSummaryDto = await _mediator.Send(new GetFranchiseSummaryRequest());
 
-        if (rest.TryPickT0(out var franchiseSummaryDto, out _))
-        {
+        if (franchiseSummaryDto is not null)
             FranchiseSummary = await _mappingService.FromCore(franchiseSummaryDto);
-        }
 
-        var conferenceSummaryResult = await _mediator.Send(new GetLeagueSummaryRequest());
-        if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        if (rest2.TryPickT0(out var leagueSummaryDto, out _))
-        {
-            Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
-        }
-
+        var leagueSummaryDto = await _mediator.Send(new GetLeagueSummaryRequest());
+        Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -151,12 +132,7 @@ public partial class HomeViewModel : ViewModelBase
         HasSearched = true;
         SearchResults.Clear();
         OnPropertyChanged(nameof(HasSearchResults));
-        var searchResponse = await _mediator.Send(new GetSearchResultsQuery(SearchQuery.Trim()));
-        if (searchResponse.TryPickT1(out var exception, out var searchResultDtos))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
+        var searchResultDtos = await _mediator.Send(new GetSearchResultsQuery(SearchQuery.Trim()));
 
         var groupedSearchResults = searchResultDtos
             .Select(x => x.FromCore())
@@ -211,13 +187,7 @@ public partial class HomeViewModel : ViewModelBase
     [RelayCommand]
     private async Task NavigateToRandomPlayerOverviewPage()
     {
-        var randomPlayerResult = await _mediator.Send(new GetRandomPlayerRequest());
-        if (randomPlayerResult.TryPickT1(out var exception, out var player))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-
+        var player = await _mediator.Send(new GetRandomPlayerRequest());
         NavigateToPlayerOverviewPage(player.PlayerId);
     }
 

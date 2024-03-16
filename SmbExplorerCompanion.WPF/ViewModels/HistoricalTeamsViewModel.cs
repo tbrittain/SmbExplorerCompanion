@@ -28,14 +28,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
         _navigationService = navigationService;
         _mediator = mediator;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
 
         var allSeasons = new Season
         {
@@ -70,14 +63,8 @@ public class HistoricalTeamsViewModel : ViewModelBase
         HistoricalTeams.Clear();
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var historicalTeamsResponse =
+        var historicalTeams =
             await _mediator.Send(new GetHistoricalTeamsRequest(SelectedSeason!.Id == default ? null : SelectedSeason!.Id));
-        if (historicalTeamsResponse.TryPickT1(out var exception, out var historicalTeams))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
 
         HistoricalTeams.AddRange(historicalTeams
             .Select(x => x.FromCore())

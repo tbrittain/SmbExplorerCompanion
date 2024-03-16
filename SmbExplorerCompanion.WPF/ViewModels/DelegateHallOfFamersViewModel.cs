@@ -30,14 +30,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         _mediator = mediator;
         _mappingService = mappingService;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
@@ -74,32 +67,17 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
     private async Task GetHallOfFamers()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var response = await _mediator.Send(new GetHallOfFameCandidatesRequest(SelectedSeason!.Id));
-
-        if (response.TryPickT2(out var exception, out var rest))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-            return;
-        }
+        var retiredPlayerCareerStatsDto = await _mediator.Send(new GetHallOfFameCandidatesRequest(SelectedSeason!.Id));
 
         TopBattingCareers.Clear();
         TopPitchingCareers.Clear();
 
-        if (rest.TryPickT1(out _, out var retiredPlayers))
-        {
-            MessageBox.Show("No retired players found. Please try another season.");
-            SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-            return;
-        }
-
-        var mappedBattingCareers = retiredPlayers.BattingCareers
+        var mappedBattingCareers = retiredPlayerCareerStatsDto.BattingCareers
             .Select(async x => await _mappingService.FromCore(x))
             .Select(x => x.Result);
         TopBattingCareers.AddRange(mappedBattingCareers);
 
-        var mappedPitchingCareers = retiredPlayers.PitchingCareers
+        var mappedPitchingCareers = retiredPlayerCareerStatsDto.PitchingCareers
             .Select(async x => await _mappingService.FromCore(x))
             .Select(x => x.Result);
         TopPitchingCareers.AddRange(mappedPitchingCareers);
@@ -139,15 +117,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             });
         }
 
-        var response = await _mediator.Send(new AddHallOfFamersRequest(hallOfFamers));
-        
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-        if (response.TryPickT1(out var exception, out _))
-        {
-            MessageBox.Show("Unable to add player awards. Please try again. " + exception.Message);
-            return;
-        }
-
+        await _mediator.Send(new AddHallOfFamersRequest(hallOfFamers));
         MessageBox.Show($"Eligible Hall of Famers for Season {SelectedSeason.Number} added successfully!");
     }
 
