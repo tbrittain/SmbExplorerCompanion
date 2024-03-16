@@ -57,7 +57,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
             .MinAsync(x => x.Id, cancellationToken);
 
-        if (seasons?.StartSeasonId == minSeasonId && seasons?.EndSeasonId is not null) onlyRookies = false;
+        if (seasons?.StartSeasonId == minSeasonId || seasons?.EndSeasonId > seasons?.StartSeasonId) onlyRookies = false;
 
         List<int> rookiePlayerIds = new();
         if (onlyRookies)

@@ -14,9 +14,9 @@ public record struct SeasonRange
     public SeasonRange(int startSeasonId)
     {
         StartSeasonId = startSeasonId;
+        EndSeasonId = startSeasonId;
     }
 
     public int StartSeasonId { get; }
-
-    public int? EndSeasonId { get; }
+    public int EndSeasonId { get; }
 }
