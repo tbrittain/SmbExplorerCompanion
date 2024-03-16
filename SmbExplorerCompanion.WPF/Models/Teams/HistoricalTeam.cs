@@ -67,7 +67,8 @@ public static class HistoricalTeamExtensions
             NumHits = x.NumHits,
             NumHomeRuns = x.NumHomeRuns,
             BattingAverage = x.BattingAverage,
-            EarnedRunAverage = x.EarnedRunAverage
+            EarnedRunAverage = x.EarnedRunAverage,
+            CurrentTeamName = x.CurrentTeamName
         };
     }
 }

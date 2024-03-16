@@ -23,7 +23,9 @@ public static class SimpleTeamExtensions
             SeasonId = teamDto.SeasonId,
             SeasonNumber = teamDto.SeasonNumber,
             DivisionName = teamDto.DivisionName,
-            ConferenceName = teamDto.ConferenceName
+            ConferenceName = teamDto.ConferenceName,
+            TeamId = teamDto.TeamId,
+            TeamName = teamDto.TeamName
         };
     }
 }
