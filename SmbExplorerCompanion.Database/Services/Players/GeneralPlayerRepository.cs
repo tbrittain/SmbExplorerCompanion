@@ -36,17 +36,11 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
     public async Task<PlayerOverviewDto> GetHistoricalPlayer(int playerId,
         CancellationToken cancellationToken = default)
     {
-        var playerCareerBattingResult =
+        var playerCareerBattingDtos =
             await _positionPlayerCareerRepository.GetBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
 
-        if (playerCareerBattingResult.TryPickT1(out var exception, out var playerCareerBattingDtos))
-            return exception;
-
-        var playerCareerPitchingResult =
+        var playerCareerPitchingDtos =
             await _pitcherCareerRepository.GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
-
-        if (playerCareerPitchingResult.TryPickT1(out exception, out var playerCareerPitchingDtos))
-            return exception;
 
         var playerOverview = await GetPlayerOverview(playerId, cancellationToken);
 
@@ -54,42 +48,28 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
 
         if (playerCareerPitchingDtos.Any()) playerOverview.CareerPitching = playerCareerPitchingDtos.First();
 
-        var playerSeasonBatting =
+        var playerSeasonBattingDtos =
             await _positionPlayerSeasonRepository.GetBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
-
-        if (playerSeasonBatting.TryPickT1(out exception, out var playerSeasonBattingDtos))
-            return exception;
-
         playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
 
-        var playerSeasonPitching = await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
-
-        if (playerSeasonPitching.TryPickT1(out exception, out var playerSeasonPitchingDtos))
-            return exception;
-
+        var playerSeasonPitchingDtos = await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
         playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
 
-        var playerPlayoffBatting =
+        var playerPlayoffBattingDtos =
             await _positionPlayerSeasonRepository.GetBattingSeasons(playerId: playerId,
                 isPlayoffs: true,
                 cancellationToken: cancellationToken);
-
-        if (playerPlayoffBatting.TryPickT1(out exception, out var playerPlayoffBattingDtos))
-            return exception;
 
         playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
 
-        var playerPlayoffPitching =
+        var playerPlayoffPitchingDtos =
             await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
-
-        if (playerPlayoffPitching.TryPickT1(out exception, out var playerPlayoffPitchingDtos))
-            return exception;
 
         playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)

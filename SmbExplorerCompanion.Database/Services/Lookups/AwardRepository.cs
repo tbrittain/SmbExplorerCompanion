@@ -60,33 +60,7 @@ public class AwardRepository : IRepository<PlayerAwardDto>
         return dtos;
     }
 
-    public Task<OneOf<PlayerAwardDto, None, Exception>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PlayerAwardDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PlayerAwardDto, Exception>> AddAsync(PlayerAwardDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<IEnumerable<PlayerAwardDto>, Exception>> AddRangeAsync(IEnumerable<PlayerAwardDto> entities,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PlayerAwardDto, None, Exception>> UpdateAsync(PlayerAwardDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<PlayerAwardDto, None, Exception>> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public Task<PlayerAwardDto> AddAsync(PlayerAwardDto entity, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }
