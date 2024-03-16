@@ -31,12 +31,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetPitcherRolesRequest());
-        if (result.TryPickT1(out var exception, out var pitcherRolesList))
-        {
-            throw exception;
-        }
-
+        var pitcherRolesList = await _mediator.Send(new GetPitcherRolesRequest());
         x = pitcherRolesList
             .Select(y => y.FromCore())
             .ToList();
@@ -54,12 +49,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetChemistryRequest());
-        if (result.TryPickT1(out var exception, out var chemistryList))
-        {
-            throw exception;
-        }
-
+        var chemistryList = await _mediator.Send(new GetChemistryRequest());
         x = chemistryList
             .Select(y => y.FromCore())
             .ToList();
@@ -77,12 +67,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetPositionsRequest());
-        if (result.TryPickT1(out var exception, out var positionsList))
-        {
-            throw exception;
-        }
-
+        var positionsList = await _mediator.Send(new GetPositionsRequest());
         x = positionsList
             .Select(y => y.FromCore())
             .ToList();
@@ -100,12 +85,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetBatHandednessRequest());
-        if (result.TryPickT1(out var exception, out var batHandednessTypes))
-        {
-            throw exception;
-        }
-
+        var batHandednessTypes = await _mediator.Send(new GetBatHandednessRequest());
         x = batHandednessTypes
             .Select(y => y.FromCore())
             .ToList();
@@ -123,12 +103,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetThrowHandednessRequest());
-        if (result.TryPickT1(out var exception, out var throwHandednessTypes))
-        {
-            throw exception;
-        }
-
+        var throwHandednessTypes = await _mediator.Send(new GetThrowHandednessRequest());
         x = throwHandednessTypes
             .Select(y => y.FromCore())
             .ToList();
@@ -146,12 +121,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetTraitsRequest());
-        if (result.TryPickT1(out var exception, out var traitsList))
-        {
-            throw exception;
-        }
-
+        var traitsList = await _mediator.Send(new GetTraitsRequest());
         x = traitsList
             .Select(y => y.FromCore())
             .ToList();
@@ -169,12 +139,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(new GetPitchTypesRequest());
-        if (result.TryPickT1(out var exception, out var pitchTypesList))
-        {
-            throw exception;
-        }
-
+        var pitchTypesList = await _mediator.Send(new GetPitchTypesRequest());
         x = pitchTypesList
             .Select(y => y.FromCore())
             .ToList();
@@ -192,12 +157,7 @@ public class LookupCache
             return x;
         }
 
-        var result = await _mediator.Send(GetPlayerAwardsRequest.AllAwards);
-        if (result.TryPickT1(out var exception, out var playerAwardsList))
-        {
-            throw exception;
-        }
-        
+        var playerAwardsList = await _mediator.Send(GetPlayerAwardsRequest.AllAwards);
         x = playerAwardsList
             .Select(y => y.FromCore())
             .ToList();

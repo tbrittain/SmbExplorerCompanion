@@ -1,12 +1,11 @@
 ﻿using System.Collections.Immutable;
 using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetTopPitchingCareersRequest : IRequest<OneOf<List<PlayerCareerPitchingDto>, Exception>>
+public class GetTopPitchingCareersRequest : IRequest<List<PlayerCareerPitchingDto>>
 {
     public GetTopPitchingCareersRequest(int? pageNumber = null,
         int? limit = null,
@@ -50,7 +49,7 @@ public class GetTopPitchingCareersRequest : IRequest<OneOf<List<PlayerCareerPitc
     );
 
     // ReSharper disable once UnusedType.Global
-    internal class GetTopPitchingCareersHandler : IRequestHandler<GetTopPitchingCareersRequest, OneOf<List<PlayerCareerPitchingDto>, Exception>>
+    internal class GetTopPitchingCareersHandler : IRequestHandler<GetTopPitchingCareersRequest, List<PlayerCareerPitchingDto>>
     {
         private readonly IPitcherCareerRepository _pitcherCareerRepository;
 
@@ -59,11 +58,11 @@ public class GetTopPitchingCareersRequest : IRequest<OneOf<List<PlayerCareerPitc
             _pitcherCareerRepository = pitcherCareerRepository;
         }
 
-        public async Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> Handle(GetTopPitchingCareersRequest request,
+        public async Task<List<PlayerCareerPitchingDto>> Handle(GetTopPitchingCareersRequest request,
             CancellationToken cancellationToken)
         {
             if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
-                return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
+                throw new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
 
             return await _pitcherCareerRepository.GetPitchingCareers(
                 pageNumber: request.PageNumber,

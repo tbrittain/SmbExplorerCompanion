@@ -3,8 +3,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Threading.Tasks;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects;
 using SmbExplorerCompanion.WPF.Models.Response;
@@ -21,12 +19,12 @@ public class HttpService : IHttpService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<OneOf<AppUpdateResult, None, Error<string>>> CheckForUpdates()
+    public async Task<AppUpdateResult?> CheckForUpdates()
     {
         var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version;
         if (currentVersion is null)
         {
-            return new Error<string>("Unable to determine current version.");
+            throw new Exception("Unable to determine current version.");
         }
 
         var httpClient = _httpClientFactory.CreateClient();
@@ -38,13 +36,13 @@ public class HttpService : IHttpService
 
         if (!response.IsSuccessStatusCode)
         {
-            return new Error<string>(response.ReasonPhrase ?? "An unknown error occurred.");
+            throw new Exception(response.ReasonPhrase ?? "An unknown error occurred.");
         }
 
         var result = await response.Content.ReadFromJsonAsync<GitHubReleaseResponse>();
         if (result is null)
         {
-            return new Error<string>("Unable to parse latest release response.");
+            throw new Exception("Unable to parse latest release response.");
         }
 
         var currentVersionWithoutRev =
@@ -53,7 +51,7 @@ public class HttpService : IHttpService
         var resultVersionWithoutRev =
             new Version(result.Version.Major, result.Version.Minor, result.Version.Build);
 
-        if (currentVersionWithoutRev >= resultVersionWithoutRev) return new None();
+        if (currentVersionWithoutRev >= resultVersionWithoutRev) return null;
 
         return new AppUpdateResult
         {

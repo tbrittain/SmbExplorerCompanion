@@ -1,12 +1,10 @@
 ﻿using MediatR;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Seasons;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 
-public class GetSeasonByTeamHistoryRequest : IRequest<OneOf<SeasonDto, None, Exception>>
+public class GetSeasonByTeamHistoryRequest : IRequest<SeasonDto?>
 {
     public GetSeasonByTeamHistoryRequest(int teamSeasonId)
     {
@@ -16,7 +14,7 @@ public class GetSeasonByTeamHistoryRequest : IRequest<OneOf<SeasonDto, None, Exc
     private int TeamSeasonId { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetSeasonByTeamHistoryHandler : IRequestHandler<GetSeasonByTeamHistoryRequest, OneOf<SeasonDto, None, Exception>>
+    internal class GetSeasonByTeamHistoryHandler : IRequestHandler<GetSeasonByTeamHistoryRequest, SeasonDto?>
     {
         private readonly ISeasonSearchService _seasonSearchService;
 
@@ -25,7 +23,7 @@ public class GetSeasonByTeamHistoryRequest : IRequest<OneOf<SeasonDto, None, Exc
             _seasonSearchService = seasonSearchService;
         }
 
-        public async Task<OneOf<SeasonDto, None, Exception>> Handle(GetSeasonByTeamHistoryRequest request, CancellationToken cancellationToken) =>
+        public async Task<SeasonDto?> Handle(GetSeasonByTeamHistoryRequest request, CancellationToken cancellationToken) =>
             await _seasonSearchService.GetByTeamSeasonIdAsync(request.TeamSeasonId, cancellationToken);
     }
 }

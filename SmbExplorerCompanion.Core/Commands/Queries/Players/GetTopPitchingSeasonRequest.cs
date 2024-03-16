@@ -1,12 +1,11 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSeasonDto>, Exception>>
+public class GetTopPitchingSeasonRequest : IRequest<List<PlayerPitchingSeasonDto>>
 {
     public GetTopPitchingSeasonRequest(
         SeasonRange? seasons = null,
@@ -47,7 +46,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
     private int? PitcherRoleId { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
+    internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, List<PlayerPitchingSeasonDto>>
     {
         private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
 
@@ -56,7 +55,7 @@ public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSea
             _pitcherSeasonRepository = pitcherSeasonRepository;
         }
 
-        public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> Handle(GetTopPitchingSeasonRequest request,
+        public async Task<List<PlayerPitchingSeasonDto>> Handle(GetTopPitchingSeasonRequest request,
             CancellationToken cancellationToken) =>
             await _pitcherSeasonRepository.GetPitchingSeasons(
                 seasons: request.Seasons,

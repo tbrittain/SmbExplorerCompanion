@@ -1,12 +1,10 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
-using OneOf;
-using OneOf.Types;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface IPitcherCareerRepository
 {
-    public Task<OneOf<List<PlayerCareerPitchingDto>, Exception>> GetPitchingCareers(
+    public Task<List<PlayerCareerPitchingDto>> GetPitchingCareers(
         int? pageNumber = null,
         int? limit = null,
         string? orderBy = null,
@@ -17,10 +15,10 @@ public interface IPitcherCareerRepository
         bool onlyActivePlayers = false,
         CancellationToken cancellationToken = default);
     
-    public Task<OneOf<List<PlayerCareerPitchingDto>, None, Exception>> GetHallOfFameCandidates(int seasonId,
+    public Task<List<PlayerCareerPitchingDto>> GetHallOfFameCandidates(int seasonId,
         CancellationToken cancellationToken = default);
     
-    public Task<OneOf<List<SimilarPlayerDto>, Exception>> GetSimilarPitchingCareers(
+    public Task<List<SimilarPlayerDto>> GetSimilarPitchingCareers(
         int playerId,
         CancellationToken cancellationToken = default);
 }

@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetPlayerOverviewRequest : IRequest<OneOf<PlayerOverviewDto, Exception>>
+public class GetPlayerOverviewRequest : IRequest<PlayerOverviewDto>
 {
     public GetPlayerOverviewRequest(int playerId)
     {
@@ -15,7 +14,7 @@ public class GetPlayerOverviewRequest : IRequest<OneOf<PlayerOverviewDto, Except
     private int PlayerId { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetPlayerOverviewHandler : IRequestHandler<GetPlayerOverviewRequest, OneOf<PlayerOverviewDto, Exception>>
+    internal class GetPlayerOverviewHandler : IRequestHandler<GetPlayerOverviewRequest, PlayerOverviewDto>
     {
         private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
@@ -24,7 +23,7 @@ public class GetPlayerOverviewRequest : IRequest<OneOf<PlayerOverviewDto, Except
             _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<OneOf<PlayerOverviewDto, Exception>> Handle(GetPlayerOverviewRequest request, CancellationToken cancellationToken) =>
+        public async Task<PlayerOverviewDto> Handle(GetPlayerOverviewRequest request, CancellationToken cancellationToken) =>
             await _generalPlayerRepository.GetHistoricalPlayer(request.PlayerId, cancellationToken);
     }
 }

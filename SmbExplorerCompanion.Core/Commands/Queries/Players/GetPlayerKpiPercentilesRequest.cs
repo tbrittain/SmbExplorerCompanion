@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetPlayerKpiPercentilesRequest : IRequest<OneOf<PlayerKpiPercentileDto, Exception>>
+public class GetPlayerKpiPercentilesRequest : IRequest<PlayerKpiPercentileDto>
 {
     public GetPlayerKpiPercentilesRequest(int playerId, int seasonId, bool isPitcher, int? pitcherRoleId = null)
     {
@@ -22,7 +21,7 @@ public class GetPlayerKpiPercentilesRequest : IRequest<OneOf<PlayerKpiPercentile
 
     // ReSharper disable once UnusedType.Global
     internal class GetPlayerKpiPercentilesHandler : IRequestHandler<GetPlayerKpiPercentilesRequest,
-        OneOf<PlayerKpiPercentileDto, Exception>>
+        PlayerKpiPercentileDto>
     {
         private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
@@ -31,7 +30,7 @@ public class GetPlayerKpiPercentilesRequest : IRequest<OneOf<PlayerKpiPercentile
             _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<OneOf<PlayerKpiPercentileDto, Exception>> Handle(GetPlayerKpiPercentilesRequest request,
+        public async Task<PlayerKpiPercentileDto> Handle(GetPlayerKpiPercentilesRequest request,
             CancellationToken cancellationToken) =>
             await _generalPlayerRepository.GetPlayerKpiPercentiles(request.PlayerId,
                 request.SeasonId,
