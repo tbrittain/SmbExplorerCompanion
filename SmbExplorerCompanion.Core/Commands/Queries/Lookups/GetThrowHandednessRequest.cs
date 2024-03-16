@@ -1,14 +1,13 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 
-public class GetThrowHandednessRequest : IRequest<OneOf<List<ThrowHandednessDto>, Exception>>
+public class GetThrowHandednessRequest : IRequest<List<ThrowHandednessDto>>
 {
     // ReSharper disable once UnusedType.Global
-    internal class GetThrowHandednessRequestHandler : IRequestHandler<GetThrowHandednessRequest, OneOf<List<ThrowHandednessDto>, Exception>>
+    internal class GetThrowHandednessRequestHandler : IRequestHandler<GetThrowHandednessRequest, List<ThrowHandednessDto>>
     {
         private readonly IRepository<ThrowHandednessDto> _throwHandednessRepository;
 
@@ -17,16 +16,11 @@ public class GetThrowHandednessRequest : IRequest<OneOf<List<ThrowHandednessDto>
             _throwHandednessRepository = throwHandednessRepository;
         }
 
-        public async Task<OneOf<List<ThrowHandednessDto>, Exception>> Handle(GetThrowHandednessRequest request,
+        public async Task<List<ThrowHandednessDto>> Handle(GetThrowHandednessRequest request,
             CancellationToken cancellationToken)
         {
             var throwHandednessResult = await _throwHandednessRepository.GetAllAsync(cancellationToken);
-            if (throwHandednessResult.TryPickT1(out var exception, out var throwHandednessDtos))
-            {
-                return exception;
-            }
-
-            return throwHandednessDtos.ToList();
+            return throwHandednessResult.ToList();
         }
     }
 }

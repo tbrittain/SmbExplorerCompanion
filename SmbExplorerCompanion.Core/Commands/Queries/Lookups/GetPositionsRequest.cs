@@ -1,14 +1,13 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 
-public class GetPositionsRequest : IRequest<OneOf<List<PositionDto>, Exception>>
+public class GetPositionsRequest : IRequest<List<PositionDto>>
 {
     // ReSharper disable once UnusedType.Global
-    internal class GetAllPositionsHandler : IRequestHandler<GetPositionsRequest, OneOf<List<PositionDto>, Exception>>
+    internal class GetAllPositionsHandler : IRequestHandler<GetPositionsRequest, List<PositionDto>>
     {
         private readonly IRepository<PositionDto> _positionRepository;
 
@@ -17,15 +16,10 @@ public class GetPositionsRequest : IRequest<OneOf<List<PositionDto>, Exception>>
             _positionRepository = positionRepository;
         }
 
-        public async Task<OneOf<List<PositionDto>, Exception>> Handle(GetPositionsRequest request, CancellationToken cancellationToken)
+        public async Task<List<PositionDto>> Handle(GetPositionsRequest request, CancellationToken cancellationToken)
         {
             var positionResult = await _positionRepository.GetAllAsync(cancellationToken);
-            if (positionResult.TryPickT1(out var exception, out var positionDtos))
-            {
-                return exception;
-            }
-
-            return positionDtos.ToList();
+            return positionResult.ToList();
         }
     }
 }

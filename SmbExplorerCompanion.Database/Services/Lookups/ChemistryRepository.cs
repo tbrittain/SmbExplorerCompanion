@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
 
@@ -15,54 +13,22 @@ public class ChemistryRepository : IRepository<ChemistryDto>
         _context = context;
     }
 
-    public async Task<OneOf<IEnumerable<ChemistryDto>, Exception>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ChemistryDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var chemistry = await _context.Chemistry
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+        var chemistry = await _context.Chemistry
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
-            return chemistry
-                .Select(p => new ChemistryDto
-                {
-                    Id = p.Id,
-                    Name = p.Name
-                })
-                .ToList();
-        }
-        catch (Exception e)
-        {
-            return e;
-        }
+        return chemistry
+            .Select(p => new ChemistryDto
+            {
+                Id = p.Id,
+                Name = p.Name
+            })
+            .ToList();
     }
 
-    public Task<OneOf<ChemistryDto, None, Exception>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<ChemistryDto, None, Exception>> GetByNameAsync(string name, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<ChemistryDto, Exception>> AddAsync(ChemistryDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<IEnumerable<ChemistryDto>, Exception>> AddRangeAsync(IEnumerable<ChemistryDto> entities, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<ChemistryDto, None, Exception>> UpdateAsync(ChemistryDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
-    }
-
-    public Task<OneOf<ChemistryDto, None, Exception>> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public Task<ChemistryDto> AddAsync(ChemistryDto entity, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException();
     }
