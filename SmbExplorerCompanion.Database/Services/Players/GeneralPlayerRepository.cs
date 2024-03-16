@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using OneOf;
-using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Shared.Enums;
@@ -136,8 +135,8 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                         ? 0
                         : x.PlayerSeason.Salary,
                     SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
-                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
-                    PitchTypes = string.Join(", ", x.PlayerSeason.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name))
+                    TraitIds = x.PlayerSeason.Traits.Select(y => y.Id).ToList(),
+                    PitchTypeIds = x.PlayerSeason.PitchTypes.Select(y => y.Id).ToList()
                 })
                 .OrderByDescending(x => x.SeasonNumber)
                 .ToListAsync(cancellationToken: cancellationToken);

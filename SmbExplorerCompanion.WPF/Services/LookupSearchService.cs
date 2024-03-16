@@ -49,6 +49,12 @@ public class LookupSearchService
         return traits.Single(x => x.Id == id);
     }
 
+    public async Task<PitchType> GetPitchTypeById(int id)
+    {
+        var pitchTypes = await _lookupCache.GetPitchTypes();
+        return pitchTypes.Single(x => x.Id == id);
+    }
+
     public async Task<PlayerAward> GetPlayerAwardById(int id)
     {
         var playerAwards = await _lookupCache.GetPlayerAwards();

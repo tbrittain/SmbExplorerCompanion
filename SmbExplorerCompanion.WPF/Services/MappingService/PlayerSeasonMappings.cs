@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 
 // ReSharper disable once CheckNamespace
@@ -58,8 +57,9 @@ public partial class MappingService
             OpsPlus = x.OpsPlus,
             Errors = x.Errors,
             Strikeouts = x.Strikeouts,
-            Awards = x.Awards
-                .Select(y => y.FromCore())
+            Awards = x.AwardIds
+                .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+                .Select(y => y.Result)
                 .ToObservableCollection(),
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
@@ -117,8 +117,15 @@ public partial class MappingService
             HomeRunsPerNine = x.HomeRunsPerNine,
             StrikeoutsPerNine = x.StrikeoutsPerNine,
             StrikeoutToWalkRatio = x.StrikeoutToWalkRatio,
-            Awards = x.Awards
-                .Select(y => y.FromCore())
+            PitchTypes = x.PitchTypeIds
+                .Select(async y => await _lookupSearchService.GetPitchTypeById(y))
+                .Select(y => y.Result)
+                .OrderBy(y => y.Name)
+                .Select(y => y.Name)
+                .Aggregate((current, next) => $"{current}, {next}"),
+            Awards = x.AwardIds
+                .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+                .Select(y => y.Result)
                 .ToObservableCollection(),
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };

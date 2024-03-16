@@ -171,7 +171,12 @@ public partial class MappingService
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
-        
+
+        var gameStats = x.GameStats
+            .Select(async y => await FromCore(y))
+            .Select(y => y.Result)
+            .ToObservableCollection();
+
         var overview = new PlayerOverview
         {
             PlayerId = x.PlayerId,
@@ -216,9 +221,7 @@ public partial class MappingService
                 .Select(async y => await FromCore(y))
                 .Select(y => y.Result)
                 .ToObservableCollection(),
-            GameStats = x.GameStats
-                .Select(y => y.FromCore())
-                .ToObservableCollection(),
+            GameStats = gameStats,
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
         };
 
@@ -230,5 +233,36 @@ public partial class MappingService
             overview.Chemistry = (await _lookupSearchService.GetChemistryById(x.ChemistryId.Value)).Name;
 
         return overview;
+    }
+    
+    public async Task<PlayerGameStatOverview> FromCore(PlayerGameStatOverviewDto x)
+    {
+        var traitTasks = x.TraitIds
+            .Select(async y => await _lookupSearchService.GetTraitById(y))
+            .ToList();
+        await Task.WhenAll(traitTasks);
+
+        var traits = traitTasks
+            .Select(y => y.Result)
+            .ToObservableCollection();
+
+        return new PlayerGameStatOverview
+        {
+            SeasonId = x.SeasonId,
+            SeasonNumber = x.SeasonNumber,
+            Age = x.Age,
+            TeamNames = x.TeamNames,
+            Power = x.Power,
+            Contact = x.Contact,
+            Speed = x.Speed,
+            Fielding = x.Fielding,
+            Arm = x.Arm,
+            Velocity = x.Velocity,
+            Junk = x.Junk,
+            Accuracy = x.Accuracy,
+            Salary = x.Salary,
+            SecondaryPosition = x.SecondaryPosition,
+            Traits = string.Join(", ", traits.Select(y => y.Name))
+        };
     }
 }

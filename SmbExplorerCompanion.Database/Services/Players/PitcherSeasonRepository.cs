@@ -1,9 +1,9 @@
 ﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using OneOf;
-using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -145,18 +145,11 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                     Shutouts = x.Shutouts,
                     WeightedOpsPlusOrEraMinus =
                         (((x.EraMinus ?? 0) + (x.FipMinus ?? 0)) / 2 - 95) * (x.InningsPitched ?? 0) * PitchingScalingFactor,
-                    Awards = x.PlayerSeason.Awards
+                    AwardIds = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
-                        .Select(y => new PlayerAwardBaseDto
-                        {
-                            Id = y.Id,
-                            Name = y.Name,
-                            Importance = y.Importance,
-                            OmitFromGroupings = y.OmitFromGroupings
-                        })
+                        .Select(y => y.Id)
                         .ToList(),
                     IsChampion = x.PlayerSeason.ChampionshipWinner != null,
-                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
                     Age = x.PlayerSeason.Age,
                     Era = x.EarnedRunAverage ?? 0,
                     GamesFinished = x.GamesFinished,
@@ -166,7 +159,8 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                     WalksPerNine = x.WalksPerNine ?? 0,
                     StrikeoutsPerNine = x.StrikeoutsPerNine ?? 0,
                     StrikeoutToWalkRatio = x.StrikeoutsPerWalk ?? 0,
-                    PitchTypes = string.Join(", ", x.PlayerSeason.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name))
+                    TraitIds = x.PlayerSeason.Traits.Select(y => y.Id).ToList(),
+                    PitchTypeIds = x.PlayerSeason.PitchTypes.Select(y => y.Id).ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
@@ -174,16 +168,12 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                 .ToListAsync(cancellationToken: cancellationToken);
 
             if (includeChampionAwards)
+            {
                 foreach (var player in playerPitchingDtos.Where(player => player.IsChampion))
                 {
-                    player.Awards.Add(new PlayerAwardBaseDto
-                    {
-                        Id = 0,
-                        Name = "Champion",
-                        Importance = 10,
-                        OmitFromGroupings = false
-                    });
+                    player.AwardIds.Add((int) VirtualAward.Champion);
                 }
+            }
 
             return playerPitchingDtos;
         }

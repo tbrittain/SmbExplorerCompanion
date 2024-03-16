@@ -29,6 +29,7 @@ public static class DependencyInjection
             .AddScoped<IRepository<PitcherRoleDto>, PitcherRoleRepository>()
             .AddScoped<IRepository<ChemistryDto>, ChemistryRepository>()
             .AddScoped<IRepository<BatHandednessDto>, BatHandednessRepository>()
+            .AddScoped<IRepository<PitchTypeDto>, PitchTypesRepository>()
             .AddScoped<IRepository<ThrowHandednessDto>, ThrowHandednessRepository>()
             .AddScoped<IRepository<TraitDto>, TraitRepository>()
             .AddScoped<IRepository<PlayerAwardDto>, AwardRepository>()

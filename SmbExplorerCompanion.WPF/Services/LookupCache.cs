@@ -159,6 +159,29 @@ public class LookupCache
         _memoryCache.Set(key, x);
         return x;
     }
+    
+    public async Task<IReadOnlyList<PitchType>> GetPitchTypes()
+    {
+        const string key = "PitchTypes";
+        if (_memoryCache.TryGetValue(key, out var pitchTypes) && 
+            pitchTypes is List<PitchType> x)
+        {
+            return x;
+        }
+
+        var result = await _mediator.Send(new GetPitchTypesRequest());
+        if (result.TryPickT1(out var exception, out var pitchTypesList))
+        {
+            throw exception;
+        }
+
+        x = pitchTypesList
+            .Select(y => y.FromCore())
+            .ToList();
+
+        _memoryCache.Set(key, x);
+        return x;
+    }
 
     public async Task<IReadOnlyList<PlayerAward>> GetPlayerAwards()
     {

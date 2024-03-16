@@ -831,6 +831,10 @@
                                         Binding="{Binding HitByPitch}"
                                         CanUserSort="True" />
                                     <DataGridTextColumn
+                                        Header="Pitch Types"
+                                        Binding="{Binding PitchTypes}"
+                                        CanUserSort="False" />
+                                    <DataGridTextColumn
                                         Header="Awards"
                                         Binding="{Binding DisplayAwards}"
                                         CanUserSort="False" />

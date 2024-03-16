@@ -33,6 +33,7 @@ public class PlayerSeasonPitching : PlayerSeasonBase
     public double HomeRunsPerNine { get; set; }
     public double StrikeoutsPerNine { get; set; }
     public double StrikeoutToWalkRatio { get; set; }
-    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
+    public string PitchTypes { get; set; } = string.Empty;
+    public ObservableCollection<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

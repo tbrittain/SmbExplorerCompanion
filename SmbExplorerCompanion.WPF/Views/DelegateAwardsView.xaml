@@ -696,6 +696,11 @@
                                 Header="TP"
                                 Binding="{Binding TotalPitches}"
                                 CanUserSort="True" />
+                            <DataGridTextColumn
+                                IsReadOnly="True"
+                                Header="Pitch Types"
+                                Binding="{Binding PitchTypes}"
+                                CanUserSort="False" />
                             <DataGridTemplateColumn
                                 CanUserSort="False"
                                 Header="Awards">

@@ -4,6 +4,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -138,15 +139,9 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     Strikeouts = x.Strikeouts,
                     WeightedOpsPlusOrEraMinus = ((x.OpsPlus ?? 0) - 95) * x.PlateAppearances * BattingScalingFactor +
                                                 (x.StolenBases - x.CaughtStealing) * BaserunningScalingFactor,
-                    Awards = x.PlayerSeason.Awards
+                    AwardIds = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
-                        .Select(y => new PlayerAwardBaseDto
-                        {
-                            Id = y.Id,
-                            Name = y.Name,
-                            Importance = y.Importance,
-                            OmitFromGroupings = y.OmitFromGroupings
-                        })
+                        .Select(y => y.Id)
                         .ToList(),
                     IsChampion = x.PlayerSeason.ChampionshipWinner != null,
                     Age = x.PlayerSeason.Age,
@@ -156,7 +151,9 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     CaughtStealing = x.CaughtStealing,
                     TotalBases = x.TotalBases,
                     SecondaryPositionId = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPositionId,
-                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name))
+                    TraitIds = x.PlayerSeason.Traits
+                        .Select(y => y.Id)
+                        .ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
@@ -164,16 +161,12 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 .ToListAsync(cancellationToken: cancellationToken);
 
             if (includeChampionAwards)
+            {
                 foreach (var player in playerBattingDtos.Where(player => player.IsChampion))
                 {
-                    player.Awards.Add(new PlayerAwardBaseDto
-                    {
-                        Id = 0,
-                        Name = "Champion",
-                        Importance = 10,
-                        OmitFromGroupings = false
-                    });
+                    player.AwardIds.Add((int)VirtualAward.Champion);
                 }
+            }
 
             return playerBattingDtos;
         }
