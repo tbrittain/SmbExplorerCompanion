@@ -1,7 +1,6 @@
 ﻿using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using OneOf;
-using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
@@ -13,10 +12,12 @@ namespace SmbExplorerCompanion.Database.Services.Players;
 public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
+    private readonly IApplicationContext _applicationContext;
 
-    public PositionPlayerSeasonRepository(SmbExplorerCompanionDbContext dbContext)
+    public PositionPlayerSeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
         _dbContext = dbContext;
+        _applicationContext = applicationContext;
     }
 
     public async Task<OneOf<List<PlayerBattingSeasonDto>, Exception>> GetBattingSeasons(
@@ -34,8 +35,8 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
         int? playerId = null,
         CancellationToken cancellationToken = default)
     {
-        if (onlyRookies && seasonId is null)
-            throw new ArgumentException("SeasonId must be provided if OnlyRookies is true");
+        if (onlyRookies && seasons is null)
+            throw new ArgumentException("SeasonRange must be provided if OnlyRookies is true");
 
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
@@ -56,26 +57,26 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
         try
         {
             var minSeasonId = await _dbContext.Seasons
+                .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
                 .MinAsync(x => x.Id, cancellationToken);
 
-            if (seasonId == minSeasonId) onlyRookies = false;
+            if (seasons?.StartSeasonId == minSeasonId && seasons?.EndSeasonId is not null) onlyRookies = false;
 
             List<int> rookiePlayerIds = new();
             if (onlyRookies)
                 rookiePlayerIds = await _dbContext.Players
-                    .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasonId))
+                    .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasons!.Value.StartSeasonId))
                     .Select(x => new
                     {
                         PlayerId = x.Id,
                         FirstSeasonId = x.PlayerSeasons.OrderBy(ps => ps.SeasonId).First().SeasonId
                     })
-                    .Where(x => x.FirstSeasonId == seasonId)
+                    .Where(x => x.FirstSeasonId == seasons!.Value.StartSeasonId)
                     .Select(x => x.PlayerId)
                     .ToListAsync(cancellationToken: cancellationToken);
 
             var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
                 .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.SecondaryPosition)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Traits)
                 .Include(x => x.PlayerSeason)
@@ -90,7 +91,8 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 .ThenInclude(x => x!.TeamNameHistory)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.ChampionshipWinner)
-                .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => seasons == null || (x.PlayerSeason.SeasonId >= seasons.Value.StartSeasonId &&
+                                               x.PlayerSeason.SeasonId <= seasons.Value.EndSeasonId))
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                       (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
@@ -151,7 +153,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     PlateAppearances = x.PlateAppearances,
                     CaughtStealing = x.CaughtStealing,
                     TotalBases = x.TotalBases,
-                    SecondaryPositionId = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPositionId,
+                    SecondaryPositionId = x.PlayerSeason.SecondaryPositionId,
                     TraitIds = x.PlayerSeason.Traits
                         .Select(y => y.Id)
                         .ToList()

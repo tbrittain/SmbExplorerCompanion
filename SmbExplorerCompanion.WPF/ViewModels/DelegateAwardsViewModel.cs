@@ -14,6 +14,7 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
@@ -120,7 +121,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var atLeastOneUserAwardAdded = false;
         var topSeasonBattersResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
@@ -141,7 +142,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var topSeasonPitchersResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 includeChampionAwards: false,
                 onlyUserAssignableAwards: true));
@@ -162,7 +163,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var topSeasonBattingRookiesResponse = await _mediator.Send(
             new GetTopBattingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 onlyRookies: true,
                 includeChampionAwards: false,
@@ -185,7 +186,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var topSeasonPitchingRookiesResponse = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
-                seasonId: SelectedSeason.Id,
+                seasons: new SeasonRange(SelectedSeason.Id),
                 limit: 10,
                 onlyRookies: true,
                 includeChampionAwards: false,
@@ -211,7 +212,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         {
             var topBattersPerTeamResponse = await _mediator.Send(
                 new GetTopBattingSeasonRequest(
-                    seasonId: SelectedSeason.Id,
+                    seasons: new SeasonRange(SelectedSeason.Id),
                     teamId: team.TeamId,
                     limit: 5,
                     includeChampionAwards: false,
@@ -245,7 +246,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
             var topPitchersPerTeamResponse = await _mediator.Send(
                 new GetTopPitchingSeasonRequest(
-                    seasonId: SelectedSeason.Id,
+                    seasons: new SeasonRange(SelectedSeason.Id),
                     teamId: team.TeamId,
                     limit: 5,
                     includeChampionAwards: false,
@@ -278,7 +279,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         {
             var topBattersByPositionResponse = await _mediator.Send(
                 new GetTopBattingSeasonRequest(
-                    seasonId: SelectedSeason.Id,
+                    seasons: new SeasonRange(SelectedSeason.Id),
                     primaryPositionId: position.Id,
                     limit: 5,
                     includeChampionAwards: false,

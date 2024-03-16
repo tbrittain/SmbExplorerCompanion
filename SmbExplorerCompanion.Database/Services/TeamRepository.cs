@@ -3,6 +3,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
@@ -545,7 +546,7 @@ public class TeamRepository : ITeamRepository
                     teamSeason.AwayPlayoffSchedule);
 
                 var playoffPitchingResult = await _pitcherSeasonRepository.GetPitchingSeasons(
-                    seasonId: seasonId,
+                    seasons: new SeasonRange(seasonId),
                     isPlayoffs: true,
                     teamId: teamId,
                     cancellationToken: cancellationToken);
@@ -556,7 +557,7 @@ public class TeamRepository : ITeamRepository
                 teamSeasonDetailDto.PlayoffPitching = playoffPitchingSeasonDtos;
 
                 var playoffBattingResult = await _positionPlayerSeasonRepository.GetBattingSeasons(
-                    seasonId: seasonId,
+                    seasons: new SeasonRange(seasonId),
                     isPlayoffs: true,
                     teamId: teamId,
                     cancellationToken: cancellationToken);
@@ -568,7 +569,7 @@ public class TeamRepository : ITeamRepository
             }
 
             var regularSeasonPitchingResult = await _pitcherSeasonRepository.GetPitchingSeasons(
-                seasonId: seasonId,
+                seasons: new SeasonRange(seasonId),
                 isPlayoffs: false,
                 teamId: teamId,
                 cancellationToken: cancellationToken);
@@ -579,7 +580,7 @@ public class TeamRepository : ITeamRepository
             teamSeasonDetailDto.RegularSeasonPitching = regularPitchingSeasonDtos;
 
             var regularSeasonBattingResult = await _positionPlayerSeasonRepository.GetBattingSeasons(
-                seasonId: seasonId,
+                seasons: new SeasonRange(seasonId),
                 isPlayoffs: false,
                 teamId: teamId,
                 cancellationToken: cancellationToken);

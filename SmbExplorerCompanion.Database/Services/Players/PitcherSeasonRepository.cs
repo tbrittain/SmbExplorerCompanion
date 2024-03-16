@@ -12,10 +12,12 @@ namespace SmbExplorerCompanion.Database.Services.Players;
 public class PitcherSeasonRepository : IPitcherSeasonRepository
 {
     private readonly SmbExplorerCompanionDbContext _dbContext;
+    private readonly IApplicationContext _applicationContext;
 
-    public PitcherSeasonRepository(SmbExplorerCompanionDbContext dbContext)
+    public PitcherSeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
         _dbContext = dbContext;
+        _applicationContext = applicationContext;
     }
 
     public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> GetPitchingSeasons(
@@ -33,8 +35,8 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
         int? pitcherRoleId = null,
         CancellationToken cancellationToken = default)
     {
-        if (onlyRookies && seasonId is null)
-            throw new ArgumentException("SeasonId must be provided if OnlyRookies is true");
+        if (onlyRookies && seasons is null)
+            throw new ArgumentException("SeasonRange must be provided if OnlyRookies is true");
 
         if (playerId is not null && pageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
@@ -55,20 +57,21 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
         try
         {
             var minSeasonId = await _dbContext.Seasons
+                .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
                 .MinAsync(x => x.Id, cancellationToken);
 
-            if (seasonId == minSeasonId) onlyRookies = false;
+            if (seasons?.StartSeasonId == minSeasonId && seasons?.EndSeasonId is not null) onlyRookies = false;
 
             List<int> rookiePlayerIds = new();
             if (onlyRookies)
                 rookiePlayerIds = await _dbContext.Players
-                    .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasonId))
+                    .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasons!.Value.StartSeasonId))
                     .Select(x => new
                     {
                         PlayerId = x.Id,
                         FirstSeasonId = x.PlayerSeasons.OrderBy(ps => ps.SeasonId).First().SeasonId
                     })
-                    .Where(x => x.FirstSeasonId == seasonId)
+                    .Where(x => x.FirstSeasonId == seasons!.Value.StartSeasonId)
                     .Select(x => x.PlayerId)
                     .ToListAsync(cancellationToken: cancellationToken);
 
@@ -102,7 +105,8 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                 .ThenInclude(x => x!.TeamNameHistory)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.ChampionshipWinner)
-                .Where(x => seasonId == null || x.PlayerSeason.SeasonId == seasonId)
+                .Where(x => seasons == null || (x.PlayerSeason.SeasonId >= seasons.Value.StartSeasonId &&
+                                                x.PlayerSeason.SeasonId <= seasons.Value.EndSeasonId))
                 .Where(x => x.IsRegularSeason == !isPlayoffs)
                 .Where(x => playerId == null || x.PlayerSeason.PlayerId == playerId)
                 .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||

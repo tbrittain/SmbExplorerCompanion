@@ -11,6 +11,7 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
@@ -212,7 +213,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var topPitchersResult = await _mediator.Send(new GetTopPitchingSeasonRequest(
-            seasonId: SelectedSeason!.Id == default ? null : SelectedSeason!.Id,
+            seasons: SelectedSeason!.Id == default ? null : new SeasonRange(SelectedSeason!.Id),
             isPlayoffs: IsPlayoffs,
             pageNumber: PageNumber,
             orderBy: SortColumn,
