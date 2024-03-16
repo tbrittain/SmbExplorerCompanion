@@ -12,9 +12,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
@@ -32,12 +29,14 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private Season? _selectedSeason;
     private bool _onlyRookies;
     private PitcherRole? _selectedPitcherRole;
+    private readonly MappingService _mappingService;
 
-    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService)
+    public TopPitchingSeasonsViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -47,9 +46,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
 
@@ -58,7 +55,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Id = default
         });
 
-        var pitcherRolesResponse = _mediator.Send(new GetAllPitcherRolesRequest()).Result;
+        var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
         if (pitcherRolesResponse.TryPickT1(out exception, out var pitcherRoles))
         {
             MessageBox.Show(exception.Message);
@@ -72,8 +69,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        var pitcherRoleMapper = new PitcherRoleMapping();
-        PitcherRoles.AddRange(pitcherRoles.Select(p => pitcherRoleMapper.FromDto(p)));
+        PitcherRoles.AddRange(pitcherRoles.Select(p => p.FromCore()));
 
         SelectedPitcherRole = allPitcherRole;
 
@@ -101,7 +97,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         get => _selectedSeason;
         set
         {
-            if (value is not null && (value?.Id == default(int) || value?.Id == MinSeasonId))
+            if (value is not null && (value.Id == default || value.Id == MinSeasonId))
             {
                 ShortCircuitOnlyRookiesRefresh = true;
                 OnlyRookies = false;
@@ -232,9 +228,10 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         }
 
         TopSeasonPitchers.Clear();
-
-        var mapper = new PlayerSeasonMapping();
-        TopSeasonPitchers.AddRange(topPitchers.Select(p => mapper.FromPitchingDto(p)));
+        var mappedTopSeasonPitchers = topPitchers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonPitchers.AddRange(mappedTopSeasonPitchers);
 
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();

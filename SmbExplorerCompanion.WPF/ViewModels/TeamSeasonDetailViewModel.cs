@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -9,7 +8,6 @@ using MediatR;
 using ScottPlot;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.Entities.Teams;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Teams;
 using SmbExplorerCompanion.WPF.Services;
@@ -25,7 +23,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
     private WpfPlot? _teamSchedulePlot;
     private bool _includeMarginOfVictoryInPlot;
 
-    public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator)
+    public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -52,13 +50,12 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
         else
         {
-            var mapper = new TeamSeasonDetailMapping();
-            TeamSeasonDetail = mapper.FromTeamSeasonDetailDto(teamSeasonDetail);
+            TeamSeasonDetail = mappingService.FromCore(teamSeasonDetail).Result;
         }
-        
+
         var teamScheduleBreakdownResponse = mediator.Send(
             new GetTeamScheduleBreakdownRequest(TeamSeasonId)).Result;
-        
+
         if (teamScheduleBreakdownResponse.TryPickT1(out exception, out var divisionScheduleBreakdown))
         {
             MessageBox.Show(exception.Message);
@@ -69,7 +66,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         }
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -120,8 +117,14 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                     wins++;
                 else if (matchup.TeamScore < matchup.OpponentTeamScore)
                     wins--;
-                var x = new TeamScheduleBreakdown(matchup.TeamHistoryId, matchup.TeamName, matchup.OpponentTeamHistoryId,
-                    matchup.OpponentTeamName, matchup.Day, matchup.GlobalGameNumber, matchup.TeamScore, matchup.OpponentTeamScore,
+                var x = new TeamScheduleBreakdown(matchup.TeamHistoryId,
+                    matchup.TeamName,
+                    matchup.OpponentTeamHistoryId,
+                    matchup.OpponentTeamName,
+                    matchup.Day,
+                    matchup.GlobalGameNumber,
+                    matchup.TeamScore,
+                    matchup.OpponentTeamScore,
                     wins);
                 teamBreakdown.Add(x);
             }
@@ -155,17 +158,17 @@ public class TeamSeasonDetailViewModel : ViewModelBase
             var teamScheduleBreakdowns = breakdown
                 .OrderBy(b => b.Day)
                 .ToHashSet();
-        
+
             var days = teamScheduleBreakdowns
-                .Select(b => (double)b.Day)
+                .Select(b => (double) b.Day)
                 .ToArray();
             min = Math.Min(min, days.Min());
             max = Math.Max(max, days.Max());
-            
+
             var steps = teamScheduleBreakdowns
-                .Select(b => (double)b.WinsDelta)
+                .Select(b => (double) b.WinsDelta)
                 .ToArray();
-        
+
             var scatterPlot = plot.Plot.AddScatterStep(xs: days, ys: steps, label: breakdown.First().TeamName, lineWidth: 2);
             scatterPlot.MarkerShape = MarkerShape.filledCircle;
             scatterPlot.MarkerSize = 2;
@@ -182,8 +185,13 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                 var xErrors = teamScheduleBreakdowns
                     .Select(_ => 0D)
                     .ToArray();
-                
-                plot.Plot.AddErrorBars(xs: days, ys: steps,xErrorsPositive: xErrors, xErrorsNegative: xErrors, yErrorsNegative: yErrNeg, yErrorsPositive: yErrPos);
+
+                plot.Plot.AddErrorBars(xs: days,
+                    ys: steps,
+                    xErrorsPositive: xErrors,
+                    xErrorsNegative: xErrors,
+                    yErrorsNegative: yErrNeg,
+                    yErrorsPositive: yErrPos);
             }
         }
 
@@ -191,7 +199,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         plot.Height = 300;
         plot.Width = 1000;
         plot.Plot.SetAxisLimits(xMin: min, xMax: max);
-        
+
         plot.Plot.XAxis.TickLabelStyle(rotation: 45);
         plot.Plot.XAxis.Label("Day");
         plot.Plot.YAxis.Label("Games >.500");

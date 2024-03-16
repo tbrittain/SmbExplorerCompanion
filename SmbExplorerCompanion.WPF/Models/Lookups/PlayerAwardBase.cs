@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Lookups;
+﻿using SmbExplorerCompanion.Core.Entities.Lookups;
+
+namespace SmbExplorerCompanion.WPF.Models.Lookups;
 
 public record PlayerAwardBase : LookupBase
 {
@@ -19,5 +21,19 @@ public record PlayerAwardBase : LookupBase
     override public int GetHashCode()
     {
         return Id;
+    }
+}
+
+public static class PlayerAwardBaseExtensions
+{
+    public static PlayerAwardBase FromCore(this PlayerAwardBaseDto playerAwardBaseDto)
+    {
+        return new PlayerAwardBase
+        {
+            Id = playerAwardBaseDto.Id,
+            Name = playerAwardBaseDto.Name,
+            Importance = playerAwardBaseDto.Importance,
+            OmitFromGroupings = playerAwardBaseDto.OmitFromGroupings
+        };
     }
 }

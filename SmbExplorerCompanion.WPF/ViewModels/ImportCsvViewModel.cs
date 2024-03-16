@@ -14,7 +14,6 @@ using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects;
 using SmbExplorerCompanion.Core.ValueObjects.Progress;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
@@ -47,8 +46,7 @@ public partial class ImportCsvViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
     }
 
     public Season? SelectedSeason

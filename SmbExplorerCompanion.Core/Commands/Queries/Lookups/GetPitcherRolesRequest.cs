@@ -5,10 +5,10 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 
-public class GetAllPitcherRolesRequest : IRequest<OneOf<List<PitcherRoleDto>, Exception>>
+public class GetPitcherRolesRequest : IRequest<OneOf<List<PitcherRoleDto>, Exception>>
 {
     // ReSharper disable once UnusedType.Global
-    internal class GetAllPitcherRolesHandler : IRequestHandler<GetAllPitcherRolesRequest, OneOf<List<PitcherRoleDto>, Exception>>
+    internal class GetAllPitcherRolesHandler : IRequestHandler<GetPitcherRolesRequest, OneOf<List<PitcherRoleDto>, Exception>>
     {
         private readonly IRepository<PitcherRoleDto> _pitcherRoleRepository;
 
@@ -17,7 +17,7 @@ public class GetAllPitcherRolesRequest : IRequest<OneOf<List<PitcherRoleDto>, Ex
             _pitcherRoleRepository = pitcherRoleRepository;
         }
 
-        public async Task<OneOf<List<PitcherRoleDto>, Exception>> Handle(GetAllPitcherRolesRequest request, CancellationToken cancellationToken)
+        public async Task<OneOf<List<PitcherRoleDto>, Exception>> Handle(GetPitcherRolesRequest request, CancellationToken cancellationToken)
         {
             var pitcherRoleResult = await _pitcherRoleRepository.GetAllAsync(cancellationToken);
             if (pitcherRoleResult.TryPickT1(out var exception, out var pitcherRoleDtos))

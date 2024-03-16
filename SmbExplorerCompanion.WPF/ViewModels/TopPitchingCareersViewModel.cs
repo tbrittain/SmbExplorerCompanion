@@ -11,8 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Services;
@@ -27,16 +25,18 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private int _pageNumber = 1;
     private PlayerPitchingCareer? _selectedPlayer;
     private PitcherRole? _selectedPitcherRole;
+    private readonly MappingService _mappingService;
 
-    public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService)
+    public TopPitchingCareersViewModel(IMediator mediator, INavigationService navigationService, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
+        _mappingService = mappingService;
 
         PropertyChanged += OnPropertyChanged;
-        
-        var pitcherRolesResponse = _mediator.Send(new GetAllPitcherRolesRequest()).Result;
+
+        var pitcherRolesResponse = _mediator.Send(new GetPitcherRolesRequest()).Result;
         if (pitcherRolesResponse.TryPickT1(out var exception, out var pitcherRoles))
         {
             MessageBox.Show(exception.Message);
@@ -50,13 +50,12 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
-        var pitcherRoleMapper = new PitcherRoleMapping();
-        PitcherRoles.AddRange(pitcherRoles.Select(p => pitcherRoleMapper.FromDto(p)));
-        
+        PitcherRoles.AddRange(pitcherRoles.Select(p => p.FromCore()));
+
         SelectedPitcherRole = allPitcherRole;
 
         GetTopPitchingCareers().Wait();
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -122,9 +121,9 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             }
         }
     }
-    
+
     private bool ShortCircuitPageNumberRefresh { get; set; }
-    
+
     private const int ResultsPerPage = 20;
     private bool CanSelectPreviousPage => PageNumber > 1;
 
@@ -169,10 +168,11 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         }
 
         TopPitchingCareers.Clear();
+        var mappedPitchingCareers = topPlayers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopPitchingCareers.AddRange(mappedPitchingCareers);
 
-        var mapper = new PlayerCareerMapping();
-        TopPitchingCareers.AddRange(topPlayers.Select(b => mapper.FromPitchingDto(b)));
-        
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

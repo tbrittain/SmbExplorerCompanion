@@ -1,6 +1,9 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.Models.Players;
 
@@ -26,6 +29,6 @@ public class PlayerSeasonBatting : PlayerSeasonBase
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
-    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
+    public ObservableCollection<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

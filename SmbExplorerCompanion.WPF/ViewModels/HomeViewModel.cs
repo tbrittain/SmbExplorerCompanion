@@ -15,8 +15,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Search;
-using SmbExplorerCompanion.WPF.Mappings.Summary;
 using SmbExplorerCompanion.WPF.Models.Search;
 using SmbExplorerCompanion.WPF.Models.Summary;
 using SmbExplorerCompanion.WPF.Services;
@@ -33,13 +31,18 @@ public partial class HomeViewModel : ViewModelBase
     private bool _canDisplayFranchiseSummary;
     private FranchiseSummary? _franchiseSummary;
     private readonly IApplicationContext _applicationContext;
+    private readonly MappingService _mappingService;
 
-    public HomeViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public HomeViewModel(IMediator mediator,
+        INavigationService navigationService,
+        IApplicationContext applicationContext,
+        MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
         _applicationContext = applicationContext;
+        _mappingService = mappingService;
 
         if (applicationContext.HasFranchiseData)
         {
@@ -87,8 +90,7 @@ public partial class HomeViewModel : ViewModelBase
 
         if (rest.TryPickT0(out var franchiseSummaryDto, out _))
         {
-            var franchiseSummaryMapper = new FranchiseSummaryMapping();
-            FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
+            FranchiseSummary = await _mappingService.FromCore(franchiseSummaryDto);
         }
 
         var conferenceSummaryResult = await _mediator.Send(new GetLeagueSummaryRequest());
@@ -101,8 +103,7 @@ public partial class HomeViewModel : ViewModelBase
 
         if (rest2.TryPickT0(out var leagueSummaryDto, out _))
         {
-            var conferenceSummaryMapper = new ConferenceSummaryMapping();
-            Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
+            Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
         }
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
@@ -157,12 +158,8 @@ public partial class HomeViewModel : ViewModelBase
             return;
         }
 
-        var searchResultMapper = new SearchResultMapping();
-        var searchResults = searchResultDtos
-            .Select(searchResultMapper.FromSearchResultDto)
-            .ToList();
-
-        var groupedSearchResults = searchResults
+        var groupedSearchResults = searchResultDtos
+            .Select(x => x.FromCore())
             .GroupBy(searchResult => searchResult.Type)
             .Select(group => new ObservableGroup<SearchResultType, SearchResult>(group.Key, group))
             .ToList();
@@ -172,7 +169,7 @@ public partial class HomeViewModel : ViewModelBase
     }
 
     private bool HasSearched { get; set; }
-    
+
     public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
 
     [RelayCommand]
@@ -210,7 +207,7 @@ public partial class HomeViewModel : ViewModelBase
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
     }
-    
+
     [RelayCommand]
     private async Task NavigateToRandomPlayerOverviewPage()
     {
@@ -220,7 +217,7 @@ public partial class HomeViewModel : ViewModelBase
             MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
-        
+
         NavigateToPlayerOverviewPage(player.PlayerId);
     }
 

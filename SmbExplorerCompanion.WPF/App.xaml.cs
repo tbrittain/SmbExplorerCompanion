@@ -50,6 +50,7 @@ public partial class App
             .AddCore()
             .AddDatabase()
             .AddHttpClient()
+            .AddMemoryCache()
             .AddSingleton<IHttpService, HttpService>()
             .AddSingleton<MainWindow>(serviceProvider => new MainWindow
             {
@@ -71,6 +72,9 @@ public partial class App
             .AddTransient<DelegateHallOfFamersViewModel>()
             .AddSingleton<INavigationService, NavigationService>()
             .AddSingleton<IApplicationContext, ApplicationContext>()
+            .AddTransient<LookupSearchService>()
+            .AddTransient<MappingService>()
+            .AddSingleton<LookupCache>()
             // NavigationService calls this Func to get the ViewModel instance
             .AddSingleton<Func<Type, ViewModelBase>>(serviceProvider =>
                 viewModelType => (ViewModelBase) serviceProvider.GetRequiredService(viewModelType));

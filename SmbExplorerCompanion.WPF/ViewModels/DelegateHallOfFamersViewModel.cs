@@ -12,10 +12,9 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
+using SmbExplorerCompanion.WPF.Services;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
@@ -23,11 +22,13 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
     private Season? _selectedSeason;
+    private readonly MappingService _mappingService;
 
-    public DelegateHallOfFamersViewModel(IMediator mediator)
+    public DelegateHallOfFamersViewModel(IMediator mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -37,9 +38,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         GetHallOfFamers().Wait();
@@ -95,13 +94,15 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             return;
         }
 
-        var battingMapper = new PlayerCareerMapping();
-        TopBattingCareers.AddRange(retiredPlayers.BattingCareers
-            .Select(b => battingMapper.FromBattingDto(b)));
+        var mappedBattingCareers = retiredPlayers.BattingCareers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopBattingCareers.AddRange(mappedBattingCareers);
 
-        var pitchingMapper = new PlayerCareerMapping();
-        TopPitchingCareers.AddRange(retiredPlayers.PitchingCareers
-            .Select(p => pitchingMapper.FromPitchingDto(p)));
+        var mappedPitchingCareers = retiredPlayers.PitchingCareers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopPitchingCareers.AddRange(mappedPitchingCareers);
 
         SubmitHallOfFamersCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

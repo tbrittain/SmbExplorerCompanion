@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using OneOf;
-using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -135,8 +135,8 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                         ? 0
                         : x.PlayerSeason.Salary,
                     SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
-                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name)),
-                    PitchTypes = string.Join(", ", x.PlayerSeason.PitchTypes.OrderBy(y => y.Id).Select(y => y.Name))
+                    TraitIds = x.PlayerSeason.Traits.Select(y => y.Id).ToList(),
+                    PitchTypeIds = x.PlayerSeason.PitchTypes.Select(y => y.Id).ToList()
                 })
                 .OrderByDescending(x => x.SeasonNumber)
                 .ToListAsync(cancellationToken: cancellationToken);
@@ -384,14 +384,14 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
 
             var playerGameStatPercentileDto = new PlayerGameStatPercentileDto
             {
-                Power = (int) Math.Round(greaterThanPower / (double) numPlayers * 100),
-                Contact = (int) Math.Round(greaterThanContact / (double) numPlayers * 100),
-                Speed = (int) Math.Round(greaterThanSpeed / (double) numPlayers * 100),
-                Fielding = (int) Math.Round(greaterThanFielding / (double) numPlayers * 100),
-                Arm = (int) Math.Round(greaterThanArm / (double) numPlayers * 100),
-                Velocity = (int) Math.Round(greaterThanVelocity / (double) numPlayers * 100),
-                Junk = (int) Math.Round(greaterThanJunk / (double) numPlayers * 100),
-                Accuracy = (int) Math.Round(greaterThanAccuracy / (double) numPlayers * 100)
+                Power = RoundPercentile(greaterThanPower, numPlayers),
+                Contact = RoundPercentile(greaterThanContact, numPlayers),
+                Speed = RoundPercentile(greaterThanSpeed, numPlayers),
+                Fielding = RoundPercentile(greaterThanFielding, numPlayers),
+                Arm = RoundPercentile(greaterThanArm, numPlayers),
+                Velocity = RoundPercentile(greaterThanVelocity, numPlayers),
+                Junk = RoundPercentile(greaterThanJunk, numPlayers),
+                Accuracy = RoundPercentile(greaterThanAccuracy, numPlayers)
             };
             return playerGameStatPercentileDto;
         }
@@ -399,6 +399,11 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         {
             return e;
         }
+    }
+
+    private static int RoundPercentile(int numGreaterThan, int numPlayers)
+    {
+        return (int) Math.Round(numGreaterThan / (double) numPlayers * 100);
     }
 
     public async Task<OneOf<PlayerKpiPercentileDto, Exception>> GetPlayerKpiPercentiles(
@@ -493,14 +498,14 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     .Select(x => x.PlayerSeason.PlayerId)
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
-
-                playerKpiPercentileDto.Hits = (int) Math.Round(greaterThanHits / (double) numQualifiedPlayers * 100);
-                playerKpiPercentileDto.HomeRuns = (int) Math.Round(greaterThanHomeRuns / (double) numQualifiedPlayers * 100);
-                playerKpiPercentileDto.BattingAverage = (int) Math.Round(greaterThanBattingAverage / (double) numQualifiedPlayers * 100);
-                playerKpiPercentileDto.StolenBases = (int) Math.Round(greaterThanStolenBases / (double) numQualifiedPlayers * 100);
-                playerKpiPercentileDto.BatterStrikeouts = (int) Math.Round(lessThanBatterStrikeouts / (double) numQualifiedPlayers * 100);
-                playerKpiPercentileDto.Obp = (int) Math.Round(greaterThanObp / (double) numQualifiedPlayers * 100);
-                playerKpiPercentileDto.Slg = (int) Math.Round(greaterThanSlg / (double) numQualifiedPlayers * 100);
+    
+                playerKpiPercentileDto.Hits = RoundPercentile(greaterThanHits, numQualifiedPlayers);
+                playerKpiPercentileDto.HomeRuns = RoundPercentile(greaterThanHomeRuns, numQualifiedPlayers);
+                playerKpiPercentileDto.BattingAverage = RoundPercentile(greaterThanBattingAverage, numQualifiedPlayers);
+                playerKpiPercentileDto.StolenBases = RoundPercentile(greaterThanStolenBases, numQualifiedPlayers);
+                playerKpiPercentileDto.BatterStrikeouts = RoundPercentile(lessThanBatterStrikeouts, numQualifiedPlayers);
+                playerKpiPercentileDto.Obp = RoundPercentile(greaterThanObp, numQualifiedPlayers);
+                playerKpiPercentileDto.Slg = RoundPercentile(greaterThanSlg, numQualifiedPlayers);
             }
 
             if (!isPitcher) return playerKpiPercentileDto;
@@ -573,14 +578,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     .Distinct()
                     .CountAsync(cancellationToken: cancellationToken);
 
-                playerKpiPercentileDto.Wins = (int) Math.Round(greaterThanWins / (double) numPlayers * 100);
-                playerKpiPercentileDto.Era = (int) Math.Round(lessThanEra / (double) numPlayers * 100);
-                playerKpiPercentileDto.Whip = (int) Math.Round(lessThanWhip / (double) numPlayers * 100);
-                playerKpiPercentileDto.InningsPitched = (int) Math.Round(greaterThanInningsPitched / (double) numPlayers * 100);
-                playerKpiPercentileDto.PitcherStrikeoutsPerNine =
-                    (int) Math.Round(greaterThanPitcherStrikeoutsPerNine / (double) numPlayers * 100);
-                playerKpiPercentileDto.PitcherStrikeoutToWalkRatio =
-                    (int) Math.Round(greaterThanPitcherStrikeoutToWalkRatio / (double) numPlayers * 100);
+                playerKpiPercentileDto.Wins = RoundPercentile(greaterThanWins, numPlayers);
+                playerKpiPercentileDto.Era = RoundPercentile(lessThanEra, numPlayers);
+                playerKpiPercentileDto.Whip = RoundPercentile(lessThanWhip, numPlayers);
+                playerKpiPercentileDto.InningsPitched = RoundPercentile(greaterThanInningsPitched, numPlayers);
+                playerKpiPercentileDto.PitcherStrikeoutsPerNine = RoundPercentile(greaterThanPitcherStrikeoutsPerNine, numPlayers);
+                playerKpiPercentileDto.PitcherStrikeoutToWalkRatio = RoundPercentile(greaterThanPitcherStrikeoutToWalkRatio, numPlayers);
             }
 
             return playerKpiPercentileDto;
@@ -620,11 +623,6 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .ThenInclude(x => x.PlayerTeamHistory)
             .Include(x => x.PlayerSeasons)
             .ThenInclude(x => x.ChampionshipWinner)
-            .Include(x => x.Chemistry)
-            .Include(x => x.ThrowHandedness)
-            .Include(x => x.BatHandedness)
-            .Include(x => x.PrimaryPosition)
-            .Include(x => x.PitcherRole)
             .Include(x => x.PlayerSeasons)
             .ThenInclude(x => x.BattingStats)
             .Include(x => x.PlayerSeasons)
@@ -645,60 +643,33 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         playerOverview.PlayerId = player.Id;
         playerOverview.PlayerName = $"{player.FirstName} {player.LastName}";
         playerOverview.IsHallOfFamer = player.IsHallOfFamer;
-        playerOverview.IsPitcher = player.PitcherRole is not null;
+        playerOverview.IsPitcher = player.PitcherRoleId is not null;
         playerOverview.TotalSalary = player.PlayerSeasons
             .Sum(x => x.PlayerTeamHistory
                 .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                 ? 0
                 : x.Salary);
-        playerOverview.BatHandedness = player.BatHandedness.Name;
-        playerOverview.ThrowHandedness = player.ThrowHandedness.Name;
-        playerOverview.PrimaryPosition = player.PrimaryPosition.Name;
-        playerOverview.PitcherRole = player.PitcherRole?.Name;
-        playerOverview.PitcherRoleId = player.PitcherRole?.Id;
-        playerOverview.Chemistry = player.Chemistry!.Name;
+        playerOverview.BatHandednessId = player.BatHandednessId;
+        playerOverview.ThrowHandednessId = player.ThrowHandednessId;
+        playerOverview.PrimaryPositionId = player.PrimaryPositionId;
+        playerOverview.PitcherRoleId = player.PitcherRoleId;
+        playerOverview.ChemistryId = player.ChemistryId;
         playerOverview.NumSeasons = player.PlayerSeasons.Count;
-        playerOverview.Awards = player.PlayerSeasons
+        playerOverview.AwardIds = player.PlayerSeasons
             .SelectMany(x => x.Awards)
             .Where(x => !x.OmitFromGroupings)
-            .Select(x => new PlayerAwardDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Importance = x.Importance,
-                OmitFromGroupings = x.OmitFromGroupings,
-                OriginalName = x.OriginalName,
-                IsBattingAward = x.IsBattingAward,
-                IsBuiltIn = x.IsBuiltIn,
-                IsFieldingAward = x.IsFieldingAward,
-                IsPitchingAward = x.IsPitchingAward,
-                IsPlayoffAward = x.IsPlayoffAward,
-                IsUserAssignable = x.IsUserAssignable
-            })
+            .Select(x => x.Id)
             .ToList();
         playerOverview.NumChampionships = player.PlayerSeasons
             .Count(x => x.ChampionshipWinner is not null);
 
         if (player.IsHallOfFamer)
-            playerOverview.Awards.Add(new PlayerAwardDto
-            {
-                Id = -1,
-                Importance = -1,
-                Name = "Hall of Fame",
-                OriginalName = "Hall of Fame",
-                OmitFromGroupings = false
-            });
+            playerOverview.AwardIds.Add((int)VirtualAward.HallOfFame);
 
         if (playerOverview.NumChampionships > 0)
             foreach (var _ in Enumerable.Range(1, playerOverview.NumChampionships))
             {
-                playerOverview.Awards.Add(new PlayerAwardDto
-                {
-                    Id = 0,
-                    Name = "Champion",
-                    Importance = 10,
-                    OmitFromGroupings = false
-                });
+                playerOverview.AwardIds.Add((int)VirtualAward.Champion);
             }
 
         var startSeason = player.PlayerSeasons.MinBy(x => x.SeasonId)!.Season;

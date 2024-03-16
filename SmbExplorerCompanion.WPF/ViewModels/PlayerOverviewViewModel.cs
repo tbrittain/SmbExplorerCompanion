@@ -17,8 +17,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Services;
@@ -34,7 +32,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     private Season? _selectedSeason;
     private readonly ISender _mediator;
 
-    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator)
+    public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, LookupSearchService lss, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
@@ -86,8 +84,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var mapper = new PlayerOverviewMapping();
-        var overview = mapper.FromDto(playerOverview);
+        var overview = mappingService.FromCore(playerOverview).Result;
         PlayerOverview = overview;
         SeasonStats = overview
             .GameStats
@@ -102,19 +99,15 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return;
         }
 
-        var similarPlayerMapper = new SimilarPlayerMapping();
-        SimilarPlayers.AddRange(similarPlayers.Select(similarPlayerMapper.FromDto));
+        SimilarPlayers.AddRange(similarPlayers.Select(x => x.FromCore()));
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
-
         if (seasonsResponse.TryPickT1(out exception, out var seasons))
         {
             MessageBox.Show(exception.Message);
             Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
             return;
         }
-
-        var seasonMapper = new SeasonMapping();
 
         var applicableSeasonIds = overview
             .GameStats
@@ -124,7 +117,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         var playerSeasons = seasons
             .Where(x => applicableSeasonIds.Contains(x.Id))
             .OrderBy(x => x.Number)
-            .Select(s => seasonMapper.FromDto(s))
+            .Select(s => s.FromCore())
             .ToList();
         Seasons.AddRange(playerSeasons);
 
@@ -138,7 +131,7 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         {
             SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
         }
-        
+
 
         GeneratePlots().Wait();
 

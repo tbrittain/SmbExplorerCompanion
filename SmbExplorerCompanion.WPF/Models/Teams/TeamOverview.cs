@@ -1,4 +1,7 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using SmbExplorerCompanion.Core.Entities.Teams;
+using SmbExplorerCompanion.WPF.Extensions;
 
 namespace SmbExplorerCompanion.WPF.Models.Teams;
 
@@ -16,4 +19,24 @@ public class TeamOverview : TeamBase
     public int NumChampionships { get; set; }
 
     public string TeamRecord => $"{NumWins}-{NumLosses}, {WinPercentage:F3} W-L%";
+}
+
+public static class TeamOverviewExtensions
+{
+    public static TeamOverview FromCore(this TeamOverviewDto x)
+    {
+        return new TeamOverview
+        {
+            NumSeasons = x.NumSeasons,
+            NumWins = x.NumWins,
+            NumLosses = x.NumLosses,
+            WinPercentage = x.WinPercentage,
+            NumPlayoffAppearances = x.NumPlayoffAppearances,
+            NumDivisionsWon = x.NumDivisionsWon,
+            NumConferenceTitles = x.NumConferenceTitles,
+            NumChampionships = x.NumChampionships,
+            TeamHistory = x.TeamHistory.Select(y => y.FromCore()).ToObservableCollection(),
+            TopPlayers = x.TopPlayers.Select(y => y.FromCore()).ToObservableCollection()
+        };
+    }
 }

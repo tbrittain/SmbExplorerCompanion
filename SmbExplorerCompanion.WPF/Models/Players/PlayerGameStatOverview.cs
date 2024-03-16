@@ -17,5 +17,4 @@ public class PlayerGameStatOverview
     public int Salary { get; set; }
     public string? SecondaryPosition { get; set; } = string.Empty;
     public string Traits { get; set; } = string.Empty;
-
 }

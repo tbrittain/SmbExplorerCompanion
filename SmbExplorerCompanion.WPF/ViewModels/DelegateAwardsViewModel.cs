@@ -15,27 +15,25 @@ using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Lookups;
-using SmbExplorerCompanion.WPF.Mappings.Players;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Lookups;
 using SmbExplorerCompanion.WPF.Models.Players;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Models.Teams;
+using SmbExplorerCompanion.WPF.Services;
 
-// ReSharper disable InconsistentNaming
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class DelegateAwardsViewModel : ViewModelBase
 {
     private readonly IMediator _mediator;
+    private readonly MappingService _mappingService;
     private Season? _selectedSeason;
 
-    public DelegateAwardsViewModel(IMediator mediator)
+    public DelegateAwardsViewModel(IMediator mediator, MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
+        _mappingService = mappingService;
 
         var seasonsResponse = _mediator.Send(new GetSeasonsRequest()).Result;
         if (seasonsResponse.TryPickT1(out var exception, out var seasons))
@@ -45,12 +43,11 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
         Seasons.Add(new Season
         {
             Id = default
         });
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
 
         var regularSeasonAwards = _mediator.Send(GetPlayerAwardsRequest.Default).Result;
@@ -61,13 +58,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
-        var awardsMapper = new PlayerAwardMapping();
-        AllAwards.AddRange(awards.Select(a => awardsMapper.FromDto(a)));
+        AllAwards.AddRange(awards.Select(a => a.FromCore()));
         BattingAwards.AddRange(AllAwards.Where(a => a.IsBattingAward));
         PitchingAwards.AddRange(AllAwards.Where(a => a.IsPitchingAward));
         FieldingAwards.AddRange(AllAwards.Where(a => a.IsFieldingAward));
         
-        var positionsResponse = _mediator.Send(new GetAllPositionsRequest()).Result;
+        var positionsResponse = _mediator.Send(new GetPositionsRequest()).Result;
         if (positionsResponse.TryPickT1(out exception, out var positions))
         {
             MessageBox.Show(exception.Message);
@@ -75,10 +71,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
-        var positionMapper = new PositionMapping();
         Positions.AddRange(positions
             .Where(x => x.IsPrimaryPosition)
-            .Select(p => positionMapper.FromPositionDto(p)));
+            .Select(p => p.FromCore()));
 
         GetAwardNomineesForSeason().Wait();
 
@@ -117,10 +112,9 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
-        var seasonTeamMapper = new SeasonTeamMapping();
         SeasonTeams.Clear();
         SeasonTeams.AddRange(seasonTeams
-            .Select(s => seasonTeamMapper.FromTeamDto(s))
+            .Select(s => s.FromCore())
             .OrderBy(x => x.TeamName));
 
         var atLeastOneUserAwardAdded = false;
@@ -136,10 +130,11 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             return;
         }
 
-        var seasonPlayerMapper = new PlayerSeasonMapping();
         TopSeasonBatters.Clear();
-        TopSeasonBatters.AddRange(topSeasonBatters
-            .Select(s => seasonPlayerMapper.FromBattingDto(s)));
+        var mappedTopBatters = topSeasonBatters
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonBatters.AddRange(mappedTopBatters);
         
         if (TopSeasonBatters.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
@@ -158,9 +153,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonPitchers.Clear();
-        TopSeasonPitchers.AddRange(topSeasonPitchers
-            .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
-        
+        var mappedTopPitchers = topSeasonPitchers
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonPitchers.AddRange(mappedTopPitchers);
         if (TopSeasonPitchers.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -179,9 +175,11 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonBattingRookies.Clear();
-        TopSeasonBattingRookies.AddRange(topSeasonBattingRookies
-            .Select(s => seasonPlayerMapper.FromBattingDto(s)));
-        
+        var mappedRookieBatters = topSeasonBattingRookies
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonBattingRookies.AddRange(mappedRookieBatters);
+
         if (TopSeasonBattingRookies.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -200,9 +198,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         }
 
         TopSeasonPitchingRookies.Clear();
-        TopSeasonPitchingRookies.AddRange(topSeasonPitchingRookies
-            .Select(s => seasonPlayerMapper.FromPitchingDto(s)));
-        
+        var mappedRookiePitchers = topSeasonPitchingRookies
+            .Select(async x => await _mappingService.FromCore(x))
+            .Select(x => x.Result);
+        TopSeasonPitchingRookies.AddRange(mappedRookiePitchers);
         if (TopSeasonPitchingRookies.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -225,7 +224,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topBattersPerTeamObservable = topBattersPerTeam
-                .Select(s => seasonPlayerMapper.FromBattingDto(s))
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result)
                 .ToList();
             
             // Automate the process of suggesting all-stars. We will use a proxy of if ANY awards have been added to the
@@ -258,7 +258,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topPitchersPerTeamObservable = topPitchersPerTeam
-                .Select(s => seasonPlayerMapper.FromPitchingDto(s))
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result)
                 .ToList();
 
             if (!atLeastOneUserAwardAdded)
@@ -290,7 +291,8 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             }
 
             var topBattersByPositionObservable = topBattersByPosition
-                .Select(s => seasonPlayerMapper.FromBattingDto(s))
+                .Select(async x => await _mappingService.FromCore(x))
+                .Select(x => x.Result)
                 .ToList();
 
             if (!atLeastOneUserAwardAdded)

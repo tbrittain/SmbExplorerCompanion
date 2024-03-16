@@ -13,13 +13,20 @@ public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Excep
         IsRegularSeason = isRegularSeason;
     }
 
+    private GetPlayerAwardsRequest()
+    {
+        All = true;
+    }
+
     private bool OnlyUserAssignable { get; }
     private bool IsRegularSeason { get; }
+    private bool All { get; }
 
     private static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable) => new(onlyUserAssignable, true);
     private static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable) => new(onlyUserAssignable, false);
     public static GetPlayerAwardsRequest Default => RegularSeason(true);
     public static GetPlayerAwardsRequest DefaultPlayoffs => Playoffs(true);
+    public static GetPlayerAwardsRequest AllAwards => new();
 
     // ReSharper disable once UnusedType.Global
     internal class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, OneOf<List<PlayerAwardDto>, Exception>>
@@ -38,8 +45,8 @@ public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Excep
                 return exception;
 
             return awards
-                .Where(x => x.IsPlayoffAward != request.IsRegularSeason)
-                .Where(x => x.IsUserAssignable == request.OnlyUserAssignable)
+                .Where(x => request.All || x.IsPlayoffAward != request.IsRegularSeason)
+                .Where(x => request.All || x.IsUserAssignable == request.OnlyUserAssignable)
                 .ToList();
         }
     }

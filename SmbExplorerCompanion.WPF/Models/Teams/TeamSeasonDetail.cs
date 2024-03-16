@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
+using System.Linq;
+using SmbExplorerCompanion.Core.Entities.Teams;
 using SmbExplorerCompanion.WPF.Models.Players;
 
 namespace SmbExplorerCompanion.WPF.Models.Teams;

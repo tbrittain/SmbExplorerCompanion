@@ -9,8 +9,6 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Models.Teams;
 using SmbExplorerCompanion.WPF.Services;
@@ -39,13 +37,11 @@ public class HistoricalTeamsViewModel : ViewModelBase
             return;
         }
 
-        var seasonMapper = new SeasonMapping();
-
         var allSeasons = new Season
         {
             Id = default
         };
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
         Seasons.Add(allSeasons);
         SelectedSeason = allSeasons;
 
@@ -83,9 +79,8 @@ public class HistoricalTeamsViewModel : ViewModelBase
             return;
         }
 
-        var mapper = new HistoricalTeamMapping();
         HistoricalTeams.AddRange(historicalTeams
-            .Select(x => mapper.FromDto(x))
+            .Select(x => x.FromCore())
             .OrderByDescending(x => x.NumRegularSeasonWins));
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);

@@ -8,6 +8,6 @@ public class PlayerGameStatOverviewDto : GameStatDto
     public string TeamNames { get; set; } = string.Empty;
     public int Salary { get; set; }
     public string? SecondaryPosition { get; set; } = string.Empty;
-    public string Traits { get; set; } = string.Empty;
-    public string PitchTypes { get; set; } = string.Empty;
+    public List<int> TraitIds { get; set; } = new();
+    public List<int> PitchTypeIds { get; set; } = new();
 }

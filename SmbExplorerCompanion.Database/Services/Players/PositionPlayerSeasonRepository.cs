@@ -4,6 +4,7 @@ using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services.Players;
@@ -80,19 +81,6 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 .ThenInclude(x => x.Awards)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.Chemistry)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.BatHandedness)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.ThrowHandedness)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.PrimaryPosition)
-                .Include(x => x.PlayerSeason)
-                .ThenInclude(x => x.Player)
-                .ThenInclude(x => x.PitcherRole)
                 .Include(x => x.PlayerSeason)
                 .ThenInclude(x => x.Season)
                 .Include(x => x.PlayerSeason)
@@ -117,16 +105,16 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                             .OrderBy(y => y.Order)
                             .Where(y => y.SeasonTeamHistory != null)
                             .Select(y => y.SeasonTeamHistory!.TeamNameHistory.Name)),
-                    IsPitcher = x.PlayerSeason.Player.PitcherRole != null,
+                    IsPitcher = x.PlayerSeason.Player.PitcherRoleId != null,
                     TotalSalary = x.PlayerSeason.PlayerTeamHistory
                         .Single(y => y.Order == 1).SeasonTeamHistoryId == null
                         ? 0
                         : x.PlayerSeason.Salary,
-                    BatHandedness = x.PlayerSeason.Player.BatHandedness.Name,
-                    ThrowHandedness = x.PlayerSeason.Player.ThrowHandedness.Name,
-                    PrimaryPosition = x.PlayerSeason.Player.PrimaryPosition.Name,
-                    PitcherRole = x.PlayerSeason.Player.PitcherRole != null ? x.PlayerSeason.Player.PitcherRole.Name : null,
-                    Chemistry = x.PlayerSeason.Player.Chemistry!.Name,
+                    BatHandednessId = x.PlayerSeason.Player.BatHandednessId,
+                    ThrowHandednessId = x.PlayerSeason.Player.ThrowHandednessId,
+                    PrimaryPositionId = x.PlayerSeason.Player.PrimaryPositionId,
+                    PitcherRoleId = x.PlayerSeason.Player.PitcherRoleId,
+                    ChemistryId = x.PlayerSeason.Player.ChemistryId,
                     SeasonId = x.PlayerSeason.SeasonId,
                     SeasonNumber = x.PlayerSeason.Season.Number,
                     AtBats = x.AtBats,
@@ -151,15 +139,9 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     Strikeouts = x.Strikeouts,
                     WeightedOpsPlusOrEraMinus = ((x.OpsPlus ?? 0) - 95) * x.PlateAppearances * BattingScalingFactor +
                                                 (x.StolenBases - x.CaughtStealing) * BaserunningScalingFactor,
-                    Awards = x.PlayerSeason.Awards
+                    AwardIds = x.PlayerSeason.Awards
                         .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
-                        .Select(y => new PlayerAwardBaseDto
-                        {
-                            Id = y.Id,
-                            Name = y.Name,
-                            Importance = y.Importance,
-                            OmitFromGroupings = y.OmitFromGroupings
-                        })
+                        .Select(y => y.Id)
                         .ToList(),
                     IsChampion = x.PlayerSeason.ChampionshipWinner != null,
                     Age = x.PlayerSeason.Age,
@@ -168,8 +150,10 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     PlateAppearances = x.PlateAppearances,
                     CaughtStealing = x.CaughtStealing,
                     TotalBases = x.TotalBases,
-                    SecondaryPosition = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPosition.Name,
-                    Traits = string.Join(", ", x.PlayerSeason.Traits.OrderBy(y => y.Id).Select(y => y.Name))
+                    SecondaryPositionId = x.PlayerSeason.SecondaryPosition == null ? null : x.PlayerSeason.SecondaryPositionId,
+                    TraitIds = x.PlayerSeason.Traits
+                        .Select(y => y.Id)
+                        .ToList()
                 })
                 .OrderBy(orderBy)
                 .Skip(((pageNumber ?? 1) - 1) * limitValue)
@@ -177,16 +161,12 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 .ToListAsync(cancellationToken: cancellationToken);
 
             if (includeChampionAwards)
+            {
                 foreach (var player in playerBattingDtos.Where(player => player.IsChampion))
                 {
-                    player.Awards.Add(new PlayerAwardBaseDto
-                    {
-                        Id = 0,
-                        Name = "Champion",
-                        Importance = 10,
-                        OmitFromGroupings = false
-                    });
+                    player.AwardIds.Add((int)VirtualAward.Champion);
                 }
+            }
 
             return playerBattingDtos;
         }
