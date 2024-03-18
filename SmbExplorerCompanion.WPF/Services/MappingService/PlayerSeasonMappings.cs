@@ -77,6 +77,17 @@ public partial class MappingService
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
             : null;
 
+        var pitchTypes = x.PitchTypeIds
+            .Select(async y => await _lookupSearchService.GetPitchTypeById(y))
+            .Select(y => y.Result)
+            .OrderBy(y => y.Name)
+            .Select(y => y.Name);
+        
+        var awards = x.AwardIds
+            .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+            .Select(y => y.Result)
+            .ToObservableCollection();
+
         return new PlayerSeasonPitching
         {
             PlayerId = x.PlayerId,
@@ -117,16 +128,8 @@ public partial class MappingService
             HomeRunsPerNine = x.HomeRunsPerNine,
             StrikeoutsPerNine = x.StrikeoutsPerNine,
             StrikeoutToWalkRatio = x.StrikeoutToWalkRatio,
-            PitchTypes = x.PitchTypeIds
-                .Select(async y => await _lookupSearchService.GetPitchTypeById(y))
-                .Select(y => y.Result)
-                .OrderBy(y => y.Name)
-                .Select(y => y.Name)
-                .Aggregate((current, next) => $"{current}, {next}"),
-            Awards = x.AwardIds
-                .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
-                .Select(y => y.Result)
-                .ToObservableCollection(),
+            PitchTypes = string.Join(", ", pitchTypes),
+            Awards = awards,
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
     }

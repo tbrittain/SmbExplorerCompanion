@@ -4,8 +4,8 @@ public record struct SeasonRange
 {
     public SeasonRange(int startSeasonId, int endSeasonId)
     {
-        if (startSeasonId >= endSeasonId)
-            throw new InvalidOperationException("Start cannot be equal or greater than End");
+        if (startSeasonId > endSeasonId)
+            throw new InvalidOperationException("Start cannot be greater than End");
         
         StartSeasonId = startSeasonId;
         EndSeasonId = endSeasonId;

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
@@ -28,6 +29,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         bool onlyHallOfFamers = false,
         int? pitcherRoleId = null,
         bool onlyActivePlayers = false,
+        SeasonRange? seasons = null,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -63,9 +65,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         }
 
         var mostRecentSeason = await _dbContext.Seasons
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.Team)
-            .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+            .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
 
@@ -77,6 +77,9 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             .Where(x => !onlyActivePlayers || x.PlayerSeasons
                 .OrderByDescending(y => y.Id)
                 .First().SeasonId == mostRecentSeason.Id)
+            .Where(x => seasons == null || (
+                x.PlayerSeasons.All(y => y.SeasonId >= seasons.Value.StartSeasonId && 
+                                         y.SeasonId <= seasons.Value.EndSeasonId)))
             .Where(x => pitcherRoleId == null || x.PitcherRoleId == pitcherRoleId);
 
         var playerPitchingDtos = await GetCareerPitchingDtos(queryable)

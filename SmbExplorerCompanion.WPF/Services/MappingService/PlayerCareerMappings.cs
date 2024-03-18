@@ -176,6 +176,31 @@ public partial class MappingService
             .Select(async y => await FromCore(y))
             .Select(y => y.Result)
             .ToObservableCollection();
+        
+        var awards = x.AwardIds
+            .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
+            .Select(y => y.Result)
+            .ToList();
+        
+        var playerSeasonBatting = x.PlayerSeasonBatting
+            .Select(async y => await FromCore(y))
+            .Select(y => y.Result)
+            .ToObservableCollection();
+        
+        var playerSeasonPitching = x.PlayerSeasonPitching
+            .Select(async y => await FromCore(y))
+            .Select(y => y.Result)
+            .ToObservableCollection();
+        
+        var playerPlayoffBatting = x.PlayerPlayoffBatting
+            .Select(async y => await FromCore(y))
+            .Select(y => y.Result)
+            .ToObservableCollection();
+        
+        var playerPlayoffPitching = x.PlayerPlayoffPitching
+            .Select(async y => await FromCore(y))
+            .Select(y => y.Result)
+            .ToObservableCollection();
 
         var overview = new PlayerOverview
         {
@@ -199,28 +224,13 @@ public partial class MappingService
             NumChampionships = x.NumChampionships,
             CurrentTeamId = x.CurrentTeamId,
             CurrentTeam = x.CurrentTeam,
-            Awards = x.AwardIds
-                .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
-                .Select(y => y.Result)
-                .ToList(),
+            Awards = awards,
             CareerBatting = careerBatting,
             CareerPitching = careerPitching,
-            PlayerSeasonBatting = x.PlayerSeasonBatting
-                .Select(async y => await FromCore(y))
-                .Select(y => y.Result)
-                .ToObservableCollection(),
-            PlayerSeasonPitching = x.PlayerSeasonPitching
-                .Select(async y => await FromCore(y))
-                .Select(y => y.Result)
-                .ToObservableCollection(),
-            PlayerPlayoffBatting = x.PlayerPlayoffBatting
-                .Select(async y => await FromCore(y))
-                .Select(y => y.Result)
-                .ToObservableCollection(),
-            PlayerPlayoffPitching = x.PlayerPlayoffPitching
-                .Select(async y => await FromCore(y))
-                .Select(y => y.Result)
-                .ToObservableCollection(),
+            PlayerSeasonBatting = playerSeasonBatting,
+            PlayerSeasonPitching = playerSeasonPitching,
+            PlayerPlayoffBatting = playerPlayoffBatting,
+            PlayerPlayoffPitching = playerPlayoffPitching,
             GameStats = gameStats,
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
         };

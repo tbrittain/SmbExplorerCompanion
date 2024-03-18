@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
@@ -28,6 +29,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
         bool onlyHallOfFamers = false,
         int? primaryPositionId = null,
         bool onlyActivePlayers = false,
+        SeasonRange? seasons = null,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -64,22 +66,75 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
         }
 
         var mostRecentSeason = await _dbContext.Seasons
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.Team)
-            .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+            .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
 
-        var queryable = GetCareerBattingIQueryable()
-            .Where(x => x.FranchiseId == franchiseId)
-            .Where(x => playerId == null || x.Id == playerId)
-            .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
-            .Where(x => !onlyActivePlayers || x.PlayerSeasons
-                .OrderByDescending(y => y.Id)
-                .First().SeasonId == mostRecentSeason.Id)
-            .Where(x => primaryPositionId == null || x.PrimaryPositionId == primaryPositionId);
-
-        var playerBattingDtos = await GetCareerBattingDtos(queryable)
+        var playerBattingDtos = await _dbContext.PlayerSeasons
+            .Include(x => x.Player)
+            .Include(x => x.BattingStats)
+            .Where(x => x.Player.FranchiseId == franchiseId)
+            .Where(x => playerId == null || x.PlayerId == playerId)
+            .Where(x => !onlyHallOfFamers || x.Player.IsHallOfFamer)
+            .Where(x => !onlyActivePlayers || x.SeasonId == mostRecentSeason.Id)
+            .Where(x => primaryPositionId == null || x.Player.PrimaryPositionId == primaryPositionId)
+            .Where(x => seasons == null || (
+                    x.SeasonId >= seasons.Value.StartSeasonId &&
+                    x.SeasonId <= seasons.Value.EndSeasonId
+                )
+            )
+            .GroupBy(x => x.PlayerId)
+            .Select(x => new PlayerCareerBattingDto
+            {
+                PlayerId = x.Key,
+                StartSeasonNumber = x.Min(y => y.Season.Number),
+                EndSeasonNumber = x.Max(y => y.Season.Number),
+                Age = x.Max(y => y.Age),
+                NumSeasons = x.Count(),
+                AtBats = x.Sum(y => y.BattingStats.Sum(z => z.AtBats)),
+                Hits = x.Sum(y => y.BattingStats.Sum(z => z.Hits)),
+                HomeRuns = x.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)),
+                // Calculate rate stats in the application layer, as we will not be sorting by them
+                Runs = x.Sum(y => y.BattingStats.Sum(z => z.Runs)),
+                RunsBattedIn = x.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)),
+                StolenBases = x.Sum(y => y.BattingStats.Sum(z => z.StolenBases)),
+                WeightedOpsPlusOrEraMinus = x
+                    .SelectMany(y => y.BattingStats)
+                    .Sum(y => ((y.OpsPlus ?? 0) - 95) * y.PlateAppearances * BattingScalingFactor +
+                              (y.StolenBases - y.CaughtStealing) * BaserunningScalingFactor),
+                OpsPlus = x
+                    .SelectMany(y => y.BattingStats)
+                    .Sum(y => y.PlateAppearances) == 0
+                    ? 0
+                    : x
+                          .SelectMany(y => y.BattingStats)
+                          .Sum(y => (y.OpsPlus ?? 0) * y.PlateAppearances)
+                      /
+                      x
+                          .SelectMany(y => y.BattingStats)
+                          .Sum(y => y.PlateAppearances),
+                Singles = x.Sum(y => y.BattingStats.Sum(z => z.Singles)),
+                Doubles = x.Sum(y => y.BattingStats.Sum(z => z.Doubles)),
+                Triples = x.Sum(y => y.BattingStats.Sum(z => z.Triples)),
+                Walks = x.Sum(y => y.BattingStats.Sum(z => z.Walks)),
+                Strikeouts = x.Sum(y => y.BattingStats.Sum(z => z.Strikeouts)),
+                GamesPlayed = x.Sum(y => y.BattingStats.Sum(z => z.GamesPlayed)),
+                HitByPitch = x.Sum(y => y.BattingStats.Sum(z => z.HitByPitch)),
+                SacrificeHits = x.Sum(y => y.BattingStats.Sum(z => z.SacrificeHits)),
+                SacrificeFlies = x.Sum(y => y.BattingStats.Sum(z => z.SacrificeFlies)),
+                Errors = x.Sum(y => y.BattingStats.Sum(z => z.Errors)),
+                AwardIds = x
+                    .SelectMany(y => y.Awards)
+                    .Where(y => !y.OmitFromGroupings)
+                    .Select(y => y.Id)
+                    .ToList(),
+                NumChampionships = x.Count(y => y.ChampionshipWinner != null),
+                TotalSalary = x
+                    .Sum(y => y.PlayerTeamHistory
+                        .Single(z => z.Order == 1).SeasonTeamHistoryId == null
+                        ? 0
+                        : y.Salary),
+            })
             .OrderBy(orderBy)
             .Skip(((pageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
@@ -88,6 +143,19 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
         // Calculate the rate stats that we omitted above
         foreach (var battingDto in playerBattingDtos)
         {
+            var player = await _dbContext.Players
+                .Where(x => x.Id == battingDto.PlayerId)
+                .SingleAsync(cancellationToken: cancellationToken);
+            
+            battingDto.PlayerId = player.Id;
+            battingDto.PlayerName = $"{player.FirstName} {player.LastName}";
+            battingDto.IsPitcher = player.PitcherRole != null;
+            battingDto.BatHandednessId = player.BatHandednessId;
+            battingDto.ThrowHandednessId = player.ThrowHandednessId;
+            battingDto.PrimaryPositionId = player.PrimaryPositionId;
+            battingDto.ChemistryId = player.ChemistryId;
+            battingDto.IsHallOfFamer = player.IsHallOfFamer;
+
             battingDto.IsRetired = battingDto.EndSeasonNumber < mostRecentSeason.Number;
             if (battingDto.IsRetired) battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
 
@@ -112,6 +180,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                     battingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
             }
+
             if (battingDto.IsHallOfFamer)
             {
                 battingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
@@ -243,10 +312,6 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             {
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
-                BatHandedness = x.BatHandedness.Name,
-                ThrowHandedness = x.ThrowHandedness.Name,
-                PrimaryPosition = x.PrimaryPosition.Name,
-                Chemistry = x.Chemistry!.Name,
                 AtBats = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.AtBats)),
                 Hits = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)),
                 HomeRuns = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)),
@@ -301,16 +366,12 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
     {
         return _dbContext.Players
             .Include(x => x.PlayerSeasons)
-            .ThenInclude(x => x.Season)
-            .Include(x => x.PlayerSeasons)
-            .ThenInclude(x => x.BattingStats)
-            .Include(x => x.PlayerSeasons)
-            .ThenInclude(x => x.Awards)
-            .Include(x => x.PlayerSeasons)
-            .ThenInclude(x => x.ChampionshipWinner);
+            .ThenInclude(x => x.BattingStats);
     }
 
-    private static IQueryable<PlayerCareerBattingDto> GetCareerBattingDtos(IQueryable<Player> players, bool omitRunnerUps = true)
+    private static IQueryable<PlayerCareerBattingDto> GetCareerBattingDtos(
+        IQueryable<Player> players,
+        bool omitRunnerUpAwards = true)
     {
         return players
             .Select(x => new PlayerCareerBattingDto
@@ -365,7 +426,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                 Errors = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Errors)),
                 AwardIds = x.PlayerSeasons
                     .SelectMany(y => y.Awards)
-                    .Where(y => !omitRunnerUps || !y.OmitFromGroupings)
+                    .Where(y => !omitRunnerUpAwards || !y.OmitFromGroupings)
                     .Select(y => y.Id)
                     .ToList(),
                 IsHallOfFamer = x.IsHallOfFamer,
