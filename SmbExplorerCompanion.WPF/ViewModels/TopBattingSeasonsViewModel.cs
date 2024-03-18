@@ -95,12 +95,13 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
             SetField(ref _startSeason, value);
             OnPropertyChanged(nameof(CanSelectOnlyRookies));
-            
+    
             if (value is not null)
             {
                 var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
                 SelectableEndSeasons = new ObservableCollection<Season>(endSeasons);
-                EndSeason = endSeasons.LastOrDefault();
+                if (EndSeason is null || EndSeason.Id < value.Id)
+                    EndSeason = endSeasons.LastOrDefault();
             }
             else
             {
@@ -113,6 +114,13 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     {
         get => _selectableEndSeasons;
         private set => SetField(ref _selectableEndSeasons, value);
+    }
+
+    [RelayCommand]
+    private void ClearSeasons()
+    {
+        StartSeason = Seasons.OrderBy(x => x.Id).Last();
+        EndSeason = Seasons.OrderBy(x => x.Id).Last();
     }
 
     public Season? EndSeason

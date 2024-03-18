@@ -31,6 +31,10 @@
                 ItemsSource="{Binding SelectableEndSeasons}"
                 SelectedItem="{Binding EndSeason}"
                 DisplayMemberPath="DisplaySeasonNumber" />
+            
+            <Button
+                Command="{Binding ClearSeasonsCommand}"
+                Content="Clear Seasons" />
 
             <ComboBox
                 Margin="2"
