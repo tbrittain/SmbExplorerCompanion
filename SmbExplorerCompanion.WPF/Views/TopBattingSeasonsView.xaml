@@ -22,7 +22,7 @@
                 ItemsSource="{Binding Seasons}"
                 SelectedItem="{Binding StartSeason}"
                 DisplayMemberPath="DisplaySeasonNumber" />
-            
+
             <ComboBox
                 DockPanel.Dock="Left"
                 Width="200"
@@ -31,7 +31,7 @@
                 ItemsSource="{Binding SelectableEndSeasons}"
                 SelectedItem="{Binding EndSeason}"
                 DisplayMemberPath="DisplaySeasonNumber" />
-            
+
             <Button
                 Command="{Binding ClearSeasonsCommand}"
                 Content="Clear Seasons" />
@@ -43,7 +43,7 @@
                 materialDesign:HintAssist.Hint="Position"
                 ItemsSource="{Binding Positions}"
                 DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPosition}"/>
+                SelectedItem="{Binding SelectedPosition}" />
 
             <StackPanel
                 DockPanel.Dock="Right"

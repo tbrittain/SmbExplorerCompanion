@@ -26,10 +26,12 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private bool _isPlayoffs;
     private int _pageNumber = 1;
     private PlayerSeasonBase? _selectedPlayer;
-    private Season? _selectedSeason;
+    private Season? _startSeason;
     private bool _onlyRookies;
     private PitcherRole? _selectedPitcherRole;
     private readonly MappingService _mappingService;
+    private ObservableCollection<Season> _selectableEndSeasons;
+    private Season? _endSeason;
 
     public TopPitchingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -43,13 +45,8 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
         var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
-        SelectedSeason = Seasons.OrderByDescending(x => x.Number).First();
+        StartSeason = Seasons.OrderByDescending(x => x.Number).First();
         MinSeasonId = Seasons.OrderBy(x => x.Number).First().Id;
-
-        Seasons.Add(new Season
-        {
-            Id = default
-        });
 
         var pitcherRoles = lookupCache.GetPitcherRoles().Result;
 
@@ -79,9 +76,9 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     private int MinSeasonId { get; }
 
-    public Season? SelectedSeason
+    public Season? StartSeason
     {
-        get => _selectedSeason;
+        get => _startSeason;
         set
         {
             if (value is not null && (value.Id == default || value.Id == MinSeasonId))
@@ -91,8 +88,49 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
                 ShortCircuitOnlyRookiesRefresh = false;
             }
 
-            SetField(ref _selectedSeason, value);
+            SetField(ref _startSeason, value);
+            OnPropertyChanged(nameof(CanSelectOnlyRookies));
+    
+            if (value is not null)
+            {
+                var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
+                SelectableEndSeasons = new ObservableCollection<Season>(endSeasons);
+                if (EndSeason is null || EndSeason.Id < value.Id)
+                    EndSeason = endSeasons.LastOrDefault();
+            }
+            else
+            {
+                EndSeason = null;
+            }
+        }
+    }
 
+    public ObservableCollection<Season> SelectableEndSeasons
+    {
+        get => _selectableEndSeasons;
+        private set => SetField(ref _selectableEndSeasons, value);
+    }
+
+    [RelayCommand]
+    private void ClearSeasons()
+    {
+        StartSeason = Seasons.OrderBy(x => x.Id).Last();
+        EndSeason = Seasons.OrderBy(x => x.Id).Last();
+    }
+
+    public Season? EndSeason
+    {
+        get => _endSeason;
+        set
+        {
+            if (value is not null && value.Id != StartSeason?.Id)
+            {
+                ShortCircuitOnlyRookiesRefresh = true;
+                OnlyRookies = false;
+                ShortCircuitOnlyRookiesRefresh = false;
+            }
+
+            SetField(ref _endSeason, value);
             OnPropertyChanged(nameof(CanSelectOnlyRookies));
         }
     }
@@ -120,9 +158,9 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     {
         get
         {
-            if (SelectedSeason is null) return false;
-            if (SelectedSeason.Id == default) return false;
-            if (SelectedSeason.Id == MinSeasonId) return false;
+            if (StartSeason is null) return false;
+            if (StartSeason.Id == default) return false;
+            if (StartSeason.Id == MinSeasonId) return false;
 
             return true;
         }
@@ -158,7 +196,8 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         {
             case nameof(OnlyRookies):
             case nameof(IsPlayoffs):
-            case nameof(SelectedSeason):
+            case nameof(StartSeason):
+            case nameof(EndSeason):
             case nameof(SelectedPitcherRole):
             {
                 ShortCircuitPageNumberRefresh = true;
@@ -198,8 +237,16 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     public async Task GetTopPitchingSeason()
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+        var seasonRange = (StartSeason, EndSeason) switch
+        {
+            (null, null) => new SeasonRange(MinSeasonId),
+            (not null, null) => new SeasonRange(StartSeason.Id),
+            (null, not null) => new SeasonRange(MinSeasonId, EndSeason.Id),
+            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id),
+        };
+
         var topPitchers = await _mediator.Send(new GetTopPitchingSeasonRequest(
-            seasons: SelectedSeason!.Id == default ? null : new SeasonRange(SelectedSeason!.Id),
+            seasons: seasonRange,
             isPlayoffs: IsPlayoffs,
             pageNumber: PageNumber,
             orderBy: SortColumn,
