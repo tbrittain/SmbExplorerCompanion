@@ -140,16 +140,21 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Take(limitValue)
             .ToListAsync(cancellationToken: cancellationToken);
 
+        var playerIds = playerBattingDtos
+            .Select(x => x.PlayerId)
+            .Distinct()
+            .ToList();
+        var players = await _dbContext.Players
+            .Where(x => playerIds.Contains(x.Id))
+            .ToListAsync(cancellationToken: cancellationToken);
+
         // Calculate the rate stats that we omitted above
         foreach (var battingDto in playerBattingDtos)
         {
-            var player = await _dbContext.Players
-                .Where(x => x.Id == battingDto.PlayerId)
-                .SingleAsync(cancellationToken: cancellationToken);
-            
-            battingDto.PlayerId = player.Id;
+            var player = players.Single(x => x.Id == battingDto.PlayerId);
+
             battingDto.PlayerName = $"{player.FirstName} {player.LastName}";
-            battingDto.IsPitcher = player.PitcherRole != null;
+            battingDto.IsPitcher = player.PitcherRoleId != null;
             battingDto.BatHandednessId = player.BatHandednessId;
             battingDto.ThrowHandednessId = player.ThrowHandednessId;
             battingDto.PrimaryPositionId = player.PrimaryPositionId;

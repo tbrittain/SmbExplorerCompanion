@@ -76,6 +76,7 @@ public class GetTopPitchingCareersRequest : IRequest<List<PlayerCareerPitchingDt
                 descending: request.Descending,
                 onlyHallOfFamers: request.OnlyHallOfFamers,
                 pitcherRoleId: request.PitcherRoleId,
+                seasons: request.SeasonRange,
                 cancellationToken: cancellationToken);
         }
     }

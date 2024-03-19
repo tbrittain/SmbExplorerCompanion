@@ -146,7 +146,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ClearSeasonRange()
+    private void ClearSeasons()
     {
         StartSeason = null;
         EndSeason = null;
@@ -195,7 +195,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     public ObservableCollection<Season> SelectableEndSeasons
     {
         get => _selectableEndSeasons;
-        set => SetField(ref _selectableEndSeasons, value);
+        private set => SetField(ref _selectableEndSeasons, value);
     }
 
     public Season? StartSeason
