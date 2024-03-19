@@ -163,6 +163,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
 
             pitchingDto.PlayerName = $"{player.FirstName} {player.LastName}";
             pitchingDto.IsPitcher = player.PitcherRoleId != null;
+            pitchingDto.PitcherRoleId = player.PitcherRoleId;
             pitchingDto.BatHandednessId = player.BatHandednessId;
             pitchingDto.ThrowHandednessId = player.ThrowHandednessId;
             pitchingDto.PrimaryPositionId = player.PrimaryPositionId;

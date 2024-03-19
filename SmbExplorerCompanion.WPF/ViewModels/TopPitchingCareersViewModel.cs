@@ -42,8 +42,6 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         _navigationService = navigationService;
         _mappingService = mappingService;
 
-        PropertyChanged += OnPropertyChanged;
-
         var pitcherRoles = lookupCache.GetPitcherRoles().Result;
         var allPitcherRole = new PitcherRole
         {
@@ -53,15 +51,16 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         PitcherRoles.Add(allPitcherRole);
         PitcherRoles.AddRange(pitcherRoles);
         SelectedPitcherRole = allPitcherRole;
-        
+
         var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
         Seasons.AddRange(seasons.Select(s => s.FromCore()));
 
         GetTopPitchingCareers().Wait();
+        PropertyChanged += OnPropertyChanged;
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
-    
+
     public ObservableCollection<Season> Seasons { get; } = new();
 
     public ObservableCollection<Season> SelectableEndSeasons
@@ -76,7 +75,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         set
         {
             SetField(ref _startSeason, value);
-            
+
             if (value is not null)
             {
                 var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
@@ -108,7 +107,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             DecrementPageCommand.NotifyCanExecuteChanged();
         }
     }
-    
+
     [RelayCommand]
     private void ClearSeasons()
     {

@@ -103,7 +103,7 @@
                 <DataGridTextColumn
                     CanUserSort="False"
                     Header="Pitcher Role"
-                    Binding="{Binding PitcherRole}" />
+                    Binding="{Binding DisplayPrimaryPosition}" />
                 <DataGridTemplateColumn
                     CanUserSort="True"
                     Header="Career Earnings"
