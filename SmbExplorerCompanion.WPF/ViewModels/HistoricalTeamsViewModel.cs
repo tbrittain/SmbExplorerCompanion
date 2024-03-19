@@ -64,7 +64,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var historicalTeams =
-            await _mediator.Send(new GetHistoricalTeamsRequest(SelectedSeason!.Id == default ? null : SelectedSeason!.Id));
+            await _mediator.Send(new GetHistoricalTeamsRequest());
 
         HistoricalTeams.AddRange(historicalTeams
             .Select(x => x.FromCore())

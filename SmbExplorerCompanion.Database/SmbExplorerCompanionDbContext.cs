@@ -1139,6 +1139,7 @@ public class SmbExplorerCompanionDbContext : DbContext
         if (dbContext.Database.GetPendingMigrations().Any()) dbContext.Database.Migrate();
     }
 
+    // TODO: This should be changed, as the playoff length may change throughout the years
     public async Task<int?> GetMaxPlayoffSeriesAsync(int franchiseId, CancellationToken cancellationToken = default)
     {
         var playoffSchedulesQueryable = TeamPlayoffSchedules
