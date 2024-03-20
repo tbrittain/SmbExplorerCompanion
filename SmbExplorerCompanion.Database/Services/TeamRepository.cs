@@ -57,7 +57,8 @@ public class TeamRepository : ITeamRepository
             .Include(x => x.Team)
             .Include(x => x.Division)
             .ThenInclude(x => x.Conference)
-            .Where(x => x.Team.FranchiseId == franchiseId);
+            .Where(x => x.Team.FranchiseId == franchiseId)
+            .Where(x => x.SeasonId >= seasonRange.StartSeasonId && x.SeasonId <= seasonRange.EndSeasonId);
 
         var maxPlayoffSeries = await _dbContext.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
 
@@ -72,7 +73,7 @@ public class TeamRepository : ITeamRepository
 
             previousSeasonId = previousSeason?.Id;
         }
-        
+
         var teams = await teamsQueryable
             .Include(x => x.TeamNameHistory)
             .Include(x => x.PlayerTeamHistory)
