@@ -135,6 +135,7 @@ public class TeamRepository : ITeamRepository
                 .ThenInclude(x => x.PlayerSeason)
                 .ThenInclude(x => x.PitchingStats)
                 .Where(x => x.TeamId == team.TeamId)
+                .Where(x => x.SeasonId >= seasonRange.StartSeasonId && x.SeasonId <= seasonRange.EndSeasonId)
                 .SelectMany(y => y.PlayerTeamHistory)
                 .ToListAsync(cancellationToken: cancellationToken);
 
