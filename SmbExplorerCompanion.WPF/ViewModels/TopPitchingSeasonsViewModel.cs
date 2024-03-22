@@ -236,6 +236,9 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
     public async Task GetTopPitchingSeason()
     {
+        if (StartSeason is not null && EndSeason is not null && StartSeason.Id > EndSeason.Id)
+            return;
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         var seasonRange = (StartSeason, EndSeason) switch
         {
