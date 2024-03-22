@@ -27,6 +27,7 @@ public static class TeamOverviewExtensions
     {
         return new TeamOverview
         {
+            CurrentTeamName = x.CurrentTeamName,
             NumSeasons = x.NumSeasons,
             NumWins = x.NumWins,
             NumLosses = x.NumLosses,
