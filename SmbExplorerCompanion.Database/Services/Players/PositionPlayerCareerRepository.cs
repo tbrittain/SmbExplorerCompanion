@@ -69,6 +69,17 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
+        
+        List<int> activePlayerIds = new();
+        if (onlyActivePlayers)
+        {
+            activePlayerIds = await _dbContext.Players
+                .Include(x => x.PlayerSeasons)
+                .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => x.PlayerSeasons.Any(y => y.SeasonId == mostRecentSeason.Id))
+                .Select(x => x.Id)
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
 
         var playerBattingDtos = await _dbContext.PlayerSeasons
             .Include(x => x.Player)
@@ -76,7 +87,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Where(x => x.Player.FranchiseId == franchiseId)
             .Where(x => playerId == null || x.PlayerId == playerId)
             .Where(x => !onlyHallOfFamers || x.Player.IsHallOfFamer)
-            .Where(x => !onlyActivePlayers || x.SeasonId == mostRecentSeason.Id)
+            .Where(x => !onlyActivePlayers || activePlayerIds.Contains(x.PlayerId))
             .Where(x => primaryPositionId == null || x.Player.PrimaryPositionId == primaryPositionId)
             .Where(x => seasons == null || (
                     x.SeasonId >= seasons.Value.StartSeasonId &&
