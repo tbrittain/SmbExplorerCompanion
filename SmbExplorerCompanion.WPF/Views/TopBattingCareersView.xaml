@@ -36,6 +36,28 @@
                     IsChecked="{Binding OnlyHallOfFamers}" />
             </StackPanel>
             <ComboBox
+                DockPanel.Dock="Left"
+                Width="200"
+                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                materialDesign:HintAssist.Hint="Start Season"
+                ItemsSource="{Binding Seasons}"
+                SelectedItem="{Binding StartSeason}"
+                DisplayMemberPath="DisplaySeasonNumber" />
+            
+            <ComboBox
+                DockPanel.Dock="Left"
+                Width="200"
+                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                materialDesign:HintAssist.Hint="End Season"
+                ItemsSource="{Binding SelectableEndSeasons}"
+                SelectedItem="{Binding EndSeason}"
+                DisplayMemberPath="DisplaySeasonNumber" />
+
+            <Button
+                Command="{Binding ClearSeasonsCommand}"
+                Content="Clear Seasons" />
+
+            <ComboBox
                 Margin="2"
                 Width="200"
                 Style="{DynamicResource MaterialDesignFloatingHintComboBox}"

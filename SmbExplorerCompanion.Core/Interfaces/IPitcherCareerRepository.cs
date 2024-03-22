@@ -1,4 +1,5 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
@@ -13,6 +14,7 @@ public interface IPitcherCareerRepository
         bool onlyHallOfFamers = false,
         int? pitcherRoleId = null,
         bool onlyActivePlayers = false,
+        SeasonRange? seasons = null,
         CancellationToken cancellationToken = default);
     
     public Task<List<PlayerCareerPitchingDto>> GetHallOfFameCandidates(int seasonId,

@@ -2,18 +2,22 @@
 using MediatR;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopBattingCareersRequest : IRequest<List<PlayerCareerBattingDto>>
 {
-    public GetTopBattingCareersRequest(int? pageNumber = null,
+    public GetTopBattingCareersRequest(
+        SeasonRange? seasonRange = null,
+        int? pageNumber = null,
         int? limit = null,
         string? orderBy = null,
         bool descending = true,
         bool onlyHallOfFamers = false,
         int? primaryPositionId = null)
     {
+        SeasonRange = seasonRange;
         PageNumber = pageNumber;
         Limit = limit;
         OrderBy = orderBy;
@@ -28,6 +32,7 @@ public class GetTopBattingCareersRequest : IRequest<List<PlayerCareerBattingDto>
     private bool Descending { get; }
     private bool OnlyHallOfFamers { get; }
     private int? PrimaryPositionId { get; }
+    private SeasonRange? SeasonRange { get; }
 
     private static ImmutableArray<string> ValidOrderByProperties { get; } = ImmutableArray.Create(
         nameof(PlayerCareerBattingDto.TotalSalary),
@@ -73,6 +78,7 @@ public class GetTopBattingCareersRequest : IRequest<List<PlayerCareerBattingDto>
                 descending: request.Descending,
                 onlyHallOfFamers: request.OnlyHallOfFamers,
                 primaryPositionId: request.PrimaryPositionId,
+                seasons: request.SeasonRange,
                 cancellationToken: cancellationToken);
         }
     }

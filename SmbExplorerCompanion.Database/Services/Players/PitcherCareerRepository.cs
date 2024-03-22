@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
@@ -28,6 +29,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         bool onlyHallOfFamers = false,
         int? pitcherRoleId = null,
         bool onlyActivePlayers = false,
+        SeasonRange? seasons = null,
         CancellationToken cancellationToken = default)
     {
         if (playerId is not null && pageNumber is not null)
@@ -63,30 +65,121 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         }
 
         var mostRecentSeason = await _dbContext.Seasons
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.Team)
-            .Where(x => x.SeasonTeamHistory.First().Team.FranchiseId == franchiseId)
+            .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
+        
+        List<int> activePlayerIds = new();
+        if (onlyActivePlayers)
+        {
+            activePlayerIds = await _dbContext.Players
+                .Include(x => x.PlayerSeasons)
+                .Where(x => x.FranchiseId == franchiseId)
+                .Where(x => x.PlayerSeasons.Any(y => y.SeasonId == mostRecentSeason.Id))
+                .Select(x => x.Id)
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
 
-        var queryable = GetCareerPitchingIQueryable()
-            .Where(x => x.FranchiseId == franchiseId)
-            .Where(x => x.PitcherRole != null)
-            .Where(x => playerId == null || x.Id == playerId)
-            .Where(x => !onlyHallOfFamers || x.IsHallOfFamer)
-            .Where(x => !onlyActivePlayers || x.PlayerSeasons
-                .OrderByDescending(y => y.Id)
-                .First().SeasonId == mostRecentSeason.Id)
-            .Where(x => pitcherRoleId == null || x.PitcherRoleId == pitcherRoleId);
-
-        var playerPitchingDtos = await GetCareerPitchingDtos(queryable)
+        var playerPitchingDtos = await _dbContext.PlayerSeasons
+            .Include(x => x.Player)
+            .Include(x => x.PitchingStats)
+            .Where(x => x.Player.FranchiseId == franchiseId)
+            .Where(x => x.Player.PitcherRoleId != null)
+            .Where(x => playerId == null || x.PlayerId == playerId)
+            .Where(x => !onlyHallOfFamers || x.Player.IsHallOfFamer)
+            .Where(x => !onlyActivePlayers || activePlayerIds.Contains(x.PlayerId))
+            .Where(x => seasons == null || (
+                    x.SeasonId >= seasons.Value.StartSeasonId &&
+                    x.SeasonId <= seasons.Value.EndSeasonId
+                )
+            )
+            .Where(x => pitcherRoleId == null || x.Player.PitcherRoleId == pitcherRoleId)
+            .GroupBy(x => x.PlayerId)
+            .Select(x => new PlayerCareerPitchingDto
+            {
+                PlayerId = x.Key,
+                StartSeasonNumber = x.Min(y => y.Season.Number),
+                EndSeasonNumber = x.Max(y => y.Season.Number),
+                Age = x.Max(y => y.Age),
+                NumSeasons = x.Count(),
+                Wins = x.Sum(y => y.PitchingStats.Sum(z => z.Wins)),
+                Losses = x.Sum(y => y.PitchingStats.Sum(z => z.Losses)),
+                GamesStarted = x.Sum(y => y.PitchingStats.Sum(z => z.GamesStarted)),
+                Saves = x.Sum(y => y.PitchingStats.Sum(z => z.Saves)),
+                InningsPitched = x.Sum(y => y.PitchingStats.Sum(z => z.InningsPitched ?? 0)),
+                Strikeouts = x.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)),
+                CompleteGames = x.Sum(y => y.PitchingStats.Sum(z => z.CompleteGames)),
+                Shutouts = x.Sum(y => y.PitchingStats.Sum(z => z.Shutouts)),
+                Walks = x.Sum(y => y.PitchingStats.Sum(z => z.Walks)),
+                Hits = x.Sum(y => y.PitchingStats.Sum(z => z.Hits)),
+                HomeRuns = x.Sum(y => y.PitchingStats.Sum(z => z.HomeRuns)),
+                EarnedRuns = x.Sum(y => y.PitchingStats.Sum(z => z.EarnedRuns)),
+                TotalPitches = x.Sum(y => y.PitchingStats.Sum(z => z.TotalPitches)),
+                HitByPitch = x.Sum(y => y.PitchingStats.Sum(z => z.HitByPitch)),
+                WeightedOpsPlusOrEraMinus = x
+                    .SelectMany(y => y.PitchingStats)
+                    .Sum(y => (((y.EraMinus ?? 0) + (y.FipMinus ?? 0)) / 2 - 95) * (y.InningsPitched ?? 0) * PitchingScalingFactor),
+                EraMinus =
+                    x
+                        .SelectMany(y => y.PitchingStats)
+                        .Sum(y => (y.InningsPitched ?? 0)) > 0
+                        ? (x
+                               .SelectMany(y => y.PitchingStats)
+                               .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
+                           /
+                           x
+                               .SelectMany(y => y.PitchingStats)
+                               .Sum(y => (y.InningsPitched ?? 0)))
+                        : 0,
+                FipMinus =
+                    x
+                        .SelectMany(y => y.PitchingStats)
+                        .Sum(y => (y.InningsPitched ?? 0)) > 0
+                        ? x
+                              .SelectMany(y => y.PitchingStats)
+                              .Sum(y => (y.FipMinus ?? 0) * (y.InningsPitched ?? 0))
+                          /
+                          x
+                              .SelectMany(y => y.PitchingStats)
+                              .Sum(y => (y.InningsPitched ?? 0))
+                        : 0,
+                AwardIds = x
+                    .SelectMany(y => y.Awards)
+                    .Where(y => !y.OmitFromGroupings)
+                    .Select(y => y.Id)
+                    .ToList(),
+                NumChampionships = x.Count(y => y.ChampionshipWinner != null),
+                TotalSalary = x
+                    .Sum(y => y.PlayerTeamHistory
+                        .Single(z => z.Order == 1).SeasonTeamHistoryId == null
+                        ? 0
+                        : y.Salary),
+            })
             .OrderBy(orderBy)
             .Skip(((pageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
             .ToListAsync(cancellationToken: cancellationToken);
 
+        var playerIds = playerPitchingDtos
+            .Select(x => x.PlayerId)
+            .Distinct()
+            .ToList();
+        var players = await _dbContext.Players
+            .Where(x => playerIds.Contains(x.Id))
+            .ToListAsync(cancellationToken: cancellationToken);
+
         foreach (var pitchingDto in playerPitchingDtos)
         {
+            var player = players.Single(x => x.Id == pitchingDto.PlayerId);
+
+            pitchingDto.PlayerName = $"{player.FirstName} {player.LastName}";
+            pitchingDto.IsPitcher = player.PitcherRoleId != null;
+            pitchingDto.PitcherRoleId = player.PitcherRoleId;
+            pitchingDto.BatHandednessId = player.BatHandednessId;
+            pitchingDto.ThrowHandednessId = player.ThrowHandednessId;
+            pitchingDto.PrimaryPositionId = player.PrimaryPositionId;
+            pitchingDto.ChemistryId = player.ChemistryId;
+            pitchingDto.IsHallOfFamer = player.IsHallOfFamer;
             pitchingDto.IsRetired = pitchingDto.EndSeasonNumber < mostRecentSeason.Number;
             {
                 pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
@@ -188,7 +281,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             if (pitchingDto.NumChampionships > 0)
                 foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
                 {
-                    pitchingDto.AwardIds.Add((int)VirtualAward.Champion);
+                    pitchingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
         }
 

@@ -49,105 +49,70 @@ public class TeamRepository : ITeamRepository
         return teams;
     }
 
-    public async Task<IEnumerable<HistoricalTeamDto>> GetHistoricalTeams(int? seasonId,
+    public async Task<IEnumerable<HistoricalTeamDto>> GetHistoricalTeams(SeasonRange seasonRange,
         CancellationToken cancellationToken)
     {
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-        var teamsQueryable = _dbContext.Teams
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.Division)
+        var teamsQueryable = _dbContext.SeasonTeamHistory
+            .Include(x => x.Team)
+            .Include(x => x.Division)
             .ThenInclude(x => x.Conference)
-            .Where(x => x.FranchiseId == franchiseId);
+            .Where(x => x.Team.FranchiseId == franchiseId)
+            .Where(x => x.SeasonId >= seasonRange.StartSeasonId && x.SeasonId <= seasonRange.EndSeasonId);
 
         var maxPlayoffSeries = await _dbContext.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
 
+        var isMultipleSeasons = seasonRange.StartSeasonId != seasonRange.EndSeasonId;
         int? previousSeasonId = null;
-        if (seasonId is not null)
+        if (!isMultipleSeasons)
         {
-            var seasons = await _dbContext.Seasons
+            var previousSeason = await _dbContext.Seasons
                 .Where(x => x.FranchiseId == franchiseId)
-                .ToListAsync(cancellationToken: cancellationToken);
-
-            if (seasons.All(x => x.Id != seasonId))
-                throw new Exception($"Season ID {seasonId} is not valid for franchise ID {franchiseId}");
-
-            var previousSeason = seasons
                 .OrderByDescending(x => x.Number)
-                .FirstOrDefault(x => x.Number < seasonId);
+                .FirstOrDefaultAsync(x => x.Number < seasonRange.StartSeasonId, cancellationToken);
 
             previousSeasonId = previousSeason?.Id;
         }
 
         var teams = await teamsQueryable
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.TeamNameHistory)
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.PlayerTeamHistory)
+            .Include(x => x.TeamNameHistory)
+            .Include(x => x.PlayerTeamHistory)
             .ThenInclude(x => x.PlayerSeason)
             .ThenInclude(x => x.BattingStats)
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.PlayerTeamHistory)
-            .ThenInclude(x => x.PlayerSeason)
-            .ThenInclude(x => x.Player)
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.PlayerTeamHistory)
+            .Include(x => x.PlayerTeamHistory)
             .ThenInclude(x => x.PlayerSeason)
             .ThenInclude(x => x.PitchingStats)
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.HomePlayoffSchedule)
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.AwayPlayoffSchedule)
-            .Include(x => x.SeasonTeamHistory)
-            .ThenInclude(x => x.ChampionshipWinner)
+            .Include(x => x.HomePlayoffSchedule)
+            .Include(x => x.AwayPlayoffSchedule)
+            .Include(x => x.ChampionshipWinner)
+            .GroupBy(x => x.TeamId)
             .Select(x => new
             {
-                x.Id,
-                SeasonTeamId = seasonId == null
+                TeamId = x.Key,
+                SeasonTeamId = isMultipleSeasons
                     ? (int?) null
-                    : x.SeasonTeamHistory
-                        .First(y => y.SeasonId == seasonId).Id,
-                CurrentTeamName = x.SeasonTeamHistory
+                    : x.First().Id,
+                CurrentTeamName = x
                     .OrderByDescending(y => y.SeasonId)
                     .First().TeamNameHistory.Name,
-                NumGames = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.Wins + y.Losses + (y.PlayoffWins ?? 0) + (y.PlayoffLosses ?? 0)),
-                NumRegularSeasonWins = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.Wins),
-                WinDiffFromPrevSeason = seasonId != null && previousSeasonId != null
-                    ? (x.SeasonTeamHistory
-                        .Where(y => y.SeasonId == seasonId)
-                        .Sum(y => y.Wins)) - (x.SeasonTeamHistory
+                NumGames = x.Sum(y => y.Wins + y.Losses + (y.PlayoffWins ?? 0) + (y.PlayoffLosses ?? 0)),
+                NumRegularSeasonWins = x.Sum(y => y.Wins),
+                WinDiffFromPrevSeason = previousSeasonId != null
+                    ? (x
+                        .Where(y => y.SeasonId == seasonRange.EndSeasonId)
+                        .Sum(y => y.Wins)) - (x
                         .Where(y => y.SeasonId == previousSeasonId)
                         .Sum(y => y.Wins))
                     : 0,
-                NumRegularSeasonLosses = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.Losses),
-                NumPlayoffWins = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.PlayoffWins ?? 0),
-                NumPlayoffLosses = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.PlayoffLosses ?? 0),
-                NumDivisionsWon = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Count(y => y.GamesBehind == 0),
-                NumChampionships = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Count(y => y.ChampionshipWinner != null),
-                NumPlayoffAppearances = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Count(y => y.HomePlayoffSchedule.Any() || y.AwayPlayoffSchedule.Any()),
-                NumRunsScored = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.RunsScored + (y.PlayoffRunsScored ?? 0)),
-                NumRunsAllowed = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
-                    .Sum(y => y.RunsAllowed + (y.PlayoffRunsAllowed ?? 0)),
-                NumConferenceTitles = x.SeasonTeamHistory
-                    .Where(y => seasonId == null || y.SeasonId == seasonId)
+                NumRegularSeasonLosses = x.Sum(y => y.Losses),
+                NumPlayoffWins = x.Sum(y => y.PlayoffWins ?? 0),
+                NumPlayoffLosses = x.Sum(y => y.PlayoffLosses ?? 0),
+                NumDivisionsWon = x.Count(y => y.GamesBehind == 0),
+                NumChampionships = x.Count(y => y.ChampionshipWinner != null),
+                NumPlayoffAppearances = x.Count(y => y.HomePlayoffSchedule.Any() || y.AwayPlayoffSchedule.Any()),
+                NumRunsScored = x.Sum(y => y.RunsScored + (y.PlayoffRunsScored ?? 0)),
+                NumRunsAllowed = x.Sum(y => y.RunsAllowed + (y.PlayoffRunsAllowed ?? 0)),
+                NumConferenceTitles = x
                     .Select(seasonTeamHistory => seasonTeamHistory.HomePlayoffSchedule
                         .Where(y => y.SeriesNumber == maxPlayoffSeries)
                         .ToList())
@@ -169,12 +134,12 @@ public class TeamRepository : ITeamRepository
                 .Include(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.PlayerSeason)
                 .ThenInclude(x => x.PitchingStats)
-                .Where(x => x.TeamId == team.Id)
-                .Where(x => seasonId == null || x.SeasonId == seasonId)
+                .Where(x => x.TeamId == team.TeamId)
+                .Where(x => x.SeasonId >= seasonRange.StartSeasonId && x.SeasonId <= seasonRange.EndSeasonId)
                 .SelectMany(y => y.PlayerTeamHistory)
                 .ToListAsync(cancellationToken: cancellationToken);
 
-            playerTeamHistories.Add(team.Id, playerTeamHistory);
+            playerTeamHistories.Add(team.TeamId, playerTeamHistory);
         }
 
         var historicalTeams = teams
@@ -182,7 +147,7 @@ public class TeamRepository : ITeamRepository
             {
                 var team = new HistoricalTeamDto
                 {
-                    TeamId = x.Id,
+                    TeamId = x.TeamId,
                     SeasonTeamId = x.SeasonTeamId,
                     CurrentTeamName = x.CurrentTeamName,
                     NumGames = x.NumGames,
@@ -199,7 +164,7 @@ public class TeamRepository : ITeamRepository
                     NumRunsAllowed = x.NumRunsAllowed,
                 };
 
-                var teamPlayers = playerTeamHistories[x.Id];
+                var teamPlayers = playerTeamHistories[x.TeamId];
 
                 team.NumPlayers = teamPlayers
                     .Select(y => y.PlayerSeason.PlayerId)
@@ -245,7 +210,7 @@ public class TeamRepository : ITeamRepository
 
         var currentSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
-            .Where(x => seasonId == null || x.Id == seasonId)
+            .Where(x => x.Id == seasonRange.EndSeasonId)
             .OrderByDescending(x => x.Number)
             .FirstAsync(cancellationToken: cancellationToken);
 

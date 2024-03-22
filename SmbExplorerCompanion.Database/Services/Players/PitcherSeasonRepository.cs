@@ -162,7 +162,8 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                 StrikeoutsPerNine = x.StrikeoutsPerNine ?? 0,
                 StrikeoutToWalkRatio = x.StrikeoutsPerWalk ?? 0,
                 TraitIds = x.PlayerSeason.Traits.Select(y => y.Id).ToList(),
-                PitchTypeIds = x.PlayerSeason.PitchTypes.Select(y => y.Id).ToList()
+                PitchTypeIds = x.PlayerSeason.PitchTypes.Select(y => y.Id).ToList(),
+                PrimaryPositionId = x.PlayerSeason.Player.PrimaryPositionId
             })
             .OrderBy(orderBy)
             .Skip(((pageNumber ?? 1) - 1) * limitValue)
