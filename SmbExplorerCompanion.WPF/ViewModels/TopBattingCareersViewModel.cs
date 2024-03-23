@@ -32,6 +32,8 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private Season? _startSeason;
     private ObservableCollection<Season> _selectableEndSeasons;
     private Season? _endSeason;
+    private Chemistry? _selectedChemistry;
+    private BatHandedness? _selectedBatHandedness;
 
     public TopBattingCareersViewModel(
         INavigationService navigationService,
@@ -44,22 +46,60 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         _mediator = mediator;
         _mappingService = mappingService;
 
-        PropertyChanged += OnPropertyChanged;
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
 
         var positions = lookupCache.GetPositions().Result;
         var allPosition = new Position
         {
-            Id = 0,
+            Id = default,
             Name = "All"
         };
         Positions.Add(allPosition);
         Positions.AddRange(positions.Where(x => x.IsPrimaryPosition));
         SelectedPosition = allPosition;
-        
-        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
-        Seasons.AddRange(seasons.Select(s => s.FromCore()));
+
+        var chemistryTypes = lookupCache.GetChemistryTypes().Result;
+        var allChemistry = new Chemistry
+        {
+            Id = default,
+            Name = "All"
+        };
+        ChemistryTypes = chemistryTypes
+            .Append(allChemistry)
+            .ToObservableCollection();
+        SelectedChemistry = allChemistry;
+
+        var batHandednessTypes = lookupCache.GetBatHandednessTypes().Result;
+        var allBatHandedness = new BatHandedness
+        {
+            Id = default,
+            Name = "All"
+        };
+        BatHandednessTypes = batHandednessTypes
+            .Append(allBatHandedness)
+            .ToObservableCollection();
+        SelectedBatHandedness = allBatHandedness;
 
         GetTopBattingCareers().Wait();
+
+        PropertyChanged += OnPropertyChanged;
+    }
+
+    public ObservableCollection<Chemistry> ChemistryTypes { get; }
+
+    public Chemistry? SelectedChemistry
+    {
+        get => _selectedChemistry;
+        set => SetField(ref _selectedChemistry, value);
+    }
+
+    public ObservableCollection<BatHandedness> BatHandednessTypes { get; }
+
+    public BatHandedness? SelectedBatHandedness
+    {
+        get => _selectedBatHandedness;
+        set => SetField(ref _selectedBatHandedness, value);
     }
 
     public int PageNumber
@@ -112,6 +152,8 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             case nameof(EndSeason):
             case nameof(SelectedPosition):
             case nameof(OnlyHallOfFamers):
+            case nameof(SelectedBatHandedness):
+            case nameof(SelectedChemistry):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -182,7 +224,9 @@ public partial class TopBattingCareersViewModel : ViewModelBase
                 OrderBy = SortColumn,
                 OnlyHallOfFamers = OnlyHallOfFamers,
                 PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
-                Seasons = seasonRange
+                Seasons = seasonRange,
+                ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
+                BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
             }));
 
         TopBattingCareers.Clear();
@@ -210,7 +254,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         set
         {
             SetField(ref _startSeason, value);
-            
+
             if (value is not null)
             {
                 var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
