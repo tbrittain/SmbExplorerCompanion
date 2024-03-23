@@ -10,6 +10,7 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
@@ -174,13 +175,15 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         };
 
         var topPlayers = await _mediator.Send(new GetTopBattingCareersRequest(
-            pageNumber: PageNumber,
-            limit: ResultsPerPage,
-            orderBy: SortColumn,
-            onlyHallOfFamers: OnlyHallOfFamers,
-            primaryPositionId: SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
-            seasonRange: seasonRange
-        ));
+            new GetBattingCareersFilters
+            {
+                PageNumber = PageNumber,
+                Limit = ResultsPerPage,
+                OrderBy = SortColumn,
+                OnlyHallOfFamers = OnlyHallOfFamers,
+                PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
+                Seasons = seasonRange
+            }));
 
         TopBattingCareers.Clear();
         var topBattingCareers = topPlayers

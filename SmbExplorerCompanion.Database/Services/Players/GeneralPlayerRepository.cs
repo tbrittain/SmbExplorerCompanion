@@ -37,7 +37,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         CancellationToken cancellationToken = default)
     {
         var playerCareerBattingDtos =
-            await _positionPlayerCareerRepository.GetBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
+            await _positionPlayerCareerRepository.GetBattingCareers(
+                new GetBattingCareersFilters
+                {
+                    PlayerId = playerId
+                },
+                cancellationToken: cancellationToken);
 
         var playerCareerPitchingDtos =
             await _pitcherCareerRepository.GetPitchingCareers(
