@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +34,10 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     private readonly MappingService _mappingService;
     private Season? _endSeason;
     private ObservableCollection<Season> _selectableEndSeasons;
+    private Chemistry? _selectedChemistry;
+    private BatHandedness? _selectedBatHandedness;
+    private ObservableCollection<Trait> _selectedTraits;
+    private Position? _selectedSecondaryPosition;
 
     public TopBattingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -52,16 +57,86 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         var positions = lookupCache.GetPositions().Result;
         var allPosition = new Position
         {
-            Id = 0,
+            Id = default,
             Name = "All"
         };
         Positions.Add(allPosition);
         Positions.AddRange(positions.Where(x => x.IsPrimaryPosition));
+
+        SecondaryPositions.Add(allPosition);
+        SecondaryPositions.AddRange(positions);
         SelectedPosition = allPosition;
+        SelectedSecondaryPosition = allPosition;
+
+        var chemistryTypes = lookupCache.GetChemistryTypes().Result;
+        var allChemistry = new Chemistry
+        {
+            Id = default,
+            Name = "All"
+        };
+        ChemistryTypes = chemistryTypes
+            .Prepend(allChemistry)
+            .ToObservableCollection();
+        SelectedChemistry = allChemistry;
+
+        var batHandednessTypes = lookupCache.GetBatHandednessTypes().Result;
+        var allBatHandedness = new BatHandedness
+        {
+            Id = default,
+            Name = "All"
+        };
+        BatHandednessTypes = batHandednessTypes
+            .Prepend(allBatHandedness)
+            .ToObservableCollection();
+        SelectedBatHandedness = allBatHandedness;
+
+        var traits = lookupCache.GetTraits().Result;
+        Traits = traits
+            .Where(x => !x.IsSmb3)
+            .ToObservableCollection();
+        SelectedTraits = new ObservableCollection<Trait>();
 
         GetTopBattingSeason().Wait();
         PropertyChanged += OnPropertyChanged;
+        SelectedTraits.CollectionChanged += SelectedTraitsOnCollectionChanged;
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    private void SelectedTraitsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedTraits)));
+    }
+
+    public ObservableCollection<Chemistry> ChemistryTypes { get; }
+
+    public Chemistry? SelectedChemistry
+    {
+        get => _selectedChemistry;
+        set => SetField(ref _selectedChemistry, value);
+    }
+
+    public ObservableCollection<BatHandedness> BatHandednessTypes { get; }
+
+    public BatHandedness? SelectedBatHandedness
+    {
+        get => _selectedBatHandedness;
+        set => SetField(ref _selectedBatHandedness, value);
+    }
+
+    public ObservableCollection<Trait> Traits { get; }
+
+    public ObservableCollection<Trait> SelectedTraits
+    {
+        get => _selectedTraits;
+        set => SetField(ref _selectedTraits, value);
+    }
+
+    public ObservableCollection<Position> SecondaryPositions { get; } = new();
+
+    public Position? SelectedSecondaryPosition
+    {
+        get => _selectedSecondaryPosition;
+        set => SetField(ref _selectedSecondaryPosition, value);
     }
 
     public PlayerSeasonBase? SelectedPlayer
@@ -96,7 +171,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
             SetField(ref _startSeason, value);
             OnPropertyChanged(nameof(CanSelectOnlyRookies));
-    
+
             if (value is not null)
             {
                 var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
@@ -212,6 +287,10 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             case nameof(StartSeason):
             case nameof(EndSeason):
             case nameof(SelectedPosition):
+            case nameof(SelectedChemistry):
+            case nameof(SelectedBatHandedness):
+            case nameof(SelectedTraits):
+            case nameof(SelectedSecondaryPosition):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -259,7 +338,11 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
                 OnlyRookies = OnlyRookies,
                 Limit = ResultsPerPage,
                 PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
-                Descending = true
+                Descending = true,
+                ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
+                BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
+                TraitIds = SelectedTraits.Select(x => x.Id).ToList(),
+                SecondaryPositionId = SelectedSecondaryPosition?.Id == 0 ? null : SelectedSecondaryPosition?.Id
             }));
 
         TopSeasonBatters.Clear();
