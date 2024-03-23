@@ -12,6 +12,7 @@ using SmbExplorerCompanion.Core.Commands.Actions.Awards;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
@@ -109,10 +110,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var topSeasonPitchers = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
-                seasons: new SeasonRange(SelectedSeason.Id),
-                limit: 10,
-                includeChampionAwards: false,
-                onlyUserAssignableAwards: true));
+                new GetPitchingSeasonsFilters
+                {
+                    Seasons = new SeasonRange(SelectedSeason.Id),
+                    Limit = 10,
+                    IncludeChampionAwards = false,
+                    OnlyUserAssignableAwards = true
+                }));
 
         TopSeasonPitchers.Clear();
         var mappedTopPitchers = topSeasonPitchers
@@ -141,11 +145,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var topSeasonPitchingRookies = await _mediator.Send(
             new GetTopPitchingSeasonRequest(
-                seasons: new SeasonRange(SelectedSeason.Id),
-                limit: 10,
-                onlyRookies: true,
-                includeChampionAwards: false,
-                onlyUserAssignableAwards: true));
+                new GetPitchingSeasonsFilters
+                {
+                    Seasons = new SeasonRange(SelectedSeason.Id),
+                    Limit = 10,
+                    OnlyRookies = true,
+                    IncludeChampionAwards = false,
+                    OnlyUserAssignableAwards = true
+                }));
 
         TopSeasonPitchingRookies.Clear();
         var mappedRookiePitchers = topSeasonPitchingRookies
@@ -189,11 +196,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
             var topPitchersPerTeam = await _mediator.Send(
                 new GetTopPitchingSeasonRequest(
-                    seasons: new SeasonRange(SelectedSeason.Id),
-                    teamId: team.TeamId,
-                    limit: 5,
-                    includeChampionAwards: false,
-                    onlyUserAssignableAwards: true));
+                    new GetPitchingSeasonsFilters
+                    {
+                        Seasons = new SeasonRange(SelectedSeason.Id),
+                        TeamId = team.TeamId,
+                        Limit = 5,
+                        IncludeChampionAwards = false,
+                        OnlyUserAssignableAwards = true
+                    }));
 
             var topPitchersPerTeamObservable = topPitchersPerTeam
                 .Select(async x => await _mappingService.FromCore(x))

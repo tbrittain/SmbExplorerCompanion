@@ -1,22 +1,22 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.ValueObjects.Players;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
+public record GetPitchingSeasonsFilters : PlayerFilters
+{
+    public bool IsPlayoffs { get; init; } = false;
+    public bool OnlyRookies { get; init; } = false;
+    public bool IncludeChampionAwards { get; init; } = true;
+    public bool OnlyUserAssignableAwards { get; init; } = false;
+    public int? PitcherRoleId { get; init; }
+    public int? TeamId { get; init; }
+}
+
 public interface IPitcherSeasonRepository
 {
     public Task<List<PlayerPitchingSeasonDto>> GetPitchingSeasons(
-        SeasonRange? seasons = null,
-        bool isPlayoffs = false,
-        int? pageNumber = null,
-        string? orderBy = null,
-        int? limit = null,
-        bool descending = true,
-        int? teamId = null,
-        bool onlyRookies = false,
-        bool includeChampionAwards = true,
-        bool onlyUserAssignableAwards = false,
-        int? playerId = null,
-        int? pitcherRoleId = null,
+        GetPitchingSeasonsFilters filters,
         CancellationToken cancellationToken = default);
 }

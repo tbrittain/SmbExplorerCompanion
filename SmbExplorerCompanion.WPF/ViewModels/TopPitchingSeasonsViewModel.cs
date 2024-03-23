@@ -10,6 +10,7 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
@@ -249,14 +250,17 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         };
 
         var topPitchers = await _mediator.Send(new GetTopPitchingSeasonRequest(
-            seasons: seasonRange,
-            isPlayoffs: IsPlayoffs,
-            pageNumber: PageNumber,
-            orderBy: SortColumn,
-            limit: ResultsPerPage,
-            onlyRookies: OnlyRookies,
-            pitcherRoleId: SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
-            descending: true));
+            new GetPitchingSeasonsFilters
+            {
+                Seasons = seasonRange,
+                IsPlayoffs = IsPlayoffs,
+                PageNumber = PageNumber,
+                OrderBy = SortColumn,
+                Limit = ResultsPerPage,
+                OnlyRookies = OnlyRookies,
+                PitcherRoleId = SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
+                Descending = true
+            }));
 
         TopSeasonPitchers.Clear();
         var mappedTopSeasonPitchers = topPitchers

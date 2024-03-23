@@ -487,9 +487,12 @@ public class TeamRepository : ITeamRepository
                 teamSeason.AwayPlayoffSchedule);
 
             teamSeasonDetailDto.PlayoffPitching = await _pitcherSeasonRepository.GetPitchingSeasons(
-                seasons: new SeasonRange(seasonId),
-                isPlayoffs: true,
-                teamId: teamId,
+                new GetPitchingSeasonsFilters
+                {
+                    Seasons = new SeasonRange(seasonId),
+                    IsPlayoffs = true,
+                    TeamId = teamId
+                },
                 cancellationToken: cancellationToken);
 
             teamSeasonDetailDto.PlayoffBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
@@ -500,9 +503,12 @@ public class TeamRepository : ITeamRepository
         }
 
         teamSeasonDetailDto.RegularSeasonPitching = await _pitcherSeasonRepository.GetPitchingSeasons(
-            seasons: new SeasonRange(seasonId),
-            isPlayoffs: false,
-            teamId: teamId,
+            new GetPitchingSeasonsFilters
+            {
+                Seasons = new SeasonRange(seasonId),
+                IsPlayoffs = false,
+                TeamId = teamId
+            },
             cancellationToken: cancellationToken);
 
         teamSeasonDetailDto.RegularSeasonBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(

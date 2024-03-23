@@ -54,7 +54,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
 
-        var playerSeasonPitchingDtos = await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+        var playerSeasonPitchingDtos = await _pitcherSeasonRepository.GetPitchingSeasons(
+            new GetPitchingSeasonsFilters
+            {
+                PlayerId = playerId
+            },
+            cancellationToken: cancellationToken);
         playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
@@ -69,7 +74,13 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .ToList();
 
         var playerPlayoffPitchingDtos =
-            await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
+            await _pitcherSeasonRepository.GetPitchingSeasons(
+                new GetPitchingSeasonsFilters
+                {
+                    PlayerId = playerId,
+                    IsPlayoffs = true
+                },
+                cancellationToken: cancellationToken);
 
         playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
