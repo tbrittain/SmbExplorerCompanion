@@ -65,7 +65,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             Name = "All"
         };
         ChemistryTypes = chemistryTypes
-            .Append(allChemistry)
+            .Prepend(allChemistry)
             .ToObservableCollection();
         SelectedChemistry = allChemistry;
 
@@ -76,7 +76,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             Name = "All"
         };
         ThrowHandednessTypes = throwHandednessTypes
-            .Append(allThrowHandedness)
+            .Prepend(allThrowHandedness)
             .ToObservableCollection();
         SelectedThrowHandedness = allThrowHandedness;
 
