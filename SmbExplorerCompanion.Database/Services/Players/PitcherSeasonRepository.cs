@@ -47,9 +47,9 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .MinAsync(x => x.Id, cancellationToken);
 
         var onlyRookies = filters.OnlyRookies;
-        if (filters.Seasons?.StartSeasonId == minSeasonId || 
+        if (filters.Seasons?.StartSeasonId == minSeasonId ||
             filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId)
-        { 
+        {
             onlyRookies = false;
         }
 
@@ -65,6 +65,8 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
                 .Where(x => x.FirstSeasonId == filters.Seasons!.Value.StartSeasonId)
                 .Select(x => x.PlayerId)
                 .ToListAsync(cancellationToken: cancellationToken);
+
+        var hasTraitFilters = filters.TraitIds.Count > 0;
 
         var playerPitchingDtos = await _dbContext.PlayerSeasonPitchingStats
             .Include(x => x.PlayerSeason)
@@ -97,13 +99,17 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .Include(x => x.PlayerSeason)
             .ThenInclude(x => x.ChampionshipWinner)
             .Where(x => filters.Seasons == null || (x.PlayerSeason.SeasonId >= filters.Seasons.Value.StartSeasonId &&
-                                            x.PlayerSeason.SeasonId <= filters.Seasons.Value.EndSeasonId))
+                                                    x.PlayerSeason.SeasonId <= filters.Seasons.Value.EndSeasonId))
             .Where(x => x.IsRegularSeason == !filters.IsPlayoffs)
             .Where(x => filters.PlayerId == null || x.PlayerSeason.PlayerId == filters.PlayerId)
             .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
                                                                   (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == filters.TeamId)))
             .Where(x => filters.PitcherRoleId == null || x.PlayerSeason.Player.PitcherRoleId == filters.PitcherRoleId)
             .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
+            .Where(x => filters.ChemistryId == null || x.PlayerSeason.Player.ChemistryId == filters.ChemistryId)
+            .Where(x => filters.BatHandednessId == null || x.PlayerSeason.Player.BatHandednessId == filters.BatHandednessId)
+            .Where(x => filters.ThrowHandednessId == null || x.PlayerSeason.Player.ThrowHandednessId == filters.ThrowHandednessId)
+            .Where(x => !hasTraitFilters || x.PlayerSeason.Traits.Any(y => filters.TraitIds.Contains(y.Id)))
             .Select(x => new PlayerPitchingSeasonDto
             {
                 PlayerId = x.PlayerSeason.PlayerId,

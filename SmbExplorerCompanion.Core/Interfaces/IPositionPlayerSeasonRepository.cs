@@ -3,7 +3,7 @@ using SmbExplorerCompanion.Core.ValueObjects.Players;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
-public record GetBattingSeasonsFilters : PlayerFilters
+public record GetBattingSeasonsFilters : SeasonPlayerFilters
 {
     public int? PrimaryPositionId { get; init; } = null;
     public bool OnlyRookies { get; init; } = false;
