@@ -86,6 +86,9 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                 )
             )
             .Where(x => filters.PitcherRoleId == null || x.Player.PitcherRoleId == filters.PitcherRoleId)
+            .Where(x => filters.ChemistryId == null || x.Player.ChemistryId == filters.ChemistryId)
+            .Where(x => filters.BatHandednessId == null || x.Player.BatHandednessId == filters.BatHandednessId)
+            .Where(x => filters.ThrowHandednessId == null || x.Player.ThrowHandednessId == filters.ThrowHandednessId)
             .GroupBy(x => x.PlayerId)
             .Select(x => new PlayerCareerPitchingDto
             {
