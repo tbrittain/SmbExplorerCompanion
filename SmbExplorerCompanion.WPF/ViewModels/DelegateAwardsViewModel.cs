@@ -94,10 +94,13 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         var atLeastOneUserAwardAdded = false;
         var topSeasonBatters = await _mediator.Send(
             new GetTopBattingSeasonRequest(
-                seasons: new SeasonRange(SelectedSeason.Id),
-                limit: 10,
-                includeChampionAwards: false,
-                onlyUserAssignableAwards: true));
+                new GetBattingSeasonsFilters
+                {
+                    Seasons = new SeasonRange(SelectedSeason.Id),
+                    Limit = 10,
+                    IncludeChampionAwards = false,
+                    OnlyUserAssignableAwards = true
+            }));
 
         TopSeasonBatters.Clear();
         var mappedTopBatters = topSeasonBatters
@@ -128,11 +131,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
 
         var topSeasonBattingRookies = await _mediator.Send(
             new GetTopBattingSeasonRequest(
-                seasons: new SeasonRange(SelectedSeason.Id),
-                limit: 10,
-                onlyRookies: true,
-                includeChampionAwards: false,
-                onlyUserAssignableAwards: true));
+                new GetBattingSeasonsFilters
+                {
+                    Seasons = new SeasonRange(SelectedSeason.Id),
+                    Limit = 10,
+                    OnlyRookies = true,
+                    IncludeChampionAwards = false,
+                    OnlyUserAssignableAwards = true
+                }));
 
         TopSeasonBattingRookies.Clear();
         var mappedRookieBatters = topSeasonBattingRookies
@@ -168,11 +174,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         {
             var topBattersPerTeam = await _mediator.Send(
                 new GetTopBattingSeasonRequest(
-                    seasons: new SeasonRange(SelectedSeason.Id),
-                    teamId: team.TeamId,
-                    limit: 5,
-                    includeChampionAwards: false,
-                    onlyUserAssignableAwards: true));
+                    new GetBattingSeasonsFilters
+                    {
+                        Seasons = new SeasonRange(SelectedSeason.Id),
+                        TeamId = team.TeamId,
+                        Limit = 5,
+                        IncludeChampionAwards = false,
+                        OnlyUserAssignableAwards = true
+                    }));
 
             var topBattersPerTeamObservable = topBattersPerTeam
                 .Select(async x => await _mappingService.FromCore(x))
@@ -226,11 +235,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         {
             var topBattersByPosition = await _mediator.Send(
                 new GetTopBattingSeasonRequest(
-                    seasons: new SeasonRange(SelectedSeason.Id),
-                    primaryPositionId: position.Id,
-                    limit: 5,
-                    includeChampionAwards: false,
-                    onlyUserAssignableAwards: true));
+                    new GetBattingSeasonsFilters
+                    {
+                        Seasons = new SeasonRange(SelectedSeason.Id),
+                        PrimaryPositionId = position.Id,
+                        Limit = 5,
+                        IncludeChampionAwards = false,
+                        OnlyUserAssignableAwards = true
+                    }));
 
             var topBattersByPositionObservable = topBattersByPosition
                 .Select(async x => await _mappingService.FromCore(x))

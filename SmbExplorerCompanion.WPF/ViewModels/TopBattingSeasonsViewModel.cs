@@ -10,6 +10,7 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
@@ -249,14 +250,17 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         };
 
         var topBatters = await _mediator.Send(new GetTopBattingSeasonRequest(
-            seasons: seasonRange,
-            isPlayoffs: IsPlayoffs,
-            pageNumber: PageNumber,
-            orderBy: SortColumn,
-            onlyRookies: OnlyRookies,
-            limit: ResultsPerPage,
-            primaryPositionId: SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
-            descending: true));
+            new GetBattingSeasonsFilters
+            {
+                Seasons = seasonRange,
+                IsPlayoffs = IsPlayoffs,
+                PageNumber = PageNumber,
+                OrderBy = SortColumn,
+                OnlyRookies = OnlyRookies,
+                Limit = ResultsPerPage,
+                PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
+                Descending = true
+            }));
 
         TopSeasonBatters.Clear();
         var topSeasonBatters = topBatters

@@ -59,7 +59,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         if (playerCareerPitchingDtos.Any()) playerOverview.CareerPitching = playerCareerPitchingDtos.First();
 
         var playerSeasonBattingDtos =
-            await _positionPlayerSeasonRepository.GetBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+            await _positionPlayerSeasonRepository.GetBattingSeasons(
+                new GetBattingSeasonsFilters
+                {
+                    PlayerId = playerId
+                },
+                cancellationToken: cancellationToken);
         playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
@@ -75,8 +80,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .ToList();
 
         var playerPlayoffBattingDtos =
-            await _positionPlayerSeasonRepository.GetBattingSeasons(playerId: playerId,
-                isPlayoffs: true,
+            await _positionPlayerSeasonRepository.GetBattingSeasons(
+                new GetBattingSeasonsFilters
+                {
+                    PlayerId = playerId,
+                    IsPlayoffs = true
+                },
                 cancellationToken: cancellationToken);
 
         playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos

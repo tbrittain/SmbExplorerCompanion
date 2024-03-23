@@ -496,9 +496,12 @@ public class TeamRepository : ITeamRepository
                 cancellationToken: cancellationToken);
 
             teamSeasonDetailDto.PlayoffBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
-                seasons: new SeasonRange(seasonId),
-                isPlayoffs: true,
-                teamId: teamId,
+                new GetBattingSeasonsFilters
+                {
+                    Seasons = new SeasonRange(seasonId),
+                    IsPlayoffs = true,
+                    TeamId = teamId
+                },
                 cancellationToken: cancellationToken);
         }
 
@@ -512,9 +515,12 @@ public class TeamRepository : ITeamRepository
             cancellationToken: cancellationToken);
 
         teamSeasonDetailDto.RegularSeasonBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
-            seasons: new SeasonRange(seasonId),
-            isPlayoffs: false,
-            teamId: teamId,
+            new GetBattingSeasonsFilters
+            {
+                Seasons = new SeasonRange(seasonId),
+                IsPlayoffs = false,
+                TeamId = teamId
+            },
             cancellationToken: cancellationToken);
 
         return teamSeasonDetailDto;
