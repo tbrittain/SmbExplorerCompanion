@@ -1,10 +1,9 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.ValueObjects.Players;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
-public record GetPitchingCareersFilters : PlayerFilters
+public record GetPitchingCareersFilters : SeasonPlayerFilters
 {
     public bool OnlyHallOfFamers { get; init; } = false;
     public bool OnlyActivePlayers { get; init; } = false;

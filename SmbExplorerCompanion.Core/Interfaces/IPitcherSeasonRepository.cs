@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
-public record GetPitchingSeasonsFilters : PlayerFilters
+public record GetPitchingSeasonsFilters : SeasonPlayerFilters
 {
     public bool IsPlayoffs { get; init; } = false;
     public bool OnlyRookies { get; init; } = false;
