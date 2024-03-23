@@ -32,6 +32,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private ObservableCollection<Season> _selectableEndSeasons;
     private Season? _startSeason;
     private Season? _endSeason;
+    private Chemistry? _selectedChemistry;
+    private ThrowHandedness? _selectedThrowHandedness;
 
     public TopPitchingCareersViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -43,23 +45,61 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         _navigationService = navigationService;
         _mappingService = mappingService;
 
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
+
         var pitcherRoles = lookupCache.GetPitcherRoles().Result;
         var allPitcherRole = new PitcherRole
         {
-            Id = 0,
+            Id = default,
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
         PitcherRoles.AddRange(pitcherRoles);
         SelectedPitcherRole = allPitcherRole;
 
-        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
-        Seasons.AddRange(seasons.Select(s => s.FromCore()));
+        var chemistryTypes = lookupCache.GetChemistryTypes().Result;
+        var allChemistry = new Chemistry
+        {
+            Id = default,
+            Name = "All"
+        };
+        ChemistryTypes = chemistryTypes
+            .Append(allChemistry)
+            .ToObservableCollection();
+        SelectedChemistry = allChemistry;
+
+        var throwHandednessTypes = lookupCache.GetThrowHandednessTypes().Result;
+        var allThrowHandedness = new ThrowHandedness
+        {
+            Id = default,
+            Name = "All"
+        };
+        ThrowHandednessTypes = throwHandednessTypes
+            .Append(allThrowHandedness)
+            .ToObservableCollection();
+        SelectedThrowHandedness = allThrowHandedness;
 
         GetTopPitchingCareers().Wait();
         PropertyChanged += OnPropertyChanged;
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    public ObservableCollection<Chemistry> ChemistryTypes { get; }
+
+    public Chemistry? SelectedChemistry
+    {
+        get => _selectedChemistry;
+        set => SetField(ref _selectedChemistry, value);
+    }
+
+    public ObservableCollection<ThrowHandedness> ThrowHandednessTypes { get; }
+
+    public ThrowHandedness? SelectedThrowHandedness
+    {
+        get => _selectedThrowHandedness;
+        set => SetField(ref _selectedThrowHandedness, value);
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();
@@ -153,6 +193,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             case nameof(EndSeason):
             case nameof(SelectedPitcherRole):
             case nameof(OnlyHallOfFamers):
+            case nameof(SelectedChemistry):
+            case nameof(SelectedThrowHandedness):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -216,7 +258,9 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
                 OrderBy = SortColumn,
                 OnlyHallOfFamers = OnlyHallOfFamers,
                 PitcherRoleId = SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
-                Seasons = seasonRange
+                Seasons = seasonRange,
+                ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
+                ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id
             }));
 
         TopPitchingCareers.Clear();

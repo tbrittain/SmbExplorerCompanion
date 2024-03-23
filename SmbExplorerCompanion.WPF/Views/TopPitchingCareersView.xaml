@@ -9,7 +9,7 @@
              d:DataContext="{d:DesignInstance viewModels:TopPitchingCareersViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="100" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -36,36 +36,57 @@
                     IsChecked="{Binding OnlyHallOfFamers}" />
             </StackPanel>
 
-            <ComboBox
-                DockPanel.Dock="Left"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Start Season"
-                ItemsSource="{Binding Seasons}"
-                SelectedItem="{Binding StartSeason}"
-                DisplayMemberPath="DisplaySeasonNumber" />
+            <WrapPanel FlowDirection="LeftToRight" Orientation="Horizontal">
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Start Season"
+                    ItemsSource="{Binding Seasons}"
+                    SelectedItem="{Binding StartSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
 
-            <ComboBox
-                DockPanel.Dock="Left"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="End Season"
-                ItemsSource="{Binding SelectableEndSeasons}"
-                SelectedItem="{Binding EndSeason}"
-                DisplayMemberPath="DisplaySeasonNumber" />
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="End Season"
+                    ItemsSource="{Binding SelectableEndSeasons}"
+                    SelectedItem="{Binding EndSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
 
-            <Button
-                Command="{Binding ClearSeasonsCommand}"
-                Content="Clear Seasons" />
+                <Button
+                    Command="{Binding ClearSeasonsCommand}"
+                    Content="Clear Seasons" />
 
-            <ComboBox
-                Margin="2"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Pitcher Role"
-                ItemsSource="{Binding PitcherRoles}"
-                DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPitcherRole}" />
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Pitcher Role"
+                    ItemsSource="{Binding PitcherRoles}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedPitcherRole}" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Chemistry"
+                    ItemsSource="{Binding ChemistryTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedChemistry}" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Throw Handedness"
+                    ItemsSource="{Binding ThrowHandednessTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedThrowHandedness}" />
+            </WrapPanel>
+
         </DockPanel>
 
         <DataGrid
