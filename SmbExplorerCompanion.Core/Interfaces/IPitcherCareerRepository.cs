@@ -1,20 +1,19 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
+using SmbExplorerCompanion.Core.ValueObjects.Players;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
+
+public record GetPitchingCareersFilters : SeasonPlayerFilters
+{
+    public bool OnlyHallOfFamers { get; init; } = false;
+    public bool OnlyActivePlayers { get; init; } = false;
+    public int? PitcherRoleId { get; init; }
+}
 
 public interface IPitcherCareerRepository
 {
     public Task<List<PlayerCareerPitchingDto>> GetPitchingCareers(
-        int? pageNumber = null,
-        int? limit = null,
-        string? orderBy = null,
-        bool descending = true,
-        int? playerId = null,
-        bool onlyHallOfFamers = false,
-        int? pitcherRoleId = null,
-        bool onlyActivePlayers = false,
-        SeasonRange? seasons = null,
+        GetPitchingCareersFilters filters,
         CancellationToken cancellationToken = default);
     
     public Task<List<PlayerCareerPitchingDto>> GetHallOfFameCandidates(int seasonId,

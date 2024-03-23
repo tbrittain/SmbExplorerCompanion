@@ -37,10 +37,20 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         CancellationToken cancellationToken = default)
     {
         var playerCareerBattingDtos =
-            await _positionPlayerCareerRepository.GetBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
+            await _positionPlayerCareerRepository.GetBattingCareers(
+                new GetBattingCareersFilters
+                {
+                    PlayerId = playerId
+                },
+                cancellationToken: cancellationToken);
 
         var playerCareerPitchingDtos =
-            await _pitcherCareerRepository.GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+            await _pitcherCareerRepository.GetPitchingCareers(
+                new GetPitchingCareersFilters
+                {
+                    PlayerId = playerId
+                },
+                cancellationToken: cancellationToken);
 
         var playerOverview = await GetPlayerOverview(playerId, cancellationToken);
 
@@ -49,19 +59,33 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         if (playerCareerPitchingDtos.Any()) playerOverview.CareerPitching = playerCareerPitchingDtos.First();
 
         var playerSeasonBattingDtos =
-            await _positionPlayerSeasonRepository.GetBattingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+            await _positionPlayerSeasonRepository.GetBattingSeasons(
+                new GetBattingSeasonsFilters
+                {
+                    PlayerId = playerId
+                },
+                cancellationToken: cancellationToken);
         playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
 
-        var playerSeasonPitchingDtos = await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, cancellationToken: cancellationToken);
+        var playerSeasonPitchingDtos = await _pitcherSeasonRepository.GetPitchingSeasons(
+            new GetPitchingSeasonsFilters
+            {
+                PlayerId = playerId
+            },
+            cancellationToken: cancellationToken);
         playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
 
         var playerPlayoffBattingDtos =
-            await _positionPlayerSeasonRepository.GetBattingSeasons(playerId: playerId,
-                isPlayoffs: true,
+            await _positionPlayerSeasonRepository.GetBattingSeasons(
+                new GetBattingSeasonsFilters
+                {
+                    PlayerId = playerId,
+                    IsPlayoffs = true
+                },
                 cancellationToken: cancellationToken);
 
         playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos
@@ -69,7 +93,13 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .ToList();
 
         var playerPlayoffPitchingDtos =
-            await _pitcherSeasonRepository.GetPitchingSeasons(playerId: playerId, isPlayoffs: true, cancellationToken: cancellationToken);
+            await _pitcherSeasonRepository.GetPitchingSeasons(
+                new GetPitchingSeasonsFilters
+                {
+                    PlayerId = playerId,
+                    IsPlayoffs = true
+                },
+                cancellationToken: cancellationToken);
 
         playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
@@ -447,7 +477,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
-    
+
             playerKpiPercentileDto.Hits = RoundPercentile(greaterThanHits, numQualifiedPlayers);
             playerKpiPercentileDto.HomeRuns = RoundPercentile(greaterThanHomeRuns, numQualifiedPlayers);
             playerKpiPercentileDto.BattingAverage = RoundPercentile(greaterThanBattingAverage, numQualifiedPlayers);
@@ -608,12 +638,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .Count(x => x.ChampionshipWinner is not null);
 
         if (player.IsHallOfFamer)
-            playerOverview.AwardIds.Add((int)VirtualAward.HallOfFame);
+            playerOverview.AwardIds.Add((int) VirtualAward.HallOfFame);
 
         if (playerOverview.NumChampionships > 0)
             foreach (var _ in Enumerable.Range(1, playerOverview.NumChampionships))
             {
-                playerOverview.AwardIds.Add((int)VirtualAward.Champion);
+                playerOverview.AwardIds.Add((int) VirtualAward.Champion);
             }
 
         var startSeason = player.PlayerSeasons.MinBy(x => x.SeasonId)!.Season;

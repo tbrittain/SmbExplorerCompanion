@@ -9,7 +9,7 @@
              d:DataContext="{d:DesignInstance viewModels:TopBattingCareersViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="100" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -35,36 +35,58 @@
                 <CheckBox
                     IsChecked="{Binding OnlyHallOfFamers}" />
             </StackPanel>
-            <ComboBox
-                DockPanel.Dock="Left"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Start Season"
-                ItemsSource="{Binding Seasons}"
-                SelectedItem="{Binding StartSeason}"
-                DisplayMemberPath="DisplaySeasonNumber" />
-            
-            <ComboBox
-                DockPanel.Dock="Left"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="End Season"
-                ItemsSource="{Binding SelectableEndSeasons}"
-                SelectedItem="{Binding EndSeason}"
-                DisplayMemberPath="DisplaySeasonNumber" />
 
-            <Button
-                Command="{Binding ClearSeasonsCommand}"
-                Content="Clear Seasons" />
+            <WrapPanel FlowDirection="LeftToRight" Orientation="Horizontal">
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Start Season"
+                    ItemsSource="{Binding Seasons}"
+                    SelectedItem="{Binding StartSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
 
-            <ComboBox
-                Margin="2"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Position"
-                ItemsSource="{Binding Positions}"
-                DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPosition}"/>
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="End Season"
+                    ItemsSource="{Binding SelectableEndSeasons}"
+                    SelectedItem="{Binding EndSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
+
+                <Button
+                    Command="{Binding ClearSeasonsCommand}"
+                    Content="Clear Seasons" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Position"
+                    ItemsSource="{Binding Positions}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedPosition}" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Chemistry"
+                    ItemsSource="{Binding ChemistryTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedChemistry}" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Bat Handedness"
+                    ItemsSource="{Binding BatHandednessTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedBatHandedness}" />
+            </WrapPanel>
+
         </DockPanel>
 
         <DataGrid

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
@@ -32,6 +34,9 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private readonly MappingService _mappingService;
     private ObservableCollection<Season> _selectableEndSeasons;
     private Season? _endSeason;
+    private Chemistry? _selectedChemistry;
+    private ThrowHandedness? _selectedThrowHandedness;
+    private ObservableCollection<Trait> _selectedTraits;
 
     public TopPitchingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -52,16 +57,74 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
         var allPitcherRole = new PitcherRole
         {
-            Id = 0,
+            Id = default,
             Name = "All"
         };
         PitcherRoles.Add(allPitcherRole);
         PitcherRoles.AddRange(pitcherRoles);
         SelectedPitcherRole = allPitcherRole;
 
+        var chemistryTypes = lookupCache.GetChemistryTypes().Result;
+        var allChemistry = new Chemistry
+        {
+            Id = default,
+            Name = "All"
+        };
+        ChemistryTypes = chemistryTypes
+            .Prepend(allChemistry)
+            .ToObservableCollection();
+        SelectedChemistry = allChemistry;
+
+        var throwHandednessTypes = lookupCache.GetThrowHandednessTypes().Result;
+        var allThrowHandedness = new ThrowHandedness
+        {
+            Id = default,
+            Name = "All"
+        };
+        ThrowHandednessTypes = throwHandednessTypes
+            .Prepend(allThrowHandedness)
+            .ToObservableCollection();
+        SelectedThrowHandedness = allThrowHandedness;
+
+        var traits = lookupCache.GetTraits().Result;
+        Traits = traits
+            .Where(x => !x.IsSmb3)
+            .ToObservableCollection();
+        SelectedTraits = new ObservableCollection<Trait>();
+
         GetTopPitchingSeason().Wait();
         PropertyChanged += OnPropertyChanged;
+        SelectedTraits.CollectionChanged += SelectedTraitsOnCollectionChanged;
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    private void SelectedTraitsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedTraits)));
+    }
+
+    public ObservableCollection<Chemistry> ChemistryTypes { get; }
+
+    public Chemistry? SelectedChemistry
+    {
+        get => _selectedChemistry;
+        set => SetField(ref _selectedChemistry, value);
+    }
+
+    public ObservableCollection<ThrowHandedness> ThrowHandednessTypes { get; }
+
+    public ThrowHandedness? SelectedThrowHandedness
+    {
+        get => _selectedThrowHandedness;
+        set => SetField(ref _selectedThrowHandedness, value);
+    }
+
+    public ObservableCollection<Trait> Traits { get; }
+    
+    public ObservableCollection<Trait> SelectedTraits
+    {
+        get => _selectedTraits;
+        set => SetField(ref _selectedTraits, value);
     }
 
     public ObservableCollection<Season> Seasons { get; } = new();
@@ -199,6 +262,9 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             case nameof(StartSeason):
             case nameof(EndSeason):
             case nameof(SelectedPitcherRole):
+            case nameof(SelectedChemistry):
+            case nameof(SelectedThrowHandedness):
+            case nameof(SelectedTraits):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -249,14 +315,20 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         };
 
         var topPitchers = await _mediator.Send(new GetTopPitchingSeasonRequest(
-            seasons: seasonRange,
-            isPlayoffs: IsPlayoffs,
-            pageNumber: PageNumber,
-            orderBy: SortColumn,
-            limit: ResultsPerPage,
-            onlyRookies: OnlyRookies,
-            pitcherRoleId: SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
-            descending: true));
+            new GetPitchingSeasonsFilters
+            {
+                Seasons = seasonRange,
+                IsPlayoffs = IsPlayoffs,
+                PageNumber = PageNumber,
+                OrderBy = SortColumn,
+                Limit = ResultsPerPage,
+                OnlyRookies = OnlyRookies,
+                PitcherRoleId = SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
+                Descending = true,
+                ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
+                ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
+                TraitIds = SelectedTraits.Select(x => x.Id).ToList()
+            }));
 
         TopSeasonPitchers.Clear();
         var mappedTopSeasonPitchers = topPitchers

@@ -215,13 +215,19 @@ public class SummaryRepository : ISummaryRepository
         }
 
         var currentBattingGreats = await _positionPlayerCareerRepository.GetBattingCareers(
-            limit: 5,
-            onlyActivePlayers: true,
+            new GetBattingCareersFilters
+            {
+                Limit = 5,
+                OnlyActivePlayers = true,
+            },
             cancellationToken: cancellationToken);
 
         var currentPitchingGreats = await _pitcherCareerRepository.GetPitchingCareers(
-            limit: 5,
-            onlyActivePlayers: true,
+            new GetPitchingCareersFilters
+            {
+                Limit = 5,
+                OnlyActivePlayers = true,
+            },
             cancellationToken: cancellationToken);
 
         var currentGreats = currentBattingGreats

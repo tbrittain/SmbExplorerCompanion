@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
@@ -20,30 +19,20 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
     }
 
     public async Task<List<PlayerBattingSeasonDto>> GetBattingSeasons(
-        SeasonRange? seasons = null,
-        bool isPlayoffs = false,
-        int? pageNumber = null,
-        string? orderBy = null,
-        int? limit = null,
-        bool descending = true,
-        int? teamId = null,
-        int? primaryPositionId = null,
-        bool onlyRookies = false,
-        bool includeChampionAwards = true,
-        bool onlyUserAssignableAwards = false,
-        int? playerId = null,
+        GetBattingSeasonsFilters filters,
         CancellationToken cancellationToken = default)
     {
-        if (onlyRookies && seasons is null)
+        if (filters.OnlyRookies && filters.Seasons is null)
             throw new ArgumentException("SeasonRange must be provided if OnlyRookies is true");
 
-        if (playerId is not null && pageNumber is not null)
+        if (filters.PlayerId is not null && filters.PageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
 
-        var limitToTeam = teamId is not null;
+        var limitToTeam = filters.TeamId is not null;
+        var orderBy = filters.OrderBy;
         if (orderBy is not null)
         {
-            orderBy += descending ? " desc" : " asc";
+            orderBy += filters.Descending ? " desc" : " asc";
         }
         else
         {
@@ -51,27 +40,34 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        var limitValue = limit ?? 30;
+        var limitValue = filters.Limit ?? 30;
 
         var minSeasonId = await _dbContext.Seasons
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
             .MinAsync(x => x.Id, cancellationToken);
 
-        if (seasons?.StartSeasonId == minSeasonId || seasons?.EndSeasonId > seasons?.StartSeasonId) onlyRookies = false;
+        var onlyRookies = filters.OnlyRookies;
+        if (filters.Seasons?.StartSeasonId == minSeasonId ||
+            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId)
+        {
+            onlyRookies = false;
+        }
 
         List<int> rookiePlayerIds = new();
         if (onlyRookies)
             rookiePlayerIds = await _dbContext.Players
-                .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == seasons!.Value.StartSeasonId))
+                .Where(x => x.PlayerSeasons.Any(p => p.SeasonId == filters.Seasons!.Value.StartSeasonId))
                 .Select(x => new
                 {
                     PlayerId = x.Id,
                     FirstSeasonId = x.PlayerSeasons.OrderBy(ps => ps.SeasonId).First().SeasonId
                 })
-                .Where(x => x.FirstSeasonId == seasons!.Value.StartSeasonId)
+                .Where(x => x.FirstSeasonId == filters.Seasons!.Value.StartSeasonId)
                 .Select(x => x.PlayerId)
                 .ToListAsync(cancellationToken: cancellationToken);
 
+        var hasTraitFilters = filters.TraitIds.Count > 0;
+        
         var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
             .Include(x => x.PlayerSeason)
             .Include(x => x.PlayerSeason)
@@ -88,14 +84,19 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
             .ThenInclude(x => x!.TeamNameHistory)
             .Include(x => x.PlayerSeason)
             .ThenInclude(x => x.ChampionshipWinner)
-            .Where(x => seasons == null || (x.PlayerSeason.SeasonId >= seasons.Value.StartSeasonId &&
-                                            x.PlayerSeason.SeasonId <= seasons.Value.EndSeasonId))
-            .Where(x => x.IsRegularSeason == !isPlayoffs)
+            .Where(x => filters.Seasons == null || (x.PlayerSeason.SeasonId >= filters.Seasons.Value.StartSeasonId &&
+                                                    x.PlayerSeason.SeasonId <= filters.Seasons.Value.EndSeasonId))
+            .Where(x => x.IsRegularSeason == !filters.IsPlayoffs)
             .Where(x => x.PlayerSeason.PlayerTeamHistory.Any(y => !limitToTeam ||
-                                                                  (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == teamId)))
-            .Where(x => primaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == primaryPositionId)
+                                                                  (y.SeasonTeamHistory != null && y.SeasonTeamHistory.TeamId == filters.TeamId)))
+            .Where(x => filters.PrimaryPositionId == null || x.PlayerSeason.Player.PrimaryPositionId == filters.PrimaryPositionId)
             .Where(x => !onlyRookies || rookiePlayerIds.Contains(x.PlayerSeason.PlayerId))
-            .Where(x => playerId == null || x.PlayerSeason.PlayerId == playerId)
+            .Where(x => filters.PlayerId == null || x.PlayerSeason.PlayerId == filters.PlayerId)
+            .Where(x => filters.ChemistryId == null || x.PlayerSeason.Player.ChemistryId == filters.ChemistryId)
+            .Where(x => filters.BatHandednessId == null || x.PlayerSeason.Player.BatHandednessId == filters.BatHandednessId)
+            .Where(x => filters.ThrowHandednessId == null || x.PlayerSeason.Player.ThrowHandednessId == filters.ThrowHandednessId)
+            .Where(x => filters.SecondaryPositionId == null || x.PlayerSeason.SecondaryPositionId == filters.SecondaryPositionId)
+            .Where(x => !hasTraitFilters || x.PlayerSeason.Traits.Any(y => filters.TraitIds.Contains(y.Id)))
             .Select(x => new PlayerBattingSeasonDto
             {
                 PlayerId = x.PlayerSeason.PlayerId,
@@ -140,7 +141,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 WeightedOpsPlusOrEraMinus = ((x.OpsPlus ?? 0) - 95) * x.PlateAppearances * BattingScalingFactor +
                                             (x.StolenBases - x.CaughtStealing) * BaserunningScalingFactor,
                 AwardIds = x.PlayerSeason.Awards
-                    .Where(y => !onlyUserAssignableAwards || y.IsUserAssignable)
+                    .Where(y => !filters.OnlyUserAssignableAwards || y.IsUserAssignable)
                     .Select(y => y.Id)
                     .ToList(),
                 IsChampion = x.PlayerSeason.ChampionshipWinner != null,
@@ -156,15 +157,15 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                     .ToList()
             })
             .OrderBy(orderBy)
-            .Skip(((pageNumber ?? 1) - 1) * limitValue)
+            .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        if (includeChampionAwards)
+        if (filters.IncludeChampionAwards)
         {
             foreach (var player in playerBattingDtos.Where(player => player.IsChampion))
             {
-                player.AwardIds.Add((int)VirtualAward.Champion);
+                player.AwardIds.Add((int) VirtualAward.Champion);
             }
         }
 

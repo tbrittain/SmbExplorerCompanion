@@ -5,45 +5,97 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SmbExplorerCompanion.WPF.ViewModels"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance viewModels:TopPitchingSeasonsViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="100" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0">
-            <ComboBox
+            <WrapPanel
                 DockPanel.Dock="Left"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Start Season"
-                ItemsSource="{Binding Seasons}"
-                SelectedItem="{Binding StartSeason}"
-                DisplayMemberPath="DisplaySeasonNumber" />
+                FlowDirection="LeftToRight"
+                Orientation="Horizontal">
+                <ComboBox
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Start Season"
+                    ItemsSource="{Binding Seasons}"
+                    SelectedItem="{Binding StartSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
 
-            <ComboBox
-                DockPanel.Dock="Left"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="End Season"
-                ItemsSource="{Binding SelectableEndSeasons}"
-                SelectedItem="{Binding EndSeason}"
-                DisplayMemberPath="DisplaySeasonNumber" />
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="End Season"
+                    ItemsSource="{Binding SelectableEndSeasons}"
+                    SelectedItem="{Binding EndSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
 
-            <Button
-                Command="{Binding ClearSeasonsCommand}"
-                Content="Clear Seasons" />
+                <Button
+                    Command="{Binding ClearSeasonsCommand}"
+                    Content="Clear Seasons" />
 
-            <ComboBox
-                Margin="2"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Pitcher Role"
-                ItemsSource="{Binding PitcherRoles}"
-                DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPitcherRole}" />
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Pitcher Role"
+                    ItemsSource="{Binding PitcherRoles}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedPitcherRole}" />
+
+                <StackPanel
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal">
+                    <Label Content="Playoffs" />
+                    <CheckBox
+                        IsChecked="{Binding IsPlayoffs}" />
+                </StackPanel>
+                <StackPanel
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal">
+                    <Label Content="Only Rookies" />
+                    <CheckBox
+                        IsEnabled="{Binding CanSelectOnlyRookies}"
+                        IsChecked="{Binding OnlyRookies}" />
+                </StackPanel>
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Chemistry"
+                    ItemsSource="{Binding ChemistryTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedChemistry}" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Throw Handedness"
+                    ItemsSource="{Binding ThrowHandednessTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedThrowHandedness}" />
+
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Label Content="Traits" />
+                    <xctk:CheckComboBox
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Name"
+                        ValueMemberPath="Id"
+                        SelectedItemsOverride="{Binding SelectedTraits}"
+                        ItemsSource="{Binding Traits}" />
+                </StackPanel>
+
+            </WrapPanel>
 
             <StackPanel
                 DockPanel.Dock="Right"
@@ -57,21 +109,6 @@
                 </Button>
             </StackPanel>
 
-            <StackPanel
-                DockPanel.Dock="Left"
-                Orientation="Horizontal">
-                <Label Content="Playoffs" />
-                <CheckBox
-                    IsChecked="{Binding IsPlayoffs}" />
-            </StackPanel>
-            <StackPanel
-                DockPanel.Dock="Left"
-                Orientation="Horizontal">
-                <Label Content="Only Rookies" />
-                <CheckBox
-                    IsEnabled="{Binding CanSelectOnlyRookies}"
-                    IsChecked="{Binding OnlyRookies}" />
-            </StackPanel>
         </DockPanel>
 
         <DataGrid
