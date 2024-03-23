@@ -6,8 +6,7 @@ namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
 public class GetTopPitchingSeasonRequest : IRequest<List<PlayerPitchingSeasonDto>>
 {
-    public GetTopPitchingSeasonRequest(
-        GetPitchingSeasonsFilters filters)
+    public GetTopPitchingSeasonRequest(GetPitchingSeasonsFilters filters)
     {
         Filters = filters;
     }

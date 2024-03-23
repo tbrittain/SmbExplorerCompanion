@@ -10,6 +10,7 @@ using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
+using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Lookups;
@@ -208,13 +209,15 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         };
 
         var topPitchers = await _mediator.Send(new GetTopPitchingCareersRequest(
-            pageNumber: PageNumber,
-            limit: ResultsPerPage,
-            orderBy: SortColumn,
-            onlyHallOfFamers: OnlyHallOfFamers,
-            pitcherRoleId: SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
-            seasonRange: seasonRange
-        ));
+            new GetPitchingCareersFilters
+            {
+                PageNumber = PageNumber,
+                Limit = ResultsPerPage,
+                OrderBy = SortColumn,
+                OnlyHallOfFamers = OnlyHallOfFamers,
+                PitcherRoleId = SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
+                Seasons = seasonRange
+            }));
 
         TopPitchingCareers.Clear();
         var mappedPitchingCareers = topPitchers

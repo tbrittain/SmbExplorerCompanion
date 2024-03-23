@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
@@ -21,33 +20,26 @@ public class PitcherCareerRepository : IPitcherCareerRepository
     }
 
     public async Task<List<PlayerCareerPitchingDto>> GetPitchingCareers(
-        int? pageNumber = null,
-        int? limit = null,
-        string? orderBy = null,
-        bool descending = true,
-        int? playerId = null,
-        bool onlyHallOfFamers = false,
-        int? pitcherRoleId = null,
-        bool onlyActivePlayers = false,
-        SeasonRange? seasons = null,
+        GetPitchingCareersFilters filters,
         CancellationToken cancellationToken = default)
     {
-        if (playerId is not null && pageNumber is not null)
+        if (filters.PlayerId is not null && filters.PageNumber is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PageNumber");
 
-        if (playerId is not null && onlyHallOfFamers)
+        if (filters.PlayerId is not null && filters.OnlyHallOfFamers)
             throw new ArgumentException("Cannot provide both PlayerId and OnlyHallOfFamers");
 
-        if (playerId is not null && pitcherRoleId is not null)
+        if (filters.PlayerId is not null && filters.PitcherRoleId is not null)
             throw new ArgumentException("Cannot provide both PlayerId and PrimaryPositionId");
 
         var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
 
-        var limitValue = limit ?? 30;
+        var limitValue = filters.Limit ?? 30;
 
+        var orderBy = filters.OrderBy;
         if (orderBy is not null)
         {
-            orderBy += descending ? " desc" : " asc";
+            orderBy += filters.Descending ? " desc" : " asc";
         }
         else
         {
@@ -55,13 +47,13 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        if (pitcherRoleId is not null)
+        if (filters.PitcherRoleId is not null)
         {
             var pitcherRole = await _dbContext.PitcherRoles
-                .SingleOrDefaultAsync(x => x.Id == pitcherRoleId, cancellationToken);
+                .SingleOrDefaultAsync(x => x.Id == filters.PitcherRoleId, cancellationToken);
 
             if (pitcherRole is null)
-                throw new ArgumentException($"No pitcher role found with Id {pitcherRoleId}");
+                throw new ArgumentException($"No pitcher role found with Id {filters.PitcherRoleId}");
         }
 
         var mostRecentSeason = await _dbContext.Seasons
@@ -70,7 +62,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             .FirstAsync(cancellationToken);
         
         List<int> activePlayerIds = new();
-        if (onlyActivePlayers)
+        if (filters.OnlyActivePlayers)
         {
             activePlayerIds = await _dbContext.Players
                 .Include(x => x.PlayerSeasons)
@@ -85,15 +77,15 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             .Include(x => x.PitchingStats)
             .Where(x => x.Player.FranchiseId == franchiseId)
             .Where(x => x.Player.PitcherRoleId != null)
-            .Where(x => playerId == null || x.PlayerId == playerId)
-            .Where(x => !onlyHallOfFamers || x.Player.IsHallOfFamer)
-            .Where(x => !onlyActivePlayers || activePlayerIds.Contains(x.PlayerId))
-            .Where(x => seasons == null || (
-                    x.SeasonId >= seasons.Value.StartSeasonId &&
-                    x.SeasonId <= seasons.Value.EndSeasonId
+            .Where(x => filters.PlayerId == null || x.PlayerId == filters.PlayerId)
+            .Where(x => !filters.OnlyHallOfFamers || x.Player.IsHallOfFamer)
+            .Where(x => !filters.OnlyActivePlayers || activePlayerIds.Contains(x.PlayerId))
+            .Where(x => filters.Seasons == null || (
+                    x.SeasonId >= filters.Seasons.Value.StartSeasonId &&
+                    x.SeasonId <= filters.Seasons.Value.EndSeasonId
                 )
             )
-            .Where(x => pitcherRoleId == null || x.Player.PitcherRoleId == pitcherRoleId)
+            .Where(x => filters.PitcherRoleId == null || x.Player.PitcherRoleId == filters.PitcherRoleId)
             .GroupBy(x => x.PlayerId)
             .Select(x => new PlayerCareerPitchingDto
             {
@@ -156,7 +148,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                         : y.Salary),
             })
             .OrderBy(orderBy)
-            .Skip(((pageNumber ?? 1) - 1) * limitValue)
+            .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -293,7 +285,12 @@ public class PitcherCareerRepository : IPitcherCareerRepository
     public async Task<List<SimilarPlayerDto>> GetSimilarPitchingCareers(int playerId,
         CancellationToken cancellationToken = default)
     {
-        var pitchingCareers = await GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+        var pitchingCareers = await GetPitchingCareers(
+            new GetPitchingCareersFilters
+            {
+                PlayerId = playerId
+            },
+            cancellationToken: cancellationToken);
 
         if (!pitchingCareers.Any())
             throw new Exception($"No player career found for player ID {playerId}");

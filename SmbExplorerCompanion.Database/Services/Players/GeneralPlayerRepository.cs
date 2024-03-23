@@ -40,7 +40,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             await _positionPlayerCareerRepository.GetBattingCareers(playerId: playerId, cancellationToken: cancellationToken);
 
         var playerCareerPitchingDtos =
-            await _pitcherCareerRepository.GetPitchingCareers(playerId: playerId, cancellationToken: cancellationToken);
+            await _pitcherCareerRepository.GetPitchingCareers(
+                new GetPitchingCareersFilters
+                {
+                    PlayerId = playerId
+                },
+                cancellationToken: cancellationToken);
 
         var playerOverview = await GetPlayerOverview(playerId, cancellationToken);
 
@@ -458,7 +463,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
-    
+
             playerKpiPercentileDto.Hits = RoundPercentile(greaterThanHits, numQualifiedPlayers);
             playerKpiPercentileDto.HomeRuns = RoundPercentile(greaterThanHomeRuns, numQualifiedPlayers);
             playerKpiPercentileDto.BattingAverage = RoundPercentile(greaterThanBattingAverage, numQualifiedPlayers);
@@ -619,12 +624,12 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .Count(x => x.ChampionshipWinner is not null);
 
         if (player.IsHallOfFamer)
-            playerOverview.AwardIds.Add((int)VirtualAward.HallOfFame);
+            playerOverview.AwardIds.Add((int) VirtualAward.HallOfFame);
 
         if (playerOverview.NumChampionships > 0)
             foreach (var _ in Enumerable.Range(1, playerOverview.NumChampionships))
             {
-                playerOverview.AwardIds.Add((int)VirtualAward.Champion);
+                playerOverview.AwardIds.Add((int) VirtualAward.Champion);
             }
 
         var startSeason = player.PlayerSeasons.MinBy(x => x.SeasonId)!.Season;
