@@ -67,6 +67,14 @@
                     ItemsSource="{Binding PitcherRoles}"
                     DisplayMemberPath="Name"
                     SelectedItem="{Binding SelectedPitcherRole}" />
+                
+                <StackPanel
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal">
+                    <Label Content="Playoffs" />
+                    <CheckBox
+                        IsChecked="{Binding IsPlayoffs}" />
+                </StackPanel>
 
                 <ComboBox
                     Margin="2"

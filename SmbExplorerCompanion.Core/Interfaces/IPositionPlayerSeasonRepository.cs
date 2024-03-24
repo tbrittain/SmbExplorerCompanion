@@ -10,7 +10,6 @@ public record GetBattingSeasonsFilters : SeasonPlayerFilters
     public bool IncludeChampionAwards { get; init; } = true;
     public bool OnlyUserAssignableAwards { get; init; } = false;
     public int? TeamId { get; init; } = null;
-    public bool IsPlayoffs { get; init; } = false;
 }
 
 public interface IPositionPlayerSeasonRepository
