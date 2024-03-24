@@ -52,10 +52,7 @@ public class PlayerOverview : PlayerCareerBase
         {
             var sb = new StringBuilder(PrimaryPosition);
 
-            if (PitcherRole is not null)
-            {
-                sb.Append($" ({PitcherRole})");
-            }
+            if (PitcherRole is not null) sb.Append($" ({PitcherRole})");
 
             return sb.ToString();
         }

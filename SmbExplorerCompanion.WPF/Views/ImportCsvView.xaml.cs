@@ -10,13 +10,20 @@ public partial class ImportCsvView : IDisposable
     public ImportCsvView()
     {
         InitializeComponent();
-        
+
         Loaded += OnLoaded;
+    }
+
+    public void Dispose()
+    {
+        var dataContext = (ImportCsvViewModel) DataContext;
+        dataContext.ImportProgress.CollectionChanged -= ImportProgressOnCollectionChanged;
+        GC.SuppressFinalize(this);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        var dataContext = (ImportCsvViewModel)DataContext;
+        var dataContext = (ImportCsvViewModel) DataContext;
         dataContext.ImportProgress.CollectionChanged += ImportProgressOnCollectionChanged;
     }
 
@@ -24,12 +31,5 @@ public partial class ImportCsvView : IDisposable
     {
         if (e.Action is not NotifyCollectionChangedAction.Add) return;
         LogScrollViewer.ScrollToEnd();
-    }
-
-    public void Dispose()
-    {
-        var dataContext = (ImportCsvViewModel)DataContext;
-        dataContext.ImportProgress.CollectionChanged -= ImportProgressOnCollectionChanged;
-        GC.SuppressFinalize(this);
     }
 }

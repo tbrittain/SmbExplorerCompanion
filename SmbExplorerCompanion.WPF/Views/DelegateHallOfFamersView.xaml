@@ -206,7 +206,7 @@
                                 IsReadOnly="True"
                                 Header="K"
                                 Binding="{Binding Strikeouts}"
-                                CanUserSort="True"/>
+                                CanUserSort="True" />
                             <DataGridTemplateColumn
                                 IsReadOnly="True"
                                 CanUserSort="True"
@@ -417,7 +417,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
-                
+
                 <Button
                     Command="{Binding SubmitHallOfFamersCommand}"
                     Content="Submit Hall of Famers" />

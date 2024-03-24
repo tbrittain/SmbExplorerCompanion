@@ -61,7 +61,7 @@
                             IsChecked="{Binding IncludeDivisionTeamsInPlot}" />
                         <Label Content="Include entire division" />
                     </StackPanel>
-                    
+
                     <StackPanel Orientation="Horizontal">
                         <CheckBox
                             IsChecked="{Binding IncludeMarginOfVictoryInPlot}" />

@@ -22,10 +22,7 @@ public class HttpService : IHttpService
     public async Task<AppUpdateResult?> CheckForUpdates()
     {
         var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version;
-        if (currentVersion is null)
-        {
-            throw new Exception("Unable to determine current version.");
-        }
+        if (currentVersion is null) throw new Exception("Unable to determine current version.");
 
         var httpClient = _httpClientFactory.CreateClient();
 
@@ -34,16 +31,10 @@ public class HttpService : IHttpService
 
         var response = await httpClient.GetAsync(LatestReleaseUrl);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(response.ReasonPhrase ?? "An unknown error occurred.");
-        }
+        if (!response.IsSuccessStatusCode) throw new Exception(response.ReasonPhrase ?? "An unknown error occurred.");
 
         var result = await response.Content.ReadFromJsonAsync<GitHubReleaseResponse>();
-        if (result is null)
-        {
-            throw new Exception("Unable to parse latest release response.");
-        }
+        if (result is null) throw new Exception("Unable to parse latest release response.");
 
         var currentVersionWithoutRev =
             new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
@@ -57,7 +48,7 @@ public class HttpService : IHttpService
         {
             Version = resultVersionWithoutRev,
             ReleasePageUrl = result.HtmlUrl,
-            ReleaseDate = result.PublishedAt,
+            ReleaseDate = result.PublishedAt
         };
     }
 }

@@ -82,7 +82,7 @@
                     FontWeight="Bold"
                     HorizontalAlignment="Center" />
 
-                <Button 
+                <Button
                     IsEnabled="{Binding AreDataRoutesEnabled}"
                     Command="{Binding NavigateToTeamsCommand}">
                     <TextBlock

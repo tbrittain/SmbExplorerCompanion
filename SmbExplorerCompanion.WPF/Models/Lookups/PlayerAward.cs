@@ -29,7 +29,7 @@ public static class PlayerAwardExtensions
             IsPitchingAward = x.IsPitchingAward,
             IsFieldingAward = x.IsFieldingAward,
             IsPlayoffAward = x.IsPlayoffAward,
-            IsUserAssignable = x.IsUserAssignable,
+            IsUserAssignable = x.IsUserAssignable
         };
     }
 }

@@ -13,7 +13,7 @@ public class TeamPlayoffRoundResult
     public int OpponentSeasonTeamId { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }
-    
+
     private string DisplayRound => Round switch
     {
         PlayoffRound.WildCard => "Wild Card",

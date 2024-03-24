@@ -17,8 +17,8 @@ public static class PlayerDetailBaseExtensions
 {
     public static string GetDisplayPrimaryPosition(string primaryPositionName, string? pitcherRoleName)
     {
-        return !string.IsNullOrEmpty(pitcherRoleName) 
-            ? $"{primaryPositionName} ({pitcherRoleName})" 
+        return !string.IsNullOrEmpty(pitcherRoleName)
+            ? $"{primaryPositionName} ({pitcherRoleName})"
             : primaryPositionName;
     }
 }

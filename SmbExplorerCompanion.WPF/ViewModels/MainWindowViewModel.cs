@@ -17,8 +17,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IApplicationContext _applicationContext;
     private readonly IHttpService _httpService;
     private AppUpdateResult? _appUpdateResult;
-    private bool _isUpdateAvailable;
     private bool _areDataRoutesEnabled;
+    private bool _isUpdateAvailable;
 
     public MainWindowViewModel(INavigationService navigationService, IApplicationContext applicationContext, IHttpService httpService)
     {
@@ -33,6 +33,49 @@ public partial class MainWindowViewModel : ViewModelBase
     public INavigationService NavigationService { get; }
 
     public bool SidebarEnabled => _applicationContext.IsFranchiseSelected;
+
+    public bool AreDataRoutesEnabled
+    {
+        get => _areDataRoutesEnabled;
+        set => SetField(ref _areDataRoutesEnabled, value);
+    }
+
+    private AppUpdateResult? AppUpdateResult
+    {
+        get => _appUpdateResult;
+        set
+        {
+            SetField(ref _appUpdateResult, value);
+            IsUpdateAvailable = true;
+        }
+    }
+
+    public string UpdateAvailableDisplayText => IsUpdateAvailable
+        ? $"Update Available: {AppUpdateResult?.Version.ToString()}"
+        : "No Updates Available";
+
+    public bool IsUpdateAvailable
+    {
+        get => _isUpdateAvailable;
+        set
+        {
+            SetField(ref _isUpdateAvailable, value);
+            OnPropertyChanged(nameof(UpdateAvailableDisplayText));
+        }
+    }
+
+    public static string CurrentVersionString => $"Version {CurrentVersion}";
+
+    private static Version CurrentVersion
+    {
+        get
+        {
+            var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version;
+            return currentVersion is null
+                ? new Version(0, 0, 0, 0)
+                : new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
+        }
+    }
 
     private void NavigationServiceOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -68,19 +111,10 @@ public partial class MainWindowViewModel : ViewModelBase
             }
             case nameof(IApplicationContext.HasFranchiseData):
             {
-                if (_applicationContext.HasFranchiseData)
-                {
-                    AreDataRoutesEnabled = true;
-                }
+                if (_applicationContext.HasFranchiseData) AreDataRoutesEnabled = true;
                 break;
             }
         }
-    }
-
-    public bool AreDataRoutesEnabled
-    {
-        get => _areDataRoutesEnabled;
-        set => SetField(ref _areDataRoutesEnabled, value);
     }
 
     public Task Initialize()
@@ -88,30 +122,6 @@ public partial class MainWindowViewModel : ViewModelBase
         NavigationService.NavigateTo<FranchiseSelectViewModel>();
         _ = Task.Run(async () => await CheckForUpdates());
         return Task.CompletedTask;
-    }
-
-    private AppUpdateResult? AppUpdateResult
-    {
-        get => _appUpdateResult;
-        set
-        {
-            SetField(ref _appUpdateResult, value);
-            IsUpdateAvailable = true;
-        }
-    }
-
-    public string UpdateAvailableDisplayText => IsUpdateAvailable
-        ? $"Update Available: {AppUpdateResult?.Version.ToString()}"
-        : "No Updates Available";
-
-    public bool IsUpdateAvailable
-    {
-        get => _isUpdateAvailable;
-        set
-        {
-            SetField(ref _isUpdateAvailable, value);
-            OnPropertyChanged(nameof(UpdateAvailableDisplayText));
-        }
     }
 
     private async Task CheckForUpdates()
@@ -131,7 +141,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         if (appUpdateResult is null) return;
-        
+
         AppUpdateResult = appUpdateResult;
 
         if (appUpdateResult.Value.Version.Major <= CurrentVersion.Major &&
@@ -148,19 +158,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (messageBoxResult != MessageBoxResult.Yes) return;
 
         SafeProcess.Start(appUpdateResult.Value.ReleasePageUrl);
-    }
-    
-    public static string CurrentVersionString => $"Version {CurrentVersion}";
-
-    private static Version CurrentVersion
-    {
-        get
-        {
-            var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version;
-            return currentVersion is null
-                ? new Version(0, 0, 0, 0)
-                : new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
-        }
     }
 
     [RelayCommand]
@@ -261,7 +258,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         SafeProcess.Start(RepoUrl);
     }
-    
+
     [RelayCommand]
     private void OpenUpdateVersionReleasePage()
     {

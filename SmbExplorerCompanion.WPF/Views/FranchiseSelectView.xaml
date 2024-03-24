@@ -21,7 +21,7 @@
             <materialDesign:DialogHost.DialogContentTemplate>
                 <DataTemplate>
                     <DataTemplate.Resources>
-                        
+
                         <DataTemplate DataType="{x:Type models:DialogViewModel}">
                             <Grid Margin="10">
                                 <Grid.RowDefinitions>
@@ -70,8 +70,7 @@
                 materialDesign:HintAssist.Hint="Select a franchise"
                 ItemsSource="{Binding Franchises}"
                 DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedFranchise}">
-            </ComboBox>
+                SelectedItem="{Binding SelectedFranchise}" />
             <Button
                 Style="{DynamicResource MaterialDesignRaisedButton}"
                 Margin="2"

@@ -7,8 +7,8 @@ namespace SmbExplorerCompanion.WPF.Services;
 
 public sealed class ApplicationContext : IApplicationContext, INotifyPropertyChanged
 {
-    private int? _selectedFranchiseId;
     private bool _hasFranchiseData;
+    private int? _selectedFranchiseId;
 
     public int? SelectedFranchiseId
     {

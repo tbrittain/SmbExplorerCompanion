@@ -67,7 +67,7 @@
                     ItemsSource="{Binding PitcherRoles}"
                     DisplayMemberPath="Name"
                     SelectedItem="{Binding SelectedPitcherRole}" />
-                
+
                 <StackPanel
                     DockPanel.Dock="Left"
                     Orientation="Horizontal">

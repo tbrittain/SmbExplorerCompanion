@@ -23,21 +23,22 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class TopBattingSeasonsViewModel : ViewModelBase
 {
+    private const int ResultsPerPage = 20;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
-    private bool _isPlayoffs;
-    private int _pageNumber = 1;
-    private PlayerSeasonBase? _selectedPlayer;
-    private Season? _startSeason;
-    private bool _onlyRookies;
-    private Position? _selectedPosition;
-    private readonly MappingService _mappingService;
     private Season? _endSeason;
+    private bool _isPlayoffs;
+    private bool _onlyRookies;
+    private int _pageNumber = 1;
     private ObservableCollection<Season> _selectableEndSeasons;
-    private Chemistry? _selectedChemistry;
     private BatHandedness? _selectedBatHandedness;
-    private ObservableCollection<Trait> _selectedTraits;
+    private Chemistry? _selectedChemistry;
+    private PlayerSeasonBase? _selectedPlayer;
+    private Position? _selectedPosition;
     private Position? _selectedSecondaryPosition;
+    private ObservableCollection<Trait> _selectedTraits;
+    private Season? _startSeason;
 
     public TopBattingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -102,11 +103,6 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
-    private void SelectedTraitsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        OnPropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedTraits)));
-    }
-
     public ObservableCollection<Chemistry> ChemistryTypes { get; }
 
     public Chemistry? SelectedChemistry
@@ -147,8 +143,6 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
 
     public bool ShortCircuitPageNumberRefresh { get; set; }
     private bool ShortCircuitOnlyRookiesRefresh { get; set; }
-
-    private const int ResultsPerPage = 20;
     private bool CanSelectPreviousPage => PageNumber > 1;
 
     private bool CanSelectNextPage => TopSeasonBatters.Count == ResultsPerPage;
@@ -190,13 +184,6 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     {
         get => _selectableEndSeasons;
         private set => SetField(ref _selectableEndSeasons, value);
-    }
-
-    [RelayCommand]
-    private void ClearSeasons()
-    {
-        StartSeason = Seasons.OrderBy(x => x.Id).Last();
-        EndSeason = Seasons.OrderBy(x => x.Id).Last();
     }
 
     public Season? EndSeason
@@ -266,6 +253,18 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         set => SetField(ref _onlyRookies, value);
     }
 
+    private void SelectedTraitsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedTraits)));
+    }
+
+    [RelayCommand]
+    private void ClearSeasons()
+    {
+        StartSeason = Seasons.OrderBy(x => x.Id).Last();
+        EndSeason = Seasons.OrderBy(x => x.Id).Last();
+    }
+
     [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
     private void IncrementPage()
     {
@@ -325,7 +324,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             (null, null) => new SeasonRange(MinSeasonId),
             (not null, null) => new SeasonRange(StartSeason.Id),
             (null, not null) => new SeasonRange(MinSeasonId, EndSeason.Id),
-            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id),
+            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id)
         };
 
         var topBatters = await _mediator.Send(new GetTopBattingSeasonRequest(

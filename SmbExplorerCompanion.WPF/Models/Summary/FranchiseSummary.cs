@@ -1,8 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
-using SmbExplorerCompanion.Core.Entities.Summary;
-using SmbExplorerCompanion.WPF.Extensions;
 using SmbExplorerCompanion.WPF.Models.Players;
 
 namespace SmbExplorerCompanion.WPF.Models.Summary;

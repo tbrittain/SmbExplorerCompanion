@@ -26,8 +26,8 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class DelegateAwardsViewModel : ViewModelBase
 {
-    private readonly IMediator _mediator;
     private readonly MappingService _mappingService;
+    private readonly IMediator _mediator;
     private Season? _selectedSeason;
 
     public DelegateAwardsViewModel(IMediator mediator, MappingService mappingService, LookupCache lookupCache)
@@ -58,9 +58,32 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         GetAwardNomineesForSeason().Wait();
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
+
+    private ObservableCollection<SimpleTeam> SeasonTeams { get; } = new();
+    private ObservableCollection<PlayerAward> AllAwards { get; } = new();
+    private List<Position> Positions { get; } = new();
+    public ObservableCollection<PlayerAward> BattingAwards { get; } = new();
+    public ObservableCollection<PlayerAward> PitchingAwards { get; } = new();
+    public ObservableCollection<PlayerAward> FieldingAwards { get; } = new();
+
+    public ObservableCollection<Season> Seasons { get; } = new();
+
+    public Season? SelectedSeason
+    {
+        get => _selectedSeason;
+        set => SetField(ref _selectedSeason, value);
+    }
+
+    public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
+    public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
+    public ObservableCollection<PlayerSeasonBatting> TopSeasonBattingRookies { get; } = new();
+    public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchingRookies { get; } = new();
+    public ObservableGroupedCollection<string, PlayerSeasonBatting> TopBattersPerTeam { get; } = new();
+    public ObservableGroupedCollection<string, PlayerSeasonPitching> TopPitchersPerTeam { get; } = new();
+    public ObservableGroupedCollection<string, PlayerSeasonBatting> TopBattersByPosition { get; } = new();
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -100,14 +123,14 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                     Limit = 10,
                     IncludeChampionAwards = false,
                     OnlyUserAssignableAwards = true
-            }));
+                }));
 
         TopSeasonBatters.Clear();
         var mappedTopBatters = topSeasonBatters
             .Select(async x => await _mappingService.FromCore(x))
             .Select(x => x.Result);
         TopSeasonBatters.AddRange(mappedTopBatters);
-        
+
         if (TopSeasonBatters.Any(x => x.Awards.Any()))
             atLeastOneUserAwardAdded = true;
 
@@ -187,19 +210,17 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 .Select(async x => await _mappingService.FromCore(x))
                 .Select(x => x.Result)
                 .ToList();
-            
+
             // Automate the process of suggesting all-stars. We will use a proxy of if ANY awards have been added to the
             // overall players, then we will not add all-stars. Otherwise, we do it, as a way to save time.
 
             var allStarAward = AllAwards.First(x => x.OriginalName == "All-Star");
             if (!atLeastOneUserAwardAdded)
-            {
                 // Only assign to the top two by default
                 foreach (var player in topBattersPerTeamObservable.Take(2))
                 {
                     player.Awards.Add(allStarAward);
                 }
-            }
 
             TopBattersPerTeam.Add(new ObservableGroup<string, PlayerSeasonBatting>(team.TeamName, topBattersPerTeamObservable));
 
@@ -220,12 +241,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 .ToList();
 
             if (!atLeastOneUserAwardAdded)
-            {
                 foreach (var player in topPitchersPerTeamObservable.Take(2))
                 {
                     player.Awards.Add(allStarAward);
                 }
-            }
 
             TopPitchersPerTeam.Add(new ObservableGroup<string, PlayerSeasonPitching>(team.TeamName, topPitchersPerTeamObservable));
         }
@@ -250,12 +269,10 @@ public partial class DelegateAwardsViewModel : ViewModelBase
                 .ToList();
 
             if (!atLeastOneUserAwardAdded)
-            {
                 foreach (var player in topBattersByPositionObservable.Take(1))
                 {
                     player.Awards.Add(AllAwards.First(x => x.OriginalName == "Silver Slugger"));
                 }
-            }
 
             TopBattersByPosition.Add(new ObservableGroup<string, PlayerSeasonBatting>(position.Name, topBattersByPositionObservable));
         }
@@ -271,7 +288,7 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             MessageBox.Show("No season selected.");
             return;
         }
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
 
         List<PlayerAwardRequestDto> playerAwardRequestDtos = new();
@@ -280,53 +297,45 @@ public partial class DelegateAwardsViewModel : ViewModelBase
         foreach (var topSeasonBatter in TopSeasonBatters)
         {
             if (topSeasonBatter.Awards.Any())
-            {
                 playerAwardRequestDtos.AddRange(topSeasonBatter.Awards
                     .Select(award => new PlayerAwardRequestDto
                     {
                         PlayerId = topSeasonBatter.PlayerId,
                         AwardId = award.Id
                     }));
-            }
         }
 
         foreach (var topSeasonPitcher in TopSeasonPitchers)
         {
             if (topSeasonPitcher.Awards.Any())
-            {
                 playerAwardRequestDtos.AddRange(topSeasonPitcher.Awards
                     .Select(award => new PlayerAwardRequestDto
                     {
                         PlayerId = topSeasonPitcher.PlayerId,
                         AwardId = award.Id
                     }));
-            }
         }
 
         foreach (var topSeasonBattingRookie in TopSeasonBattingRookies)
         {
             if (topSeasonBattingRookie.Awards.Any())
-            {
                 playerAwardRequestDtos.AddRange(topSeasonBattingRookie.Awards
                     .Select(award => new PlayerAwardRequestDto
                     {
                         PlayerId = topSeasonBattingRookie.PlayerId,
                         AwardId = award.Id
                     }));
-            }
         }
 
         foreach (var topSeasonPitchingRookie in TopSeasonPitchingRookies)
         {
             if (topSeasonPitchingRookie.Awards.Any())
-            {
                 playerAwardRequestDtos.AddRange(topSeasonPitchingRookie.Awards
                     .Select(award => new PlayerAwardRequestDto
                     {
                         PlayerId = topSeasonPitchingRookie.PlayerId,
                         AwardId = award.Id
                     }));
-            }
         }
 
         foreach (var topBattersPerTeam in TopBattersPerTeam)
@@ -334,14 +343,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             foreach (var topBatter in topBattersPerTeam)
             {
                 if (topBatter.Awards.Any())
-                {
                     playerAwardRequestDtos.AddRange(topBatter.Awards
                         .Select(award => new PlayerAwardRequestDto
                         {
                             PlayerId = topBatter.PlayerId,
                             AwardId = award.Id
                         }));
-                }
             }
         }
 
@@ -350,14 +357,12 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             foreach (var topPitcher in topPitchersPerTeam)
             {
                 if (topPitcher.Awards.Any())
-                {
                     playerAwardRequestDtos.AddRange(topPitcher.Awards
                         .Select(award => new PlayerAwardRequestDto
                         {
                             PlayerId = topPitcher.PlayerId,
                             AwardId = award.Id
                         }));
-                }
             }
         }
 
@@ -366,53 +371,25 @@ public partial class DelegateAwardsViewModel : ViewModelBase
             foreach (var topBatter in topBattersPerPosition)
             {
                 if (topBatter.Awards.Any())
-                {
                     playerAwardRequestDtos.AddRange(topBatter.Awards
                         .Select(award => new PlayerAwardRequestDto
                         {
                             PlayerId = topBatter.PlayerId,
                             AwardId = award.Id
                         }));
-                }
             }
         }
 
         var request = new AddPlayerAwardsRequest(playerAwardRequestDtos.Distinct().ToList(), SelectedSeason.Id);
         await _mediator.Send(request);
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
         MessageBox.Show($"Player awards for Season {SelectedSeason.Number} added successfully!");
     }
 
-    private ObservableCollection<SimpleTeam> SeasonTeams { get; } = new();
-    private ObservableCollection<PlayerAward> AllAwards { get; } = new();
-    private List<Position> Positions { get; } = new();
-    public ObservableCollection<PlayerAward> BattingAwards { get; } = new();
-    public ObservableCollection<PlayerAward> PitchingAwards { get; } = new();
-    public ObservableCollection<PlayerAward> FieldingAwards { get; } = new();
-
-    public ObservableCollection<Season> Seasons { get; } = new();
-
-    public Season? SelectedSeason
-    {
-        get => _selectedSeason;
-        set => SetField(ref _selectedSeason, value);
-    }
-
-    public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
-    public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
-    public ObservableCollection<PlayerSeasonBatting> TopSeasonBattingRookies { get; } = new();
-    public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchingRookies { get; } = new();
-    public ObservableGroupedCollection<string, PlayerSeasonBatting> TopBattersPerTeam { get; } = new();
-    public ObservableGroupedCollection<string, PlayerSeasonPitching> TopPitchersPerTeam { get; } = new();
-    public ObservableGroupedCollection<string, PlayerSeasonBatting> TopBattersByPosition { get; } = new();
-
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            PropertyChanged -= OnPropertyChanged;
-        }
+        if (disposing) PropertyChanged -= OnPropertyChanged;
 
         base.Dispose(disposing);
     }

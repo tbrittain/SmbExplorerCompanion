@@ -22,19 +22,20 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class TopPitchingCareersViewModel : ViewModelBase
 {
+    private const int ResultsPerPage = 20;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
+    private Season? _endSeason;
+    private bool _isPlayoffs;
     private bool _onlyHallOfFamers;
     private int _pageNumber = 1;
-    private PlayerPitchingCareer? _selectedPlayer;
-    private PitcherRole? _selectedPitcherRole;
-    private readonly MappingService _mappingService;
     private ObservableCollection<Season> _selectableEndSeasons;
-    private Season? _startSeason;
-    private Season? _endSeason;
     private Chemistry? _selectedChemistry;
+    private PitcherRole? _selectedPitcherRole;
+    private PlayerPitchingCareer? _selectedPlayer;
     private ThrowHandedness? _selectedThrowHandedness;
-    private bool _isPlayoffs;
+    private Season? _startSeason;
 
     public TopPitchingCareersViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -156,13 +157,6 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    private void ClearSeasons()
-    {
-        StartSeason = null;
-        EndSeason = null;
-    }
-
     public bool OnlyHallOfFamers
     {
         get => _onlyHallOfFamers;
@@ -184,6 +178,18 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     {
         get => _selectedPitcherRole;
         set => SetField(ref _selectedPitcherRole, value);
+    }
+
+    private bool ShortCircuitPageNumberRefresh { get; set; }
+    private bool CanSelectPreviousPage => PageNumber > 1;
+
+    private bool CanSelectNextPage => TopPitchingCareers.Count == ResultsPerPage;
+
+    [RelayCommand]
+    private void ClearSeasons()
+    {
+        StartSeason = null;
+        EndSeason = null;
     }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -217,13 +223,6 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             }
         }
     }
-
-    private bool ShortCircuitPageNumberRefresh { get; set; }
-
-    private const int ResultsPerPage = 20;
-    private bool CanSelectPreviousPage => PageNumber > 1;
-
-    private bool CanSelectNextPage => TopPitchingCareers.Count == ResultsPerPage;
 
     [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
     private void IncrementPage()

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Windows.Controls;
-using System.Windows.Input;
 using SmbExplorerCompanion.WPF.EventHandlers;
 
 namespace SmbExplorerCompanion.WPF.Views;

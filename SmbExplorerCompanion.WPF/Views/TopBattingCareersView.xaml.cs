@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
 using SmbExplorerCompanion.WPF.ViewModels;
@@ -22,10 +21,10 @@ public partial class TopBattingCareersView
         viewModel.SortColumn = columnPropertyName;
 
         await viewModel.GetTopBattingCareers();
-        
+
         TopBattingCareersDataGrid.Items.SortDescriptions.Clear();
         TopBattingCareersDataGrid.Items.SortDescriptions.Add(new SortDescription(columnPropertyName, ListSortDirection.Descending));
-        
+
         e.Handled = true;
     }
 }
