@@ -25,7 +25,9 @@ public class GetHistoricalTeamsRequest : IRequest<IEnumerable<HistoricalTeamDto>
         }
 
         public async Task<IEnumerable<HistoricalTeamDto>> Handle(GetHistoricalTeamsRequest request,
-            CancellationToken cancellationToken) =>
-            await _teamRepository.GetHistoricalTeams(request.SeasonRange, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _teamRepository.GetHistoricalTeams(request.SeasonRange, cancellationToken);
+        }
     }
 }

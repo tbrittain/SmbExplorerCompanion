@@ -12,7 +12,7 @@ public class AddFranchiseRequest : IRequest<FranchiseDto>
     }
 
     private string Name { get; }
-    
+
     // ReSharper disable once UnusedType.Global
     internal class AddFranchiseHandler : IRequestHandler<AddFranchiseRequest, FranchiseDto>
     {

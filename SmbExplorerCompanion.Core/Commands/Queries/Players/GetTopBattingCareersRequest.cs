@@ -2,7 +2,6 @@
 using MediatR;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
@@ -54,7 +53,7 @@ public class GetTopBattingCareersRequest : IRequest<List<PlayerCareerBattingDto>
 
             return await _positionPlayerCareerRepository.GetBattingCareers(
                 request.Filters,
-                cancellationToken: cancellationToken);
+                cancellationToken);
         }
     }
 }

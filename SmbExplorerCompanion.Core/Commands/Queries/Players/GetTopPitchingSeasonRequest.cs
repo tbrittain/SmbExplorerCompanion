@@ -10,7 +10,7 @@ public class GetTopPitchingSeasonRequest : IRequest<List<PlayerPitchingSeasonDto
     {
         Filters = filters;
     }
-    
+
     private GetPitchingSeasonsFilters Filters { get; }
 
     // ReSharper disable once UnusedType.Global
@@ -24,9 +24,11 @@ public class GetTopPitchingSeasonRequest : IRequest<List<PlayerPitchingSeasonDto
         }
 
         public async Task<List<PlayerPitchingSeasonDto>> Handle(GetTopPitchingSeasonRequest request,
-            CancellationToken cancellationToken) =>
-            await _pitcherSeasonRepository.GetPitchingSeasons(
-                filters: request.Filters,
-                cancellationToken: cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _pitcherSeasonRepository.GetPitchingSeasons(
+                request.Filters,
+                cancellationToken);
+        }
     }
 }

@@ -23,7 +23,9 @@ public class GetPlayerOverviewRequest : IRequest<PlayerOverviewDto>
             _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<PlayerOverviewDto> Handle(GetPlayerOverviewRequest request, CancellationToken cancellationToken) =>
-            await _generalPlayerRepository.GetHistoricalPlayer(request.PlayerId, cancellationToken);
+        public async Task<PlayerOverviewDto> Handle(GetPlayerOverviewRequest request, CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetHistoricalPlayer(request.PlayerId, cancellationToken);
+        }
     }
 }

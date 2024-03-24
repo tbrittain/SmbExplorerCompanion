@@ -1,6 +1,4 @@
-﻿using SmbExplorerCompanion.Core.Entities.Lookups;
-
-namespace SmbExplorerCompanion.Core.Entities.Players;
+﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
 public class PlayerBattingSeasonDto : PlayerSeasonDto
 {

@@ -15,10 +15,10 @@ public interface IPitcherCareerRepository
     public Task<List<PlayerCareerPitchingDto>> GetPitchingCareers(
         GetPitchingCareersFilters filters,
         CancellationToken cancellationToken = default);
-    
+
     public Task<List<PlayerCareerPitchingDto>> GetHallOfFameCandidates(int seasonId,
         CancellationToken cancellationToken = default);
-    
+
     public Task<List<SimilarPlayerDto>> GetSimilarPitchingCareers(
         int playerId,
         CancellationToken cancellationToken = default);

@@ -23,7 +23,7 @@ public interface IGeneralPlayerRepository
         bool isPitcher,
         int? pitcherRoleId = null,
         CancellationToken cancellationToken = default);
-    
+
     public Task<PlayerKpiPercentileDto> GetPlayerKpiPercentiles(
         int playerId,
         int seasonId,

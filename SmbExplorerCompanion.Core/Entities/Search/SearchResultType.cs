@@ -3,5 +3,5 @@
 public enum SearchResultType
 {
     Players,
-    Teams,
+    Teams
 }

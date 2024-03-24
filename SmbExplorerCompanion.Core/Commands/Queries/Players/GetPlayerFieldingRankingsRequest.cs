@@ -31,11 +31,13 @@ public class GetPlayerFieldingRankingsRequest : IRequest<List<PlayerFieldingRank
         }
 
         public async Task<List<PlayerFieldingRankingDto>> Handle(GetPlayerFieldingRankingsRequest request,
-            CancellationToken cancellationToken) =>
-            await _generalPlayerRepository.GetPlayerFieldingRankings(request.SeasonId,
+            CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetPlayerFieldingRankings(request.SeasonId,
                 request.PrimaryPositionId,
                 request.PageNumber,
                 request.Limit,
                 cancellationToken);
+        }
     }
 }

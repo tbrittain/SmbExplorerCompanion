@@ -12,19 +12,21 @@ public class GetTeamOverviewRequest : IRequest<TeamOverviewDto>
     }
 
     private int TeamId { get; }
-    
+
     // ReSharper disable once UnusedType.Global
     internal class GetTeamOverviewHandler : IRequestHandler<GetTeamOverviewRequest, TeamOverviewDto>
     {
         private readonly ITeamRepository _teamRepository;
-        
+
         public GetTeamOverviewHandler(ITeamRepository teamRepository)
         {
             _teamRepository = teamRepository;
         }
 
         public async Task<TeamOverviewDto> Handle(GetTeamOverviewRequest request,
-            CancellationToken cancellationToken) =>
-            await _teamRepository.GetTeamOverview(request.TeamId, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _teamRepository.GetTeamOverview(request.TeamId, cancellationToken);
+        }
     }
 }

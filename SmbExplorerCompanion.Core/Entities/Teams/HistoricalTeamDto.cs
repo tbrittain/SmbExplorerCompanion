@@ -6,7 +6,7 @@ public class HistoricalTeamDto : TeamBaseDto
     public int NumGames { get; set; }
     public int NumRegularSeasonWins { get; set; }
     public int NumRegularSeasonLosses { get; set; }
-    public double WinLossPct => (double)NumRegularSeasonWins / (NumGames - NumPlayoffGames);
+    public double WinLossPct => (double) NumRegularSeasonWins / (NumGames - NumPlayoffGames);
     public int GamesOver500 => NumRegularSeasonWins - NumRegularSeasonLosses;
     private int NumPlayoffGames => NumPlayoffWins + NumPlayoffLosses;
     public int NumPlayoffWins { get; set; }

@@ -16,7 +16,9 @@ public class GetAllFranchisesRequest : IRequest<IEnumerable<FranchiseDto>>
             _franchiseRepository = franchiseRepository;
         }
 
-        public async Task<IEnumerable<FranchiseDto>> Handle(GetAllFranchisesRequest request, CancellationToken cancellationToken) =>
-            await _franchiseRepository.GetAllAsync(cancellationToken);
+        public async Task<IEnumerable<FranchiseDto>> Handle(GetAllFranchisesRequest request, CancellationToken cancellationToken)
+        {
+            return await _franchiseRepository.GetAllAsync(cancellationToken);
+        }
     }
 }

@@ -23,7 +23,9 @@ public class GetSeasonByTeamHistoryRequest : IRequest<SeasonDto?>
             _seasonSearchService = seasonSearchService;
         }
 
-        public async Task<SeasonDto?> Handle(GetSeasonByTeamHistoryRequest request, CancellationToken cancellationToken) =>
-            await _seasonSearchService.GetByTeamSeasonIdAsync(request.TeamSeasonId, cancellationToken);
+        public async Task<SeasonDto?> Handle(GetSeasonByTeamHistoryRequest request, CancellationToken cancellationToken)
+        {
+            return await _seasonSearchService.GetByTeamSeasonIdAsync(request.TeamSeasonId, cancellationToken);
+        }
     }
 }

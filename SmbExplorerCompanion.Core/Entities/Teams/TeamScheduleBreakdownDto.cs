@@ -5,7 +5,8 @@ public class DivisionScheduleBreakdownDto
     public List<HashSet<TeamScheduleBreakdownDto>> TeamScheduleBreakdowns { get; set; } = new();
 }
 
-public record TeamScheduleBreakdownDto(int TeamHistoryId,
+public record TeamScheduleBreakdownDto(
+    int TeamHistoryId,
     string TeamName,
     int OpponentTeamHistoryId,
     string OpponentTeamName,

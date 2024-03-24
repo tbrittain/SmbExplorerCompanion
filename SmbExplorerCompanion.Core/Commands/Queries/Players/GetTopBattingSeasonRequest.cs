@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
@@ -25,9 +24,11 @@ public class GetTopBattingSeasonRequest : IRequest<List<PlayerBattingSeasonDto>>
         }
 
         public async Task<List<PlayerBattingSeasonDto>> Handle(GetTopBattingSeasonRequest request,
-            CancellationToken cancellationToken) =>
-            await _positionPlayerSeasonRepository.GetBattingSeasons(
+            CancellationToken cancellationToken)
+        {
+            return await _positionPlayerSeasonRepository.GetBattingSeasons(
                 request.Filters,
-                cancellationToken: cancellationToken);
+                cancellationToken);
+        }
     }
 }

@@ -2,7 +2,6 @@
 using MediatR;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
@@ -52,7 +51,7 @@ public class GetTopPitchingCareersRequest : IRequest<List<PlayerCareerPitchingDt
 
             return await _pitcherCareerRepository.GetPitchingCareers(
                 request.Filters,
-                cancellationToken: cancellationToken);
+                cancellationToken);
         }
     }
 }

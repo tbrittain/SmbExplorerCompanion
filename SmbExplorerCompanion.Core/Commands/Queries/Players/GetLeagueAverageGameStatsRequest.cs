@@ -27,10 +27,12 @@ public class GetLeagueAverageGameStatsRequest : IRequest<GameStatDto>
             _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<GameStatDto> Handle(GetLeagueAverageGameStatsRequest request, CancellationToken cancellationToken) =>
-            await _generalPlayerRepository.GetLeagueAverageGameStats(request.SeasonId,
+        public async Task<GameStatDto> Handle(GetLeagueAverageGameStatsRequest request, CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetLeagueAverageGameStats(request.SeasonId,
                 request.IsPitcher,
                 request.PitcherRoleId,
                 cancellationToken);
+        }
     }
 }

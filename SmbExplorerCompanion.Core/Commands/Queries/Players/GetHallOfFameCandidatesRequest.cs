@@ -16,8 +16,8 @@ public class GetHallOfFameCandidatesRequest : IRequest<RetiredPlayerCareerStatsD
     // ReSharper disable once UnusedType.Global
     internal class GetHallOfFameCandidatesHandler : IRequestHandler<GetHallOfFameCandidatesRequest, RetiredPlayerCareerStatsDto>
     {
-        private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
         private readonly IPitcherCareerRepository _pitcherCareerRepository;
+        private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
 
         public GetHallOfFameCandidatesHandler(IPositionPlayerCareerRepository positionPlayerCareerRepository,
             IPitcherCareerRepository pitcherCareerRepository)

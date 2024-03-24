@@ -15,10 +15,10 @@ public interface IPositionPlayerCareerRepository
     public Task<List<PlayerCareerBattingDto>> GetBattingCareers(
         GetBattingCareersFilters filters,
         CancellationToken cancellationToken = default);
-    
+
     public Task<List<PlayerCareerBattingDto>> GetHallOfFameCandidates(int seasonId,
         CancellationToken cancellationToken = default);
-    
+
     public Task<List<SimilarPlayerDto>> GetSimilarBattingCareers(
         int playerId,
         CancellationToken cancellationToken = default);
