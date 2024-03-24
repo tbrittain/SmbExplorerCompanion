@@ -10,10 +10,10 @@ namespace SmbExplorerCompanion.Database.Services;
 
 public class TeamRepository : ITeamRepository
 {
-    private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
-    private readonly IPositionPlayerSeasonRepository _positionPlayerSeasonRepository;
+    private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
+    private readonly IPositionPlayerSeasonRepository _positionPlayerSeasonRepository;
 
     public TeamRepository(SmbExplorerCompanionDbContext dbContext,
         IApplicationContext applicationContext,
@@ -98,11 +98,11 @@ public class TeamRepository : ITeamRepository
                 NumGames = x.Sum(y => y.Wins + y.Losses + (y.PlayoffWins ?? 0) + (y.PlayoffLosses ?? 0)),
                 NumRegularSeasonWins = x.Sum(y => y.Wins),
                 WinDiffFromPrevSeason = previousSeasonId != null
-                    ? (x
+                    ? x
                         .Where(y => y.SeasonId == seasonRange.EndSeasonId)
-                        .Sum(y => y.Wins)) - (x
+                        .Sum(y => y.Wins) - x
                         .Where(y => y.SeasonId == previousSeasonId)
-                        .Sum(y => y.Wins))
+                        .Sum(y => y.Wins)
                     : 0,
                 NumRegularSeasonLosses = x.Sum(y => y.Losses),
                 NumPlayoffWins = x.Sum(y => y.PlayoffWins ?? 0),
@@ -161,7 +161,7 @@ public class TeamRepository : ITeamRepository
                     NumConferenceTitles = x.NumConferenceTitles,
                     NumPlayoffAppearances = x.NumPlayoffAppearances,
                     NumRunsScored = x.NumRunsScored,
-                    NumRunsAllowed = x.NumRunsAllowed,
+                    NumRunsAllowed = x.NumRunsAllowed
                 };
 
                 var teamPlayers = playerTeamHistories[x.TeamId];
@@ -261,7 +261,7 @@ public class TeamRepository : ITeamRepository
                         .Where(y => y.SeriesNumber == maxPlayoffSeries)
                         .ToList())
                     .Count(homePlayoffSchedule => homePlayoffSchedule.Any()),
-                NumChampionships = x.Count(y => y.ChampionshipWinner != null),
+                NumChampionships = x.Count(y => y.ChampionshipWinner != null)
             })
             .FirstAsync(cancellationToken: cancellationToken);
 
@@ -292,7 +292,7 @@ public class TeamRepository : ITeamRepository
                 PlayoffSeed = x.PlayoffSeed,
                 WonConference = x.HomePlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries) ||
                                 x.AwayPlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries),
-                WonChampionship = x.ChampionshipWinner != null,
+                WonChampionship = x.ChampionshipWinner != null
             })
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
@@ -353,7 +353,6 @@ public class TeamRepository : ITeamRepository
                     .ToList();
 
                 if (x.IsHallOfFamer)
-                {
                     dto.Awards.Add(new PlayerAwardDto
                     {
                         Id = -1,
@@ -362,7 +361,6 @@ public class TeamRepository : ITeamRepository
                         OriginalName = "Hall of Fame",
                         OmitFromGroupings = false
                     });
-                }
 
                 var numChampionships = seasonsWithTeam
                     .Count(y => y.ChampionshipWinner is not null);
@@ -439,7 +437,7 @@ public class TeamRepository : ITeamRepository
         var teamId = teamSeason.TeamId;
 
         var seasonPlayoffsCompleted = await _dbContext.ChampionshipWinners
-            .AnyAsync(x => x.SeasonId == seasonId, cancellationToken: cancellationToken);
+            .AnyAsync(x => x.SeasonId == seasonId, cancellationToken);
 
         var teamSeasonDetailDto = new TeamSeasonDetailDto
         {
@@ -474,7 +472,7 @@ public class TeamRepository : ITeamRepository
             PlayoffSeed = teamSeason.PlayoffSeed,
             WonConference = teamSeason.HomePlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries) ||
                             teamSeason.AwayPlayoffSchedule.Any(y => y.SeriesNumber == maxPlayoffSeries),
-            WonChampionship = teamSeason.ChampionshipWinner is not null,
+            WonChampionship = teamSeason.ChampionshipWinner is not null
         };
 
         if (teamSeasonDetailDto.MadePlayoffs && seasonPlayoffsCompleted)
@@ -493,7 +491,7 @@ public class TeamRepository : ITeamRepository
                     IsPlayoffs = true,
                     TeamId = teamId
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
 
             teamSeasonDetailDto.PlayoffBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
                 new GetBattingSeasonsFilters
@@ -502,7 +500,7 @@ public class TeamRepository : ITeamRepository
                     IsPlayoffs = true,
                     TeamId = teamId
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
         }
 
         teamSeasonDetailDto.RegularSeasonPitching = await _pitcherSeasonRepository.GetPitchingSeasons(
@@ -512,7 +510,7 @@ public class TeamRepository : ITeamRepository
                 IsPlayoffs = false,
                 TeamId = teamId
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         teamSeasonDetailDto.RegularSeasonBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
             new GetBattingSeasonsFilters
@@ -521,7 +519,7 @@ public class TeamRepository : ITeamRepository
                 IsPlayoffs = false,
                 TeamId = teamId
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         return teamSeasonDetailDto;
     }
@@ -541,7 +539,7 @@ public class TeamRepository : ITeamRepository
                 .Where(x => x.Id == teamSeasonId)
                 .Select(x => x.DivisionId)
                 .SingleAsync(cancellationToken: cancellationToken);
-                
+
             teamSeasonIds = await _dbContext.SeasonTeamHistory
                 .Include(x => x.Division)
                 .Where(x => x.SeasonId == seasonId)
@@ -574,7 +572,6 @@ public class TeamRepository : ITeamRepository
                 .Select(x =>
                 {
                     if (x.HomeTeamHistoryId == currentTeamSeasonId)
-                    {
                         return new TeamScheduleBreakdownDto(
                             x.HomeTeamHistoryId,
                             x.HomeTeamHistory.TeamNameHistory.Name,
@@ -584,7 +581,6 @@ public class TeamRepository : ITeamRepository
                             x.GlobalGameNumber,
                             x.HomeScore!.Value,
                             x.AwayScore!.Value);
-                    }
 
                     return new TeamScheduleBreakdownDto(
                         x.AwayTeamHistoryId,
@@ -651,11 +647,11 @@ public class TeamRepository : ITeamRepository
                 .Round;
 
             var numWins = series
-                .Count(x => x.IsHomeTeam && x.HomeScore > x.AwayScore ||
-                            !x.IsHomeTeam && x.AwayScore > x.HomeScore);
+                .Count(x => (x.IsHomeTeam && x.HomeScore > x.AwayScore) ||
+                            (!x.IsHomeTeam && x.AwayScore > x.HomeScore));
             var numLosses = series
-                .Count(x => x.IsHomeTeam && x.HomeScore < x.AwayScore ||
-                            !x.IsHomeTeam && x.AwayScore < x.HomeScore);
+                .Count(x => (x.IsHomeTeam && x.HomeScore < x.AwayScore) ||
+                            (!x.IsHomeTeam && x.AwayScore < x.HomeScore));
             var teamWonSeries = numWins > numLosses;
             var opponentTeamSeasonId = series.First().OpponentTeamSeasonId;
 
@@ -675,7 +671,7 @@ public class TeamRepository : ITeamRepository
                 OpponentTeamName = opponentTeamName,
                 WonSeries = teamWonSeries,
                 NumWins = numWins,
-                NumLosses = numLosses,
+                NumLosses = numLosses
             };
             playoffResults.Add(playoffRoundResult);
         }

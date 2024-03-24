@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
@@ -65,14 +64,12 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
 
         List<int> activePlayerIds = new();
         if (filters.OnlyActivePlayers)
-        {
             activePlayerIds = await _dbContext.Players
                 .Include(x => x.PlayerSeasons)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PlayerSeasons.Any(y => y.SeasonId == mostRecentSeason.Id))
                 .Select(x => x.Id)
                 .ToListAsync(cancellationToken: cancellationToken);
-        }
 
         var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
             .Include(x => x.PlayerSeason)
@@ -136,7 +133,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                         : y.PlayerSeason.PlayerTeamHistory
                             .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                             ? 0
-                            : y.PlayerSeason.Salary),
+                            : y.PlayerSeason.Salary)
             })
             .OrderBy(orderBy)
             .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
@@ -182,17 +179,12 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             battingDto.Ops = battingDto.Obp + battingDto.Slg;
 
             if (battingDto.NumChampionships > 0)
-            {
                 foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
                 {
                     battingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
-            }
 
-            if (battingDto.IsHallOfFamer)
-            {
-                battingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
-            }
+            if (battingDto.IsHallOfFamer) battingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
         }
 
         return playerBattingDtos;
@@ -268,12 +260,10 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             battingDto.Ops = battingDto.Obp + battingDto.Slg;
 
             if (battingDto.NumChampionships > 0)
-            {
                 foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
                 {
                     battingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
-            }
         }
 
         return battingDtos
@@ -290,7 +280,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             {
                 PlayerId = playerId
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         if (!battingCareers.Any())
             throw new Exception($"No player career found for player ID {playerId}");

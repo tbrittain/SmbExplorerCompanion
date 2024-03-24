@@ -9,8 +9,8 @@ namespace SmbExplorerCompanion.Database.Services.Players;
 
 public class PitcherSeasonRepository : IPitcherSeasonRepository
 {
-    private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
+    private readonly SmbExplorerCompanionDbContext _dbContext;
 
     public PitcherSeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
@@ -48,10 +48,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
 
         var onlyRookies = filters.OnlyRookies;
         if (filters.Seasons?.StartSeasonId == minSeasonId ||
-            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId)
-        {
-            onlyRookies = false;
-        }
+            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId) onlyRookies = false;
 
         List<int> rookiePlayerIds = new();
         if (onlyRookies)
@@ -171,12 +168,10 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .ToListAsync(cancellationToken: cancellationToken);
 
         if (filters.IncludeChampionAwards)
-        {
             foreach (var player in playerPitchingDtos.Where(player => player.IsChampion))
             {
                 player.AwardIds.Add((int) VirtualAward.Champion);
             }
-        }
 
         return playerPitchingDtos;
     }

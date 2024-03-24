@@ -42,7 +42,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 {
                     PlayerId = playerId
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
 
         var playerCareerPitchingDtos =
             await _pitcherCareerRepository.GetPitchingCareers(
@@ -50,7 +50,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 {
                     PlayerId = playerId
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
 
         var playerOverview = await GetPlayerOverview(playerId, cancellationToken);
 
@@ -64,7 +64,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 {
                     PlayerId = playerId
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
         playerOverview.PlayerSeasonBatting = playerSeasonBattingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
@@ -74,7 +74,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             {
                 PlayerId = playerId
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
         playerOverview.PlayerSeasonPitching = playerSeasonPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
             .ToList();
@@ -86,7 +86,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     PlayerId = playerId,
                     IsPlayoffs = true
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
 
         playerOverview.PlayerPlayoffBatting = playerPlayoffBattingDtos
             .OrderByDescending(x => x.SeasonNumber)
@@ -99,7 +99,7 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                     PlayerId = playerId,
                     IsPlayoffs = true
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
 
         playerOverview.PlayerPlayoffPitching = playerPlayoffPitchingDtos
             .OrderByDescending(x => x.SeasonNumber)
@@ -247,11 +247,9 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .Where(x => x.PlayerSeason.SeasonId == seasonId);
 
         if (isPitcher)
-        {
             queryable = pitcherRoleId.HasValue
                 ? queryable.Where(x => x.PlayerSeason.Player.PitcherRoleId == pitcherRoleId)
                 : queryable.Where(x => x.PlayerSeason.Player.PitcherRoleId != null);
-        }
 
         var averageGameStats = await queryable
             .GroupBy(x => 1)
@@ -299,11 +297,9 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
             .Where(x => x.PlayerSeason.PlayerId != playerId);
 
         if (isPitcher)
-        {
             queryable = pitcherRoleId.HasValue
                 ? queryable.Where(x => x.PlayerSeason.Player.PitcherRoleId == pitcherRoleId)
                 : queryable.Where(x => x.PlayerSeason.Player.PitcherRoleId != null);
-        }
 
         var numPlayers = await queryable
             .Select(x => x.PlayerSeason.PlayerId)
@@ -382,11 +378,6 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
         return playerGameStatPercentileDto;
     }
 
-    private static int RoundPercentile(int numGreaterThan, int numPlayers)
-    {
-        return (int) Math.Round(numGreaterThan / (double) numPlayers * 100);
-    }
-
     public async Task<PlayerKpiPercentileDto> GetPlayerKpiPercentiles(
         int playerId,
         int seasonId,
@@ -430,14 +421,14 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanHits = await battingQueryable
-                .Where(x => (hits / (double) plateAppearances) > (x.Hits / (double) x.PlateAppearances))
+                .Where(x => hits / (double) plateAppearances > x.Hits / (double) x.PlateAppearances)
                 .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanHomeRuns = await battingQueryable
-                .Where(x => (homeRuns / (double) plateAppearances) > (x.HomeRuns / (double) x.PlateAppearances))
+                .Where(x => homeRuns / (double) plateAppearances > x.HomeRuns / (double) x.PlateAppearances)
                 .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
@@ -451,14 +442,14 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 .CountAsync(cancellationToken: cancellationToken);
 
             var greaterThanStolenBases = await battingQueryable
-                .Where(x => (stolenBases / (double) plateAppearances) > (x.StolenBases / (double) x.PlateAppearances))
+                .Where(x => stolenBases / (double) plateAppearances > x.StolenBases / (double) x.PlateAppearances)
                 .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
                 .CountAsync(cancellationToken: cancellationToken);
 
             var lessThanBatterStrikeouts = await battingQueryable
-                .Where(x => (batterStrikeouts / (double) plateAppearances) < (x.Strikeouts / (double) x.PlateAppearances))
+                .Where(x => batterStrikeouts / (double) plateAppearances < x.Strikeouts / (double) x.PlateAppearances)
                 .Where(x => x.PlateAppearances >= season.NumGamesRegularSeason * 3.1)
                 .Select(x => x.PlayerSeason.PlayerId)
                 .Distinct()
@@ -511,10 +502,8 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 .Where(x => x.PlayerSeason.PlayerId != playerId);
 
             if (pitcherRoleId.HasValue)
-            {
                 pitchingQueryable = pitchingQueryable
                     .Where(x => x.PlayerSeason.Player.PitcherRoleId == pitcherRoleId);
-            }
 
             var numPlayers = await pitchingQueryable
                 .Select(x => x.PlayerSeason.PlayerId)
@@ -582,6 +571,11 @@ public class GeneralPlayerRepository : IGeneralPlayerRepository
                 PlayerName = $"{x.FirstName} {x.LastName}"
             })
             .FirstAsync();
+    }
+
+    private static int RoundPercentile(int numGreaterThan, int numPlayers)
+    {
+        return (int) Math.Round(numGreaterThan / (double) numPlayers * 100);
     }
 
     private async Task<PlayerOverviewDto> GetPlayerOverview(int playerId, CancellationToken cancellationToken)

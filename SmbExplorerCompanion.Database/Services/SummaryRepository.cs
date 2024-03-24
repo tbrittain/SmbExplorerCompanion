@@ -7,8 +7,8 @@ namespace SmbExplorerCompanion.Database.Services;
 
 public class SummaryRepository : ISummaryRepository
 {
-    private readonly SmbExplorerCompanionDbContext _context;
     private readonly IApplicationContext _applicationContext;
+    private readonly SmbExplorerCompanionDbContext _context;
     private readonly IPitcherCareerRepository _pitcherCareerRepository;
     private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
 
@@ -124,15 +124,12 @@ public class SummaryRepository : ISummaryRepository
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
                 StatName = "Home Runs",
-                StatValue = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns)),
+                StatValue = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.HomeRuns))
             })
             .OrderByDescending(x => x.StatValue)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (topHomeRuns is not null)
-        {
-            franchiseSummaryDto.TopHomeRuns = topHomeRuns;
-        }
+        if (topHomeRuns is not null) franchiseSummaryDto.TopHomeRuns = topHomeRuns;
 
         var topHits = await playersIQueryable
             .Select(x => new PlayerLeaderSummaryDto
@@ -140,15 +137,12 @@ public class SummaryRepository : ISummaryRepository
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
                 StatName = "Hits",
-                StatValue = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits)),
+                StatValue = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.Hits))
             })
             .OrderByDescending(x => x.StatValue)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (topHits is not null)
-        {
-            franchiseSummaryDto.TopHits = topHits;
-        }
+        if (topHits is not null) franchiseSummaryDto.TopHits = topHits;
 
         var topRunsBattedIn = await playersIQueryable
             .Select(x => new PlayerLeaderSummaryDto
@@ -156,15 +150,12 @@ public class SummaryRepository : ISummaryRepository
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
                 StatName = "Runs Batted In",
-                StatValue = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn)),
+                StatValue = x.PlayerSeasons.Sum(y => y.BattingStats.Sum(z => z.RunsBattedIn))
             })
             .OrderByDescending(x => x.StatValue)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (topRunsBattedIn is not null)
-        {
-            franchiseSummaryDto.TopRunsBattedIn = topRunsBattedIn;
-        }
+        if (topRunsBattedIn is not null) franchiseSummaryDto.TopRunsBattedIn = topRunsBattedIn;
 
         var topWins = await playersIQueryable
             .Select(x => new PlayerLeaderSummaryDto
@@ -172,15 +163,12 @@ public class SummaryRepository : ISummaryRepository
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
                 StatName = "Wins",
-                StatValue = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins)),
+                StatValue = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Wins))
             })
             .OrderByDescending(x => x.StatValue)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (topWins is not null)
-        {
-            franchiseSummaryDto.TopWins = topWins;
-        }
+        if (topWins is not null) franchiseSummaryDto.TopWins = topWins;
 
         var topSaves = await playersIQueryable
             .Select(x => new PlayerLeaderSummaryDto
@@ -188,15 +176,12 @@ public class SummaryRepository : ISummaryRepository
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
                 StatName = "Saves",
-                StatValue = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves)),
+                StatValue = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Saves))
             })
             .OrderByDescending(x => x.StatValue)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (topSaves is not null)
-        {
-            franchiseSummaryDto.TopSaves = topSaves;
-        }
+        if (topSaves is not null) franchiseSummaryDto.TopSaves = topSaves;
 
         var topStrikeouts = await playersIQueryable
             .Select(x => new PlayerLeaderSummaryDto
@@ -204,31 +189,28 @@ public class SummaryRepository : ISummaryRepository
                 PlayerId = x.Id,
                 PlayerName = $"{x.FirstName} {x.LastName}",
                 StatName = "Strikeouts",
-                StatValue = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts)),
+                StatValue = x.PlayerSeasons.Sum(y => y.PitchingStats.Sum(z => z.Strikeouts))
             })
             .OrderByDescending(x => x.StatValue)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (topStrikeouts is not null)
-        {
-            franchiseSummaryDto.TopStrikeouts = topStrikeouts;
-        }
+        if (topStrikeouts is not null) franchiseSummaryDto.TopStrikeouts = topStrikeouts;
 
         var currentBattingGreats = await _positionPlayerCareerRepository.GetBattingCareers(
             new GetBattingCareersFilters
             {
                 Limit = 5,
-                OnlyActivePlayers = true,
+                OnlyActivePlayers = true
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         var currentPitchingGreats = await _pitcherCareerRepository.GetPitchingCareers(
             new GetPitchingCareersFilters
             {
                 Limit = 5,
-                OnlyActivePlayers = true,
+                OnlyActivePlayers = true
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         var currentGreats = currentBattingGreats
             .Concat(currentPitchingGreats.Cast<PlayerCareerBaseDto>())
@@ -261,7 +243,7 @@ public class SummaryRepository : ISummaryRepository
             .Select(x => new ConferenceSummaryDto
             {
                 Id = x.Id,
-                ConferenceName = x.Name,
+                ConferenceName = x.Name
             })
             .ToList();
 
@@ -275,7 +257,7 @@ public class SummaryRepository : ISummaryRepository
                 .Select(x => new DivisionSummaryDto
                 {
                     Id = x.Id,
-                    DivisionName = x.Name,
+                    DivisionName = x.Name
                 })
                 .ToList();
 
@@ -304,7 +286,7 @@ public class SummaryRepository : ISummaryRepository
                                 PlayoffSeed = x.PlayoffSeed,
                                 PlayoffWins = x.PlayoffWins,
                                 PlayoffLosses = x.PlayoffLosses,
-                                IsDivisionChampion = x.GamesBehind == 0,
+                                IsDivisionChampion = x.GamesBehind == 0
                             };
 
                         if (maxPlayoffSeries is not null)

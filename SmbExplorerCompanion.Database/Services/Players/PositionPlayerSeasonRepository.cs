@@ -9,8 +9,8 @@ namespace SmbExplorerCompanion.Database.Services.Players;
 
 public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
 {
-    private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
+    private readonly SmbExplorerCompanionDbContext _dbContext;
 
     public PositionPlayerSeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
@@ -48,10 +48,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
 
         var onlyRookies = filters.OnlyRookies;
         if (filters.Seasons?.StartSeasonId == minSeasonId ||
-            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId)
-        {
-            onlyRookies = false;
-        }
+            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId) onlyRookies = false;
 
         List<int> rookiePlayerIds = new();
         if (onlyRookies)
@@ -67,7 +64,7 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
                 .ToListAsync(cancellationToken: cancellationToken);
 
         var hasTraitFilters = filters.TraitIds.Count > 0;
-        
+
         var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
             .Include(x => x.PlayerSeason)
             .Include(x => x.PlayerSeason)
@@ -162,12 +159,10 @@ public class PositionPlayerSeasonRepository : IPositionPlayerSeasonRepository
             .ToListAsync(cancellationToken: cancellationToken);
 
         if (filters.IncludeChampionAwards)
-        {
             foreach (var player in playerBattingDtos.Where(player => player.IsChampion))
             {
                 player.AwardIds.Add((int) VirtualAward.Champion);
             }
-        }
 
         return playerBattingDtos;
     }
