@@ -6,7 +6,6 @@ namespace SmbExplorerCompanion.Core.Interfaces;
 
 public record GetPitchingSeasonsFilters : SeasonPlayerFilters
 {
-    public bool IsPlayoffs { get; init; } = false;
     public bool OnlyRookies { get; init; } = false;
     public bool IncludeChampionAwards { get; init; } = true;
     public bool OnlyUserAssignableAwards { get; init; } = false;

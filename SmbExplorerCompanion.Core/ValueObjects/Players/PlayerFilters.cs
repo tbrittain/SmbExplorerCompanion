@@ -9,6 +9,7 @@ public abstract record PlayerFilters : PaginationFilters
     public int? ChemistryId { get; init; }
     public int? BatHandednessId { get; init; }
     public int? ThrowHandednessId { get; init; }
+    public bool IsPlayoffs { get; init; } = false;
 }
 
 public abstract record SeasonPlayerFilters : PlayerFilters
