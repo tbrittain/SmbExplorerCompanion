@@ -68,6 +68,14 @@
                     DisplayMemberPath="Name"
                     SelectedItem="{Binding SelectedPosition}" />
 
+                <StackPanel
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal">
+                    <Label Content="Playoffs" />
+                    <CheckBox
+                        IsChecked="{Binding IsPlayoffs}" />
+                </StackPanel>
+
                 <ComboBox
                     Margin="2"
                     Width="200"

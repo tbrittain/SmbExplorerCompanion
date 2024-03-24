@@ -34,6 +34,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private Season? _endSeason;
     private Chemistry? _selectedChemistry;
     private BatHandedness? _selectedBatHandedness;
+    private bool _isPlayoffs;
 
     public TopBattingCareersViewModel(
         INavigationService navigationService,
@@ -84,6 +85,12 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         GetTopBattingCareers().Wait();
 
         PropertyChanged += OnPropertyChanged;
+    }
+
+    public bool IsPlayoffs
+    {
+        get => _isPlayoffs;
+        set => SetField(ref _isPlayoffs, value);
     }
 
     public ObservableCollection<Chemistry> ChemistryTypes { get; }
@@ -154,6 +161,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             case nameof(OnlyHallOfFamers):
             case nameof(SelectedBatHandedness):
             case nameof(SelectedChemistry):
+            case nameof(IsPlayoffs):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -227,6 +235,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
                 Seasons = seasonRange,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
+                IsPlayoffs = IsPlayoffs
             }));
 
         TopBattingCareers.Clear();

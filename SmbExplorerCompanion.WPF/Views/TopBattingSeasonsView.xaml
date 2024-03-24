@@ -63,6 +63,7 @@
                     <CheckBox
                         IsChecked="{Binding IsPlayoffs}" />
                 </StackPanel>
+
                 <StackPanel
                     DockPanel.Dock="Left"
                     Orientation="Horizontal">

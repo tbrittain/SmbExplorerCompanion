@@ -34,6 +34,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private Season? _endSeason;
     private Chemistry? _selectedChemistry;
     private ThrowHandedness? _selectedThrowHandedness;
+    private bool _isPlayoffs;
 
     public TopPitchingCareersViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -84,6 +85,12 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    public bool IsPlayoffs
+    {
+        get => _isPlayoffs;
+        set => SetField(ref _isPlayoffs, value);
     }
 
     public ObservableCollection<Chemistry> ChemistryTypes { get; }
@@ -195,6 +202,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             case nameof(OnlyHallOfFamers):
             case nameof(SelectedChemistry):
             case nameof(SelectedThrowHandedness):
+            case nameof(IsPlayoffs):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -260,7 +268,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
                 PitcherRoleId = SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
                 Seasons = seasonRange,
                 ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
-                ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id
+                ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
+                IsPlayoffs = IsPlayoffs
             }));
 
         TopPitchingCareers.Clear();
