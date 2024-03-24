@@ -47,15 +47,6 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        if (filters.PitcherRoleId is not null)
-        {
-            var pitcherRole = await _dbContext.PitcherRoles
-                .SingleOrDefaultAsync(x => x.Id == filters.PitcherRoleId, cancellationToken);
-
-            if (pitcherRole is null)
-                throw new ArgumentException($"No pitcher role found with Id {filters.PitcherRoleId}");
-        }
-
         var mostRecentSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)

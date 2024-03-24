@@ -47,16 +47,6 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        if (filters.PrimaryPositionId is not null)
-        {
-            var position = await _dbContext.Positions
-                .Where(x => x.IsPrimaryPosition)
-                .SingleOrDefaultAsync(x => x.Id == filters.PrimaryPositionId, cancellationToken);
-
-            if (position is null)
-                throw new ArgumentException($"No primary position found with Id {filters.PrimaryPositionId}");
-        }
-
         var mostRecentSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
