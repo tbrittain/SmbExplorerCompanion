@@ -22,7 +22,7 @@ public class PlayerPitchingCareer : PlayerCareerBase
     public int HitByPitch { get; set; }
     public double EraMinus { get; set; }
     public double FipMinus { get; set; }
-    public double Era { get; set; }
+    public double EarnedRunAverage { get; set; }
     public double Fip { get; set; }
     public double Whip { get; set; }
     public List<PlayerAward> Awards { get; set; } = new();

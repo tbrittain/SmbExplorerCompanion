@@ -293,7 +293,7 @@
                                 Header="ERA">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Era, StringFormat={}{0:F2}}" />
+                                        <TextBlock Text="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

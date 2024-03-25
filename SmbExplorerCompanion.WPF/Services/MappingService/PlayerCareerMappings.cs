@@ -103,7 +103,7 @@ public partial class MappingService
             Losses = x.Losses,
             EarnedRuns = x.EarnedRuns,
             TotalPitches = x.TotalPitches,
-            Era = x.Era,
+            EarnedRunAverage = x.EarnedRunAverage,
             Fip = x.Fip,
             GamesStarted = x.GamesStarted,
             Saves = x.Saves,
