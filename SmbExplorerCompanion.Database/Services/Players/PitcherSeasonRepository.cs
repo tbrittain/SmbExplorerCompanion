@@ -42,9 +42,12 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
 
         var limitValue = filters.Limit ?? 30;
 
-        var minSeasonId = await _dbContext.Seasons
+        var startSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
-            .MinAsync(x => x.Id, cancellationToken);
+            .OrderBy(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        var minSeasonId = startSeason.Id;
+        var gamesPerSeason = startSeason.NumGamesRegularSeason;
 
         var onlyRookies = filters.OnlyRookies;
         if (filters.Seasons?.StartSeasonId == minSeasonId ||
@@ -107,6 +110,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .Where(x => filters.BatHandednessId == null || x.PlayerSeason.Player.BatHandednessId == filters.BatHandednessId)
             .Where(x => filters.ThrowHandednessId == null || x.PlayerSeason.Player.ThrowHandednessId == filters.ThrowHandednessId)
             .Where(x => !hasTraitFilters || x.PlayerSeason.Traits.Any(y => filters.TraitIds.Contains(y.Id)))
+            .Where(x => !filters.OnlyQualifiedPlayers || x.InningsPitched >= gamesPerSeason * 3)
             .Select(x => new PlayerPitchingSeasonDto
             {
                 PlayerId = x.PlayerSeason.PlayerId,
