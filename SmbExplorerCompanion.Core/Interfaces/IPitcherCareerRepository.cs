@@ -3,7 +3,7 @@ using SmbExplorerCompanion.Core.ValueObjects.Players;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
-public record GetPitchingCareersFilters : SeasonPlayerFilters
+public record GetPitchingCareersFilters : CareerPlayerFilters
 {
     public bool OnlyHallOfFamers { get; init; } = false;
     public bool OnlyActivePlayers { get; init; } = false;
