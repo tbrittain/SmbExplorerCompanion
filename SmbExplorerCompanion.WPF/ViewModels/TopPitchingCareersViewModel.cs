@@ -36,6 +36,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     private PlayerPitchingCareer? _selectedPlayer;
     private ThrowHandedness? _selectedThrowHandedness;
     private Season? _startSeason;
+    private bool _onlyQualifiers;
 
     public TopPitchingCareersViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -86,6 +87,12 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    public bool OnlyQualifiers
+    {
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
     }
 
     public bool IsPlayoffs
@@ -209,6 +216,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             case nameof(SelectedChemistry):
             case nameof(SelectedThrowHandedness):
             case nameof(IsPlayoffs):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -268,7 +276,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
                 Seasons = seasonRange,
                 ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
-                IsPlayoffs = IsPlayoffs
+                IsPlayoffs = IsPlayoffs,
+                OnlyQualifiedPlayers = OnlyQualifiers
             }));
 
         TopPitchingCareers.Clear();

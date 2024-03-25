@@ -38,6 +38,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     private ThrowHandedness? _selectedThrowHandedness;
     private ObservableCollection<Trait> _selectedTraits;
     private Season? _startSeason;
+    private bool _onlyQualifiers;
 
     public TopPitchingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -97,6 +98,12 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
         SelectedTraits.CollectionChanged += SelectedTraitsOnCollectionChanged;
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    public bool OnlyQualifiers
+    {
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
     }
 
     public ObservableCollection<Chemistry> ChemistryTypes { get; }
@@ -264,6 +271,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             case nameof(SelectedChemistry):
             case nameof(SelectedThrowHandedness):
             case nameof(SelectedTraits):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -326,7 +334,8 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
                 Descending = true,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
-                TraitIds = SelectedTraits.Select(x => x.Id).ToList()
+                TraitIds = SelectedTraits.Select(x => x.Id).ToList(),
+                OnlyQualifiedPlayers = OnlyQualifiers
             }));
 
         TopSeasonPitchers.Clear();

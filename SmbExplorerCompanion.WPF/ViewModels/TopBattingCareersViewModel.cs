@@ -36,6 +36,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     private PlayerBattingCareer? _selectedPlayer;
     private Position? _selectedPosition;
     private Season? _startSeason;
+    private bool _onlyQualifiers;
 
     public TopBattingCareersViewModel(
         INavigationService navigationService,
@@ -86,6 +87,12 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         GetTopBattingCareers().Wait();
 
         PropertyChanged += OnPropertyChanged;
+    }
+
+    public bool OnlyQualifiers
+    {
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
     }
 
     public bool IsPlayoffs
@@ -202,6 +209,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             case nameof(SelectedBatHandedness):
             case nameof(SelectedChemistry):
             case nameof(IsPlayoffs):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -268,7 +276,8 @@ public partial class TopBattingCareersViewModel : ViewModelBase
                 Seasons = seasonRange,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
-                IsPlayoffs = IsPlayoffs
+                IsPlayoffs = IsPlayoffs,
+                OnlyQualifiedPlayers = OnlyQualifiers
             }));
 
         TopBattingCareers.Clear();

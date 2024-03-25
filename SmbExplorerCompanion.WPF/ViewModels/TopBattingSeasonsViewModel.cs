@@ -39,6 +39,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     private Position? _selectedSecondaryPosition;
     private ObservableCollection<Trait> _selectedTraits;
     private Season? _startSeason;
+    private bool _onlyQualifiers;
 
     public TopBattingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -101,6 +102,12 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
         SelectedTraits.CollectionChanged += SelectedTraitsOnCollectionChanged;
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    public bool OnlyQualifiers
+    {
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
     }
 
     public ObservableCollection<Chemistry> ChemistryTypes { get; }
@@ -290,6 +297,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
             case nameof(SelectedBatHandedness):
             case nameof(SelectedTraits):
             case nameof(SelectedSecondaryPosition):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -341,7 +349,8 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
                 TraitIds = SelectedTraits.Select(x => x.Id).ToList(),
-                SecondaryPositionId = SelectedSecondaryPosition?.Id == 0 ? null : SelectedSecondaryPosition?.Id
+                SecondaryPositionId = SelectedSecondaryPosition?.Id == 0 ? null : SelectedSecondaryPosition?.Id,
+                OnlyQualifiedPlayers = OnlyQualifiers
             }));
 
         TopSeasonBatters.Clear();
