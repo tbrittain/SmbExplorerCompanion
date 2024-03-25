@@ -51,6 +51,12 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
+        
+        var startSeason = await _dbContext.Seasons
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .OrderBy(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        var gamesPerSeason = startSeason.NumGamesRegularSeason;
 
         List<int> activePlayerIds = new();
         if (filters.OnlyActivePlayers)
@@ -82,6 +88,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Select(x => new PlayerCareerBattingDto
             {
                 PlayerId = x.Key,
+                PlateAppearances = x.Sum(y => y.PlateAppearances),
                 StartSeasonNumber = x.Min(y => y.PlayerSeason.Season.Number),
                 EndSeasonNumber = x.Max(y => y.PlayerSeason.Season.Number),
                 Age = x.Max(y => y.PlayerSeason.Age),
@@ -126,6 +133,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                             ? 0
                             : y.PlayerSeason.Salary)
             })
+            .Where(x => !filters.OnlyQualifiedPlayers || (x.PlateAppearances >= gamesPerSeason * 3.1 * x.NumSeasons))
             .OrderBy(orderBy)
             .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)

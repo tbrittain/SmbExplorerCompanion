@@ -22,7 +22,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
         GetPitchingSeasonsFilters filters,
         CancellationToken cancellationToken = default)
     {
-        if (filters.OnlyRookies && filters.Seasons is null)
+        if (filters is {OnlyRookies: true, Seasons: null})
             throw new ArgumentException("SeasonRange must be provided if OnlyRookies is true");
 
         if (filters.PlayerId is not null && filters.PageNumber is not null)

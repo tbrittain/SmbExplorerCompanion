@@ -52,6 +52,12 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
 
+        var startSeason = await _dbContext.Seasons
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .OrderBy(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        var gamesPerSeason = startSeason.NumGamesRegularSeason;
+
         List<int> activePlayerIds = new();
         if (filters.OnlyActivePlayers)
             activePlayerIds = await _dbContext.Players
@@ -133,6 +139,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                             ? 0
                             : y.PlayerSeason.Salary)
             })
+            .Where(x => !filters.OnlyQualifiedPlayers || (x.InningsPitched >= gamesPerSeason * 3 * x.NumSeasons))
             .OrderBy(orderBy)
             .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
