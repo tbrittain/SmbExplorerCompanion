@@ -110,7 +110,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .Where(x => filters.BatHandednessId == null || x.PlayerSeason.Player.BatHandednessId == filters.BatHandednessId)
             .Where(x => filters.ThrowHandednessId == null || x.PlayerSeason.Player.ThrowHandednessId == filters.ThrowHandednessId)
             .Where(x => !hasTraitFilters || x.PlayerSeason.Traits.Any(y => filters.TraitIds.Contains(y.Id)))
-            .Where(x => !filters.OnlyQualifiedPlayers || x.InningsPitched >= gamesPerSeason * 3)
+            .Where(x => !filters.OnlyQualifiedPlayers || x.InningsPitched >= gamesPerSeason * 1)
             .Select(x => new PlayerPitchingSeasonDto
             {
                 PlayerId = x.PlayerSeason.PlayerId,

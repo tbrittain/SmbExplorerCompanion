@@ -139,7 +139,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                             ? 0
                             : y.PlayerSeason.Salary)
             })
-            .Where(x => !filters.OnlyQualifiedPlayers || (x.InningsPitched >= gamesPerSeason * 3 * x.NumSeasons))
+            .Where(x => !filters.OnlyQualifiedPlayers || (x.InningsPitched >= gamesPerSeason * 1 * x.NumSeasons))
             .OrderBy(orderBy)
             .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
