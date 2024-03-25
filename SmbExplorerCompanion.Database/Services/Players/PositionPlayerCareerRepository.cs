@@ -112,6 +112,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                 SacrificeFlies = x.Sum(y => y.SacrificeFlies),
                 Errors = x.Sum(y => y.Errors),
                 AwardIds = x
+                    .Where(y => y.IsRegularSeason)
                     .SelectMany(y => y.PlayerSeason.Awards)
                     .Where(y => !y.OmitFromGroupings)
                     .Select(y => y.Id)

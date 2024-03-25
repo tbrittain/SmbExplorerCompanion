@@ -119,6 +119,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                           .Sum(y => y.InningsPitched ?? 0)
                     : 0,
                 AwardIds = x
+                    .Where(y => y.IsRegularSeason)
                     .SelectMany(y => y.PlayerSeason.Awards)
                     .Where(y => !y.OmitFromGroupings)
                     .Select(y => y.Id)
@@ -162,7 +163,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                 pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
             }
 
-            pitchingDto.Era = pitchingDto.InningsPitched == 0
+            pitchingDto.EarnedRunAverage = pitchingDto.InningsPitched == 0
                 ? 0
                 : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
             pitchingDto.Whip = pitchingDto.InningsPitched == 0
@@ -239,7 +240,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         {
             pitchingDto.IsRetired = true;
             pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
-            pitchingDto.Era = pitchingDto.InningsPitched == 0
+            pitchingDto.EarnedRunAverage = pitchingDto.InningsPitched == 0
                 ? 0
                 : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
             pitchingDto.Whip = pitchingDto.InningsPitched == 0
@@ -279,7 +280,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
 
         var wins = playerCareerPitching.Wins;
         var losses = playerCareerPitching.Losses;
-        var era = playerCareerPitching.Era;
+        var era = playerCareerPitching.EarnedRunAverage;
         var starts = playerCareerPitching.GamesStarted;
         var completeGames = playerCareerPitching.CompleteGames;
         var inningsPitched = playerCareerPitching.InningsPitched;
