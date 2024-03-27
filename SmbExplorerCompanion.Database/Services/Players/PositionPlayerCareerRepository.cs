@@ -51,7 +51,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
-        
+
         var startSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
             .OrderBy(x => x.Id)
@@ -131,7 +131,47 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                         : y.PlayerSeason.PlayerTeamHistory
                             .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                             ? 0
-                            : y.PlayerSeason.Salary)
+                            : y.PlayerSeason.Salary),
+                BattingAverage = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : x.Sum(y => y.Hits) / (double) x.Sum(y => y.AtBats),
+                Obp = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : (
+                        (
+                            x.Sum(y => y.Hits) +
+                            x.Sum(y => y.Walks) +
+                            x.Sum(y => y.HitByPitch)) /
+                        (double) (x.Sum(y => y.AtBats) +
+                                  x.Sum(y => y.Walks) +
+                                  x.Sum(y => y.HitByPitch) +
+                                  x.Sum(y => y.SacrificeFlies)
+                        )
+                    ),
+                Slg = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : (
+                        (x.Sum(y => y.Singles) + (x.Sum(y => y.Doubles) * 2) + (x.Sum(y => y.Triples) * 3) +
+                         (x.Sum(y => y.HomeRuns) * 4)
+                        ) / (double) x.Sum(y => y.AtBats)
+                    ),
+                Ops = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : (
+                        (
+                            x.Sum(y => y.Hits) +
+                            x.Sum(y => y.Walks) +
+                            x.Sum(y => y.HitByPitch)) /
+                        (double) (x.Sum(y => y.AtBats) +
+                                  x.Sum(y => y.Walks) +
+                                  x.Sum(y => y.HitByPitch) +
+                                  x.Sum(y => y.SacrificeFlies)
+                        )
+                    ) + (
+                        (x.Sum(y => y.Singles) + (x.Sum(y => y.Doubles) * 2) + (x.Sum(y => y.Triples) * 3) +
+                         (x.Sum(y => y.HomeRuns) * 4)
+                        ) / (double) x.Sum(y => y.AtBats)
+                    )
             })
             .Where(x => !filters.OnlyQualifiedPlayers || (x.PlateAppearances >= gamesPerSeason * 3.1 * x.NumSeasons))
             .OrderBy(orderBy)
@@ -162,20 +202,6 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
 
             battingDto.IsRetired = battingDto.EndSeasonNumber < mostRecentSeason.Number;
             if (battingDto.IsRetired) battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
-
-            battingDto.BattingAverage = battingDto.AtBats == 0
-                ? 0
-                : battingDto.Hits / (double) battingDto.AtBats;
-            battingDto.Obp = battingDto.AtBats == 0
-                ? 0
-                : (battingDto.Hits + battingDto.Walks + battingDto.HitByPitch) /
-                  (double) (battingDto.AtBats + battingDto.Walks + battingDto.HitByPitch +
-                            battingDto.SacrificeFlies);
-            battingDto.Slg = battingDto.AtBats == 0
-                ? 0
-                : (battingDto.Singles + battingDto.Doubles * 2 + battingDto.Triples * 3 +
-                   battingDto.HomeRuns * 4) / (double) battingDto.AtBats;
-            battingDto.Ops = battingDto.Obp + battingDto.Slg;
 
             if (battingDto.NumChampionships > 0)
                 foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
