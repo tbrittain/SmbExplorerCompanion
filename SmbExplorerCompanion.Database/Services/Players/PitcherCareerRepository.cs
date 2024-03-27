@@ -137,7 +137,31 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                         : y.PlayerSeason.PlayerTeamHistory
                             .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                             ? 0
-                            : y.PlayerSeason.Salary)
+                            : y.PlayerSeason.Salary),
+                EarnedRunAverage = x.Sum(y => y.InningsPitched ?? 0) == 0
+                    ? 0
+                    : x.Sum(y => y.EarnedRuns) /
+                    x.Sum(y => y.InningsPitched ?? 0) * 9,
+                Whip = x.Sum(y => y.InningsPitched ?? 0) == 0
+                    ? 0
+                    : (x.Sum(y => y.Walks) + x.Sum(y => y.Hits)) /
+                      x.Sum(y => y.InningsPitched ?? 0),
+                Fip = x.Sum(y => y.InningsPitched ?? 0) == 0
+                    ? 0
+                    : (
+                        (
+                            (
+                                (13 * x.Sum(y => y.HomeRuns)) +
+                                (3 * (
+                                        x.Sum(y => y.Walks) +
+                                        x.Sum(y => y.HitByPitch)
+                                    )
+                                ) -
+                                (2 * x.Sum(y => y.Strikeouts))
+                            )
+                            / x.Sum(y => y.InningsPitched ?? 0)
+                        ) + 3.10
+                    )
             })
             .Where(x => !filters.OnlyQualifiedPlayers || (x.InningsPitched >= gamesPerSeason * 1 * x.NumSeasons))
             .OrderBy(orderBy)
@@ -169,17 +193,6 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             {
                 pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
             }
-
-            pitchingDto.EarnedRunAverage = pitchingDto.InningsPitched == 0
-                ? 0
-                : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
-            pitchingDto.Whip = pitchingDto.InningsPitched == 0
-                ? 0
-                : (pitchingDto.Walks + pitchingDto.Hits) / pitchingDto.InningsPitched;
-            pitchingDto.Fip = pitchingDto.InningsPitched == 0
-                ? 0
-                : (13 * pitchingDto.HomeRuns + 3 * (pitchingDto.Walks + pitchingDto.HitByPitch) -
-                   2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
 
             if (pitchingDto.NumChampionships > 0)
                 foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
