@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace SmbExplorerCompanion.WPF.Converters;
@@ -14,7 +15,7 @@ public class InverseBoolToVisibilityConverter : IValueConverter
         if (value is not bool boolean)
             throw new ArgumentException("Value must be a boolean", nameof(value));
 
-        return !boolean ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+        return !boolean ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public object ConvertBack(object? value,
@@ -22,9 +23,9 @@ public class InverseBoolToVisibilityConverter : IValueConverter
         object? parameter,
         CultureInfo culture)
     {
-        if (value is not System.Windows.Visibility visibility)
+        if (value is not Visibility visibility)
             throw new ArgumentException("Value must be a Visibility", nameof(value));
 
-        return visibility != System.Windows.Visibility.Visible;
+        return visibility != Visibility.Visible;
     }
 }

@@ -7,7 +7,7 @@ namespace SmbExplorerCompanion.Database.Services;
 
 public class SearchRepository : ISearchRepository
 {
-    private SmbExplorerCompanionDbContext _context;
+    private readonly SmbExplorerCompanionDbContext _context;
 
     public SearchRepository(SmbExplorerCompanionDbContext context)
     {

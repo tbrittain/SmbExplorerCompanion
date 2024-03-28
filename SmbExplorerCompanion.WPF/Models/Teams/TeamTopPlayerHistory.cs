@@ -12,6 +12,7 @@ public class TeamTopPlayerHistory : PlayerBase
 {
     public int NumSeasonsWithTeam { get; set; }
     public List<int> SeasonNumbers { get; set; } = new();
+
     public string Seasons
     {
         get
@@ -21,28 +22,20 @@ public class TeamTopPlayerHistory : PlayerBase
             for (var i = 0; i < seasons.Count; i++)
             {
                 var start = seasons[i];
-                
-                while (i < seasons.Count - 1 && seasons[i] + 1 == seasons[i + 1])
-                {
-                    i++;
-                }
+
+                while (i < seasons.Count - 1 && seasons[i] + 1 == seasons[i + 1]) i++;
 
                 var end = seasons[i];
 
                 // If start and end are the same, it's just a single season, otherwise it's a range.
-                if (start == end)
-                {
-                    ranges.Add(start.ToString());
-                }
-                else
-                {
-                    ranges.Add($"{start}-{end}");
-                }
+                if (start == end) ranges.Add(start.ToString());
+                else ranges.Add($"{start}-{end}");
             }
 
             return string.Join(", ", ranges);
         }
     }
+
     public bool IsPitcher { get; set; }
     public string PlayerPosition { get; set; } = string.Empty;
     public double AverageOpsPlus { get; set; }

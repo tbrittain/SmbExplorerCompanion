@@ -23,20 +23,22 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class TopPitchingSeasonsViewModel : ViewModelBase
 {
+    private const int ResultsPerPage = 20;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
-    private bool _isPlayoffs;
-    private int _pageNumber = 1;
-    private PlayerSeasonBase? _selectedPlayer;
-    private Season? _startSeason;
-    private bool _onlyRookies;
-    private PitcherRole? _selectedPitcherRole;
-    private readonly MappingService _mappingService;
-    private ObservableCollection<Season> _selectableEndSeasons;
     private Season? _endSeason;
+    private bool _isPlayoffs;
+    private bool _onlyRookies;
+    private int _pageNumber = 1;
+    private ObservableCollection<Season> _selectableEndSeasons;
     private Chemistry? _selectedChemistry;
+    private PitcherRole? _selectedPitcherRole;
+    private PlayerSeasonBase? _selectedPlayer;
     private ThrowHandedness? _selectedThrowHandedness;
     private ObservableCollection<Trait> _selectedTraits;
+    private Season? _startSeason;
+    private bool _onlyQualifiers;
 
     public TopPitchingSeasonsViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -98,9 +100,10 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
-    private void SelectedTraitsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    public bool OnlyQualifiers
     {
-        OnPropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedTraits)));
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
     }
 
     public ObservableCollection<Chemistry> ChemistryTypes { get; }
@@ -120,7 +123,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     }
 
     public ObservableCollection<Trait> Traits { get; }
-    
+
     public ObservableCollection<Trait> SelectedTraits
     {
         get => _selectedTraits;
@@ -153,7 +156,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
 
             SetField(ref _startSeason, value);
             OnPropertyChanged(nameof(CanSelectOnlyRookies));
-    
+
             if (value is not null)
             {
                 var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
@@ -172,13 +175,6 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     {
         get => _selectableEndSeasons;
         private set => SetField(ref _selectableEndSeasons, value);
-    }
-
-    [RelayCommand]
-    private void ClearSeasons()
-    {
-        StartSeason = Seasons.OrderBy(x => x.Id).Last();
-        EndSeason = Seasons.OrderBy(x => x.Id).Last();
     }
 
     public Season? EndSeason
@@ -236,6 +232,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     }
 
     public string SortColumn { get; set; } = nameof(PlayerPitchingSeasonDto.WeightedOpsPlusOrEraMinus);
+    public bool SortDescending { get; set; } = true;
 
     public ObservableCollection<PlayerSeasonPitching> TopSeasonPitchers { get; } = new();
 
@@ -248,10 +245,20 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
     public bool ShortCircuitPageNumberRefresh { get; set; }
     private bool ShortCircuitOnlyRookiesRefresh { get; set; }
 
-    private const int ResultsPerPage = 20;
-
     private bool CanSelectPreviousPage => PageNumber > 1;
     private bool CanSelectNextPage => TopSeasonPitchers.Count == ResultsPerPage;
+
+    private void SelectedTraitsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedTraits)));
+    }
+
+    [RelayCommand]
+    private void ClearSeasons()
+    {
+        StartSeason = Seasons.OrderBy(x => x.Id).Last();
+        EndSeason = Seasons.OrderBy(x => x.Id).Last();
+    }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -265,6 +272,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             case nameof(SelectedChemistry):
             case nameof(SelectedThrowHandedness):
             case nameof(SelectedTraits):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -311,7 +319,7 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
             (null, null) => new SeasonRange(MinSeasonId),
             (not null, null) => new SeasonRange(StartSeason.Id),
             (null, not null) => new SeasonRange(MinSeasonId, EndSeason.Id),
-            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id),
+            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id)
         };
 
         var topPitchers = await _mediator.Send(new GetTopPitchingSeasonRequest(
@@ -324,10 +332,11 @@ public partial class TopPitchingSeasonsViewModel : ViewModelBase
                 Limit = ResultsPerPage,
                 OnlyRookies = OnlyRookies,
                 PitcherRoleId = SelectedPitcherRole?.Id == 0 ? null : SelectedPitcherRole?.Id,
-                Descending = true,
+                Descending = SortDescending,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
-                TraitIds = SelectedTraits.Select(x => x.Id).ToList()
+                TraitIds = SelectedTraits.Select(x => x.Id).ToList(),
+                OnlyQualifiedPlayers = OnlyQualifiers
             }));
 
         TopSeasonPitchers.Clear();

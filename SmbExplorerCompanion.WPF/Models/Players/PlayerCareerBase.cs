@@ -10,21 +10,16 @@ public class PlayerCareerBase : PlayerDetailBase
     public int Age { get; set; }
     public int? RetiredCurrentAge { get; set; }
     public bool IsHallOfFamer { get; set; }
+
     public string DisplaySeasons
     {
         get
         {
             var sb = new StringBuilder($"{StartSeasonNumber}-");
-            
-            if (IsRetired)
-            {
-                sb.Append($"{EndSeasonNumber}");
-            }
-            else
-            {
-                sb.Append("present");
-            }
-            
+
+            if (IsRetired) sb.Append($"{EndSeasonNumber}");
+            else sb.Append("present");
+
             return sb.ToString();
         }
     }

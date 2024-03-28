@@ -17,6 +17,9 @@ public class GetFranchiseSummaryRequest : IRequest<FranchiseSummaryDto?>
         }
 
         public async Task<FranchiseSummaryDto?> Handle(GetFranchiseSummaryRequest request,
-            CancellationToken cancellationToken) => await _summaryRepository.GetFranchiseSummaryAsync(cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _summaryRepository.GetFranchiseSummaryAsync(cancellationToken);
+        }
     }
 }

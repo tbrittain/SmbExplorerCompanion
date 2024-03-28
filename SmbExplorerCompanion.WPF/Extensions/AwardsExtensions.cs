@@ -30,16 +30,10 @@ public static class AwardsExtensions
         var lastGrouping = groupings.Last();
         foreach (var grouping in groupings)
         {
-            if (!isSeason && grouping.First().Name != "Hall of Fame")
-            {
-                sb.Append($"{grouping.Count()}x ");
-            }
+            if (!isSeason && grouping.First().Name != "Hall of Fame") sb.Append($"{grouping.Count()}x ");
             sb.Append($"{grouping.First().Name}");
 
-            if (grouping.Key != lastGrouping.Key)
-            {
-                sb.Append(", ");
-            }
+            if (grouping.Key != lastGrouping.Key) sb.Append(", ");
         }
 
         return sb.ToString();
@@ -50,7 +44,7 @@ public static class AwardsExtensions
         var awards = groupedAwards.ToList();
         var count = awards.Count;
         var award = awards.First();
-        
+
         var awardName = award.Name;
 
         return new FormattedPlayerAward
@@ -64,7 +58,7 @@ public static class AwardsExtensions
                 _ => award.Importance switch
                 {
                     <= 1 => FormattedPlayerAward.Importance1Color,
-                    _ => FormattedPlayerAward.BaseColor,
+                    _ => FormattedPlayerAward.BaseColor
                 }
             }
         };

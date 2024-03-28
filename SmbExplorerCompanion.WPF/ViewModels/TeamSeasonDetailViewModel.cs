@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -18,10 +19,10 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 {
     public const string SeasonTeamIdProp = "SeasonTeamId";
     private readonly INavigationService _navigationService;
-    private PlayerBase? _selectedPlayer;
     private bool _includeDivisionTeamsInPlot = true;
-    private WpfPlot? _teamSchedulePlot;
     private bool _includeMarginOfVictoryInPlot;
+    private PlayerBase? _selectedPlayer;
+    private WpfPlot? _teamSchedulePlot;
 
     public TeamSeasonDetailViewModel(INavigationService navigationService, ISender mediator, MappingService mappingService)
     {
@@ -53,6 +54,29 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
+    public bool IncludeDivisionTeamsInPlot
+    {
+        get => _includeDivisionTeamsInPlot;
+        set => SetField(ref _includeDivisionTeamsInPlot, value);
+    }
+
+    public bool IncludeMarginOfVictoryInPlot
+    {
+        get => _includeMarginOfVictoryInPlot;
+        set => SetField(ref _includeMarginOfVictoryInPlot, value);
+    }
+
+    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; }
+
+    public PlayerBase? SelectedPlayer
+    {
+        get => _selectedPlayer;
+        set => SetField(ref _selectedPlayer, value);
+    }
+
+    public int TeamSeasonId { get; }
+    public TeamSeasonDetail TeamSeasonDetail { get; set; }
+
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -72,20 +96,6 @@ public class TeamSeasonDetailViewModel : ViewModelBase
             }
         }
     }
-
-    public bool IncludeDivisionTeamsInPlot
-    {
-        get => _includeDivisionTeamsInPlot;
-        set => SetField(ref _includeDivisionTeamsInPlot, value);
-    }
-
-    public bool IncludeMarginOfVictoryInPlot
-    {
-        get => _includeMarginOfVictoryInPlot;
-        set => SetField(ref _includeMarginOfVictoryInPlot, value);
-    }
-
-    public List<HashSet<TeamScheduleBreakdown>> TeamScheduleBreakdowns { get; }
 
     private static List<HashSet<TeamScheduleBreakdown>> SetBreakdowns(List<HashSet<TeamScheduleBreakdownDto>> divisionSchedules)
     {
@@ -129,12 +139,10 @@ public class TeamSeasonDetailViewModel : ViewModelBase
 
         var breakdowns = TeamScheduleBreakdowns;
         if (!IncludeDivisionTeamsInPlot)
-        {
             breakdowns = breakdowns
                 .Where(b => b
                     .All(x => x.TeamHistoryId == TeamSeasonId))
                 .ToList();
-        }
 
         foreach (var breakdown in breakdowns)
         {
@@ -152,7 +160,7 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                 .Select(b => (double) b.WinsDelta)
                 .ToArray();
 
-            var scatterPlot = plot.Plot.AddScatterStep(xs: days, ys: steps, label: breakdown.First().TeamName, lineWidth: 2);
+            var scatterPlot = plot.Plot.AddScatterStep(days, steps, label: breakdown.First().TeamName, lineWidth: 2);
             scatterPlot.MarkerShape = MarkerShape.filledCircle;
             scatterPlot.MarkerSize = 2;
 
@@ -169,19 +177,19 @@ public class TeamSeasonDetailViewModel : ViewModelBase
                     .Select(_ => 0D)
                     .ToArray();
 
-                plot.Plot.AddErrorBars(xs: days,
-                    ys: steps,
-                    xErrorsPositive: xErrors,
-                    xErrorsNegative: xErrors,
+                plot.Plot.AddErrorBars(days,
+                    steps,
+                    xErrors,
+                    xErrors,
                     yErrorsNegative: yErrNeg,
                     yErrorsPositive: yErrPos);
             }
         }
 
-        plot.Plot.AddHorizontalLine(0, color: System.Drawing.Color.Black, style: LineStyle.Dash);
+        plot.Plot.AddHorizontalLine(0, Color.Black, style: LineStyle.Dash);
         plot.Height = 300;
         plot.Width = 1000;
-        plot.Plot.SetAxisLimits(xMin: min, xMax: max);
+        plot.Plot.SetAxisLimits(min, max);
 
         plot.Plot.XAxis.TickLabelStyle(rotation: 45);
         plot.Plot.XAxis.Label("Day");
@@ -200,13 +208,4 @@ public class TeamSeasonDetailViewModel : ViewModelBase
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(parameters);
     }
-
-    public PlayerBase? SelectedPlayer
-    {
-        get => _selectedPlayer;
-        set => SetField(ref _selectedPlayer, value);
-    }
-
-    public int TeamSeasonId { get; }
-    public TeamSeasonDetail TeamSeasonDetail { get; set; }
 }

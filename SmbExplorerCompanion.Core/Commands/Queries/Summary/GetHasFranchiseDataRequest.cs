@@ -15,7 +15,9 @@ public class GetHasFranchiseDataRequest : IRequest<bool>
             _summaryRepository = summaryRepository;
         }
 
-        public async Task<bool> Handle(GetHasFranchiseDataRequest request, CancellationToken cancellationToken) =>
-            await _summaryRepository.HasFranchiseDataAsync(cancellationToken);
+        public async Task<bool> Handle(GetHasFranchiseDataRequest request, CancellationToken cancellationToken)
+        {
+            return await _summaryRepository.HasFranchiseDataAsync(cancellationToken);
+        }
     }
 }

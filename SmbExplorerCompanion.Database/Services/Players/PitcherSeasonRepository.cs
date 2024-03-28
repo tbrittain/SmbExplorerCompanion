@@ -9,8 +9,8 @@ namespace SmbExplorerCompanion.Database.Services.Players;
 
 public class PitcherSeasonRepository : IPitcherSeasonRepository
 {
-    private readonly SmbExplorerCompanionDbContext _dbContext;
     private readonly IApplicationContext _applicationContext;
+    private readonly SmbExplorerCompanionDbContext _dbContext;
 
     public PitcherSeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
     {
@@ -22,7 +22,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
         GetPitchingSeasonsFilters filters,
         CancellationToken cancellationToken = default)
     {
-        if (filters.OnlyRookies && filters.Seasons is null)
+        if (filters is {OnlyRookies: true, Seasons: null})
             throw new ArgumentException("SeasonRange must be provided if OnlyRookies is true");
 
         if (filters.PlayerId is not null && filters.PageNumber is not null)
@@ -42,16 +42,16 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
 
         var limitValue = filters.Limit ?? 30;
 
-        var minSeasonId = await _dbContext.Seasons
+        var startSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
-            .MinAsync(x => x.Id, cancellationToken);
+            .OrderBy(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        var minSeasonId = startSeason.Id;
+        var gamesPerSeason = startSeason.NumGamesRegularSeason;
 
         var onlyRookies = filters.OnlyRookies;
         if (filters.Seasons?.StartSeasonId == minSeasonId ||
-            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId)
-        {
-            onlyRookies = false;
-        }
+            filters.Seasons?.EndSeasonId > filters.Seasons?.StartSeasonId) onlyRookies = false;
 
         List<int> rookiePlayerIds = new();
         if (onlyRookies)
@@ -110,6 +110,7 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .Where(x => filters.BatHandednessId == null || x.PlayerSeason.Player.BatHandednessId == filters.BatHandednessId)
             .Where(x => filters.ThrowHandednessId == null || x.PlayerSeason.Player.ThrowHandednessId == filters.ThrowHandednessId)
             .Where(x => !hasTraitFilters || x.PlayerSeason.Traits.Any(y => filters.TraitIds.Contains(y.Id)))
+            .Where(x => !filters.OnlyQualifiedPlayers || x.InningsPitched >= gamesPerSeason * 1)
             .Select(x => new PlayerPitchingSeasonDto
             {
                 PlayerId = x.PlayerSeason.PlayerId,
@@ -171,12 +172,10 @@ public class PitcherSeasonRepository : IPitcherSeasonRepository
             .ToListAsync(cancellationToken: cancellationToken);
 
         if (filters.IncludeChampionAwards)
-        {
             foreach (var player in playerPitchingDtos.Where(player => player.IsChampion))
             {
                 player.AwardIds.Add((int) VirtualAward.Champion);
             }
-        }
 
         return playerPitchingDtos;
     }

@@ -63,7 +63,7 @@ public partial class MappingService
             PlayoffBatting = x.PlayoffBatting
                 .Select(async y => await FromCore(y))
                 .Select(y => y.Result)
-                .ToList(),
+                .ToList()
         });
     }
 }

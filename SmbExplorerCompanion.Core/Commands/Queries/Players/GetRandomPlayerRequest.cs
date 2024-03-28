@@ -16,7 +16,9 @@ public class GetRandomPlayerRequest : IRequest<PlayerBaseDto>
             _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<PlayerBaseDto> Handle(GetRandomPlayerRequest request, CancellationToken cancellationToken) =>
-            await _generalPlayerRepository.GetRandomPlayer();
+        public async Task<PlayerBaseDto> Handle(GetRandomPlayerRequest request, CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetRandomPlayer();
+        }
     }
 }

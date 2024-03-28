@@ -8,6 +8,6 @@ public interface IAwardDelegationRepository
         List<PlayerAwardRequestDto> playerAwardRequestDtos,
         CancellationToken cancellationToken = default);
 
-    public Task AddHallOfFameAwards(List<PlayerHallOfFameRequestDto> players, 
+    public Task AddHallOfFameAwards(List<PlayerHallOfFameRequestDto> players,
         CancellationToken cancellationToken = default);
 }

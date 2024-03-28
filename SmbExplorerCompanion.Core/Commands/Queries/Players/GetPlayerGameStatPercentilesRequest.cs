@@ -31,7 +31,13 @@ public class GetPlayerGameStatPercentilesRequest : IRequest<PlayerGameStatPercen
         }
 
         public async Task<PlayerGameStatPercentileDto> Handle(GetPlayerGameStatPercentilesRequest request,
-            CancellationToken cancellationToken) =>
-            await _generalPlayerRepository.GetPlayerGameStatPercentiles(request.PlayerId, request.SeasonId, request.IsPitcher, request.PitcherRoleId, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetPlayerGameStatPercentiles(request.PlayerId,
+                request.SeasonId,
+                request.IsPitcher,
+                request.PitcherRoleId,
+                cancellationToken);
+        }
     }
 }

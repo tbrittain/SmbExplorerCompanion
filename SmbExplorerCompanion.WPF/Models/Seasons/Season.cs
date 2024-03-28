@@ -37,7 +37,7 @@ public static class SeasonExtensions
             Number = seasonDto.Number,
             NumGamesRegularSeason = seasonDto.NumGamesRegularSeason,
             ChampionshipWinnerId = seasonDto.ChampionshipWinnerId,
-            IsNewSeason = false,
+            IsNewSeason = false
         };
     }
 }

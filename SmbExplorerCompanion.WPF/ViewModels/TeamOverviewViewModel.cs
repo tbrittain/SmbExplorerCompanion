@@ -36,7 +36,7 @@ public class TeamOverviewViewModel : ViewModelBase
         TeamOverview = teamOverview.FromCore();
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 

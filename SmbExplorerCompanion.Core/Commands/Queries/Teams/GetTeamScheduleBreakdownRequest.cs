@@ -27,7 +27,9 @@ public class GetTeamScheduleBreakdownRequest : IRequest<DivisionScheduleBreakdow
         }
 
         public async Task<DivisionScheduleBreakdownDto> Handle(GetTeamScheduleBreakdownRequest request,
-            CancellationToken cancellationToken) =>
-            await _teamRepository.GetTeamScheduleBreakdown(request.TeamSeasonId, request.IncludeDivision, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _teamRepository.GetTeamScheduleBreakdown(request.TeamSeasonId, request.IncludeDivision, cancellationToken);
+        }
     }
 }

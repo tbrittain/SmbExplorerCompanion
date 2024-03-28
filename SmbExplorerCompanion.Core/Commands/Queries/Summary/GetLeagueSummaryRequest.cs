@@ -17,7 +17,9 @@ public class GetLeagueSummaryRequest : IRequest<List<ConferenceSummaryDto>>
         }
 
         public async Task<List<ConferenceSummaryDto>> Handle(GetLeagueSummaryRequest request,
-            CancellationToken cancellationToken) =>
-            await _summaryRepository.GetLeagueSummaryAsync(cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _summaryRepository.GetLeagueSummaryAsync(cancellationToken);
+        }
     }
 }

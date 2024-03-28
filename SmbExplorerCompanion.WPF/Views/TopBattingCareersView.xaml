@@ -76,6 +76,13 @@
                         IsChecked="{Binding IsPlayoffs}" />
                 </StackPanel>
 
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Label Content="Only Qualifiers" />
+                    <CheckBox
+                        IsChecked="{Binding OnlyQualifiers}" />
+                </StackPanel>
+
                 <ComboBox
                     Margin="2"
                     Width="200"
@@ -171,15 +178,10 @@
                     Header="BB"
                     Binding="{Binding Walks}"
                     CanUserSort="True" />
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="BA">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding BattingAverage, StringFormat={}{0:F3}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Header="BA"
+                    CanUserSort="True"
+                    Binding="{Binding BattingAverage, StringFormat={}{0:F3}}" />
                 <DataGridTextColumn
                     Header="R"
                     Binding="{Binding Runs}"
@@ -204,42 +206,22 @@
                     Header="SF"
                     Binding="{Binding SacrificeFlies}"
                     CanUserSort="True" />
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="OBP">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Obp, StringFormat={}{0:F3}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="SLG">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Slg, StringFormat={}{0:F3}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="OPS">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Ops, StringFormat={}{0:F3}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="OPS+">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding OpsPlus, StringFormat={}{0:F1}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Header="OBP"
+                    CanUserSort="True"
+                    Binding="{Binding Obp, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn
+                    Header="SLG"
+                    CanUserSort="True"
+                    Binding="{Binding Slg, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn
+                    Header="OPS"
+                    CanUserSort="True"
+                    Binding="{Binding Ops, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn
+                    Header="OPS+"
+                    CanUserSort="True"
+                    Binding="{Binding OpsPlus, StringFormat={}{0:F1}}" />
                 <DataGridTextColumn
                     Header="E"
                     Binding="{Binding Errors}"
@@ -248,16 +230,10 @@
                     Header="K"
                     Binding="{Binding Strikeouts}"
                     CanUserSort="True" />
-                <DataGridTemplateColumn
-                    CanUserSort="True"
+                <DataGridTextColumn
                     Header="smbWAR"
-                    SortMemberPath="WeightedOpsPlusOrEraMinus">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                    CanUserSort="True"
+                    Binding="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
                 <DataGridTextColumn
                     Header="Awards"
                     Binding="{Binding DisplayAwards}"

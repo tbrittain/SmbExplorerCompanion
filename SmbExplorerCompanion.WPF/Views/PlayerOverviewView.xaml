@@ -225,7 +225,7 @@
                             <DataGridTextColumn
                                 CanUserSort="False"
                                 Header="ERA"
-                                Binding="{Binding Era, StringFormat={}{0:F2}}" />
+                                Binding="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
                             <DataGridTextColumn
                                 CanUserSort="False"
                                 Header="Games Started"
@@ -791,19 +791,19 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="H/9"
                                         Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="HR/9"
                                         Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="K/9"
                                         Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="K/BB"
                                         Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
@@ -981,19 +981,19 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="H/9"
                                         Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="HR/9"
                                         Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="K/9"
                                         Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn
-                                        CanUserSort="False"
+                                        CanUserSort="True"
                                         Header="K/BB"
                                         Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
                                     <DataGridTextColumn

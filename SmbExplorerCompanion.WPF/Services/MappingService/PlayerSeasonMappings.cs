@@ -82,7 +82,7 @@ public partial class MappingService
             .Select(y => y.Result)
             .OrderBy(y => y.Name)
             .Select(y => y.Name);
-        
+
         var awards = x.AwardIds
             .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
             .Select(y => y.Result)

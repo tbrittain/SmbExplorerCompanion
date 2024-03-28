@@ -47,30 +47,25 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        if (filters.PitcherRoleId is not null)
-        {
-            var pitcherRole = await _dbContext.PitcherRoles
-                .SingleOrDefaultAsync(x => x.Id == filters.PitcherRoleId, cancellationToken);
-
-            if (pitcherRole is null)
-                throw new ArgumentException($"No pitcher role found with Id {filters.PitcherRoleId}");
-        }
-
         var mostRecentSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
 
+        var startSeason = await _dbContext.Seasons
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .OrderBy(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        var gamesPerSeason = startSeason.NumGamesRegularSeason;
+
         List<int> activePlayerIds = new();
         if (filters.OnlyActivePlayers)
-        {
             activePlayerIds = await _dbContext.Players
                 .Include(x => x.PlayerSeasons)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PlayerSeasons.Any(y => y.SeasonId == mostRecentSeason.Id))
                 .Select(x => x.Id)
                 .ToListAsync(cancellationToken: cancellationToken);
-        }
 
         var playerPitchingDtos = await _dbContext.PlayerSeasonPitchingStats
             .Include(x => x.PlayerSeason)
@@ -113,23 +108,24 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                 TotalPitches = x.Sum(y => y.TotalPitches),
                 HitByPitch = x.Sum(y => y.HitByPitch),
                 WeightedOpsPlusOrEraMinus = x
-                    .Sum(y => (((y.EraMinus ?? 0) + (y.FipMinus ?? 0)) / 2 - 95) * 
+                    .Sum(y => (((y.EraMinus ?? 0) + (y.FipMinus ?? 0)) / 2 - 95) *
                               (y.InningsPitched ?? 0) * PitchingScalingFactor),
                 EraMinus = x
-                    .Sum(y => (y.InningsPitched ?? 0)) > 0
-                    ? (x
-                           .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
-                       / x
-                           .Sum(y => (y.InningsPitched ?? 0)))
+                    .Sum(y => y.InningsPitched ?? 0) > 0
+                    ? x
+                          .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
+                      / x
+                          .Sum(y => y.InningsPitched ?? 0)
                     : 0,
                 FipMinus = x
-                    .Sum(y => (y.InningsPitched ?? 0)) > 0
+                    .Sum(y => y.InningsPitched ?? 0) > 0
                     ? x
                           .Sum(y => (y.FipMinus ?? 0) * (y.InningsPitched ?? 0))
                       / x
-                          .Sum(y => (y.InningsPitched ?? 0))
+                          .Sum(y => y.InningsPitched ?? 0)
                     : 0,
                 AwardIds = x
+                    .Where(y => y.IsRegularSeason)
                     .SelectMany(y => y.PlayerSeason.Awards)
                     .Where(y => !y.OmitFromGroupings)
                     .Select(y => y.Id)
@@ -142,7 +138,32 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                             .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                             ? 0
                             : y.PlayerSeason.Salary),
+                EarnedRunAverage = x.Sum(y => y.InningsPitched ?? 0) == 0
+                    ? 0
+                    : x.Sum(y => y.EarnedRuns) /
+                    x.Sum(y => y.InningsPitched ?? 0) * 9,
+                Whip = x.Sum(y => y.InningsPitched ?? 0) == 0
+                    ? 0
+                    : (x.Sum(y => y.Walks) + x.Sum(y => y.Hits)) /
+                      x.Sum(y => y.InningsPitched ?? 0),
+                Fip = x.Sum(y => y.InningsPitched ?? 0) == 0
+                    ? 0
+                    : (
+                        (
+                            (
+                                (13 * x.Sum(y => y.HomeRuns)) +
+                                (3 * (
+                                        x.Sum(y => y.Walks) +
+                                        x.Sum(y => y.HitByPitch)
+                                    )
+                                ) -
+                                (2 * x.Sum(y => y.Strikeouts))
+                            )
+                            / x.Sum(y => y.InningsPitched ?? 0)
+                        ) + 3.10
+                    )
             })
+            .Where(x => !filters.OnlyQualifiedPlayers || (x.InningsPitched >= gamesPerSeason * 1 * x.NumSeasons))
             .OrderBy(orderBy)
             .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
@@ -173,29 +194,13 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                 pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
             }
 
-            pitchingDto.Era = pitchingDto.InningsPitched == 0
-                ? 0
-                : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
-            pitchingDto.Whip = pitchingDto.InningsPitched == 0
-                ? 0
-                : (pitchingDto.Walks + pitchingDto.Hits) / pitchingDto.InningsPitched;
-            pitchingDto.Fip = pitchingDto.InningsPitched == 0
-                ? 0
-                : (13 * pitchingDto.HomeRuns + 3 * (pitchingDto.Walks + pitchingDto.HitByPitch) -
-                   2 * pitchingDto.Strikeouts) / pitchingDto.InningsPitched + 3.10;
-
             if (pitchingDto.NumChampionships > 0)
-            {
                 foreach (var _ in Enumerable.Range(1, pitchingDto.NumChampionships))
                 {
                     pitchingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
-            }
 
-            if (pitchingDto.IsHallOfFamer)
-            {
-                pitchingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
-            }
+            if (pitchingDto.IsHallOfFamer) pitchingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
         }
 
         return playerPitchingDtos;
@@ -255,7 +260,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
         {
             pitchingDto.IsRetired = true;
             pitchingDto.RetiredCurrentAge = pitchingDto.Age + (mostRecentSeason.Number - pitchingDto.EndSeasonNumber);
-            pitchingDto.Era = pitchingDto.InningsPitched == 0
+            pitchingDto.EarnedRunAverage = pitchingDto.InningsPitched == 0
                 ? 0
                 : pitchingDto.EarnedRuns / pitchingDto.InningsPitched * 9;
             pitchingDto.Whip = pitchingDto.InningsPitched == 0
@@ -286,7 +291,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
             {
                 PlayerId = playerId
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         if (!pitchingCareers.Any())
             throw new Exception($"No player career found for player ID {playerId}");
@@ -295,7 +300,7 @@ public class PitcherCareerRepository : IPitcherCareerRepository
 
         var wins = playerCareerPitching.Wins;
         var losses = playerCareerPitching.Losses;
-        var era = playerCareerPitching.Era;
+        var era = playerCareerPitching.EarnedRunAverage;
         var starts = playerCareerPitching.GamesStarted;
         var completeGames = playerCareerPitching.CompleteGames;
         var inningsPitched = playerCareerPitching.InningsPitched;
@@ -418,26 +423,26 @@ public class PitcherCareerRepository : IPitcherCareerRepository
                 EraMinus =
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.InningsPitched ?? 0)) > 0
-                        ? (x.PlayerSeasons
-                               .SelectMany(y => y.PitchingStats)
-                               .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
-                           /
-                           x.PlayerSeasons
-                               .SelectMany(y => y.PitchingStats)
-                               .Sum(y => (y.InningsPitched ?? 0)))
+                        .Sum(y => y.InningsPitched ?? 0) > 0
+                        ? x.PlayerSeasons
+                              .SelectMany(y => y.PitchingStats)
+                              .Sum(y => (y.EraMinus ?? 0) * (y.InningsPitched ?? 0))
+                          /
+                          x.PlayerSeasons
+                              .SelectMany(y => y.PitchingStats)
+                              .Sum(y => y.InningsPitched ?? 0)
                         : 0,
                 FipMinus =
                     x.PlayerSeasons
                         .SelectMany(y => y.PitchingStats)
-                        .Sum(y => (y.InningsPitched ?? 0)) > 0
+                        .Sum(y => y.InningsPitched ?? 0) > 0
                         ? x.PlayerSeasons
                               .SelectMany(y => y.PitchingStats)
                               .Sum(y => (y.FipMinus ?? 0) * (y.InningsPitched ?? 0))
                           /
                           x.PlayerSeasons
                               .SelectMany(y => y.PitchingStats)
-                              .Sum(y => (y.InningsPitched ?? 0))
+                              .Sum(y => y.InningsPitched ?? 0)
                         : 0,
                 AwardIds = x.PlayerSeasons
                     .SelectMany(y => y.Awards)

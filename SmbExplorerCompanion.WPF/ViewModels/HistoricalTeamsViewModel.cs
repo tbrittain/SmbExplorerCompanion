@@ -20,10 +20,10 @@ public class HistoricalTeamsViewModel : ViewModelBase
 {
     private readonly ISender _mediator;
     private readonly INavigationService _navigationService;
+    private Season? _endSeason;
+    private ObservableCollection<Season> _selectableEndSeasons;
     private HistoricalTeam? _selectedHistoricalTeam;
     private Season? _startSeason;
-    private ObservableCollection<Season> _selectableEndSeasons;
-    private Season? _endSeason;
 
     public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService)
     {
@@ -81,11 +81,19 @@ public class HistoricalTeamsViewModel : ViewModelBase
         set => SetField(ref _endSeason, value);
     }
 
+    public ObservableCollection<HistoricalTeam> HistoricalTeams { get; } = new();
+
+    public HistoricalTeam? SelectedHistoricalTeam
+    {
+        get => _selectedHistoricalTeam;
+        set => SetField(ref _selectedHistoricalTeam, value);
+    }
+
     private async Task GetHistoricalTeams()
     {
         if (StartSeason is not null && EndSeason is not null && StartSeason.Id > EndSeason.Id)
             return;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         HistoricalTeams.Clear();
 
@@ -94,7 +102,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
             (null, null) => new SeasonRange(MinSeasonId),
             (not null, null) => new SeasonRange(StartSeason.Id),
             (null, not null) => new SeasonRange(MinSeasonId, EndSeason.Id),
-            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id),
+            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id)
         };
         var historicalTeams =
             await _mediator.Send(new GetHistoricalTeamsRequest(seasonRange: seasonRange));
@@ -104,14 +112,6 @@ public class HistoricalTeamsViewModel : ViewModelBase
             .OrderByDescending(x => x.NumRegularSeasonWins));
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-    }
-
-    public ObservableCollection<HistoricalTeam> HistoricalTeams { get; } = new();
-
-    public HistoricalTeam? SelectedHistoricalTeam
-    {
-        get => _selectedHistoricalTeam;
-        set => SetField(ref _selectedHistoricalTeam, value);
     }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)

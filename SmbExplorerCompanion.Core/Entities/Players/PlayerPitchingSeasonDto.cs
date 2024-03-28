@@ -1,6 +1,4 @@
-﻿using SmbExplorerCompanion.Core.Entities.Lookups;
-
-namespace SmbExplorerCompanion.Core.Entities.Players;
+﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
 public class PlayerPitchingSeasonDto : PlayerSeasonDto
 {
@@ -25,7 +23,7 @@ public class PlayerPitchingSeasonDto : PlayerSeasonDto
     public int Shutouts { get; set; }
     public List<int> AwardIds { get; set; } = new();
     public bool IsChampion { get; set; }
-    public double WinPercentage => Wins + Losses > 0 ? (double)Wins / (Wins + Losses) : 0;
+    public double WinPercentage => Wins + Losses > 0 ? (double) Wins / (Wins + Losses) : 0;
     public double Era { get; set; }
     public int GamesFinished { get; set; }
     public int BattersFaced { get; set; }

@@ -14,8 +14,8 @@ public partial class MappingService
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
-        var position = primaryPositionId != default 
-            ? await _lookupSearchService.GetPositionById(primaryPositionId) 
+        var position = primaryPositionId != default
+            ? await _lookupSearchService.GetPositionById(primaryPositionId)
             : default;
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
@@ -74,8 +74,8 @@ public partial class MappingService
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
-        var position = primaryPositionId != default 
-            ? await _lookupSearchService.GetPositionById(primaryPositionId) 
+        var position = primaryPositionId != default
+            ? await _lookupSearchService.GetPositionById(primaryPositionId)
             : default;
         var pitcherRole = pitcherRoleId.HasValue
             ? await _lookupSearchService.GetPitcherRoleById(pitcherRoleId.Value)
@@ -98,12 +98,12 @@ public partial class MappingService
             EndSeasonNumber = x.EndSeasonNumber,
             IsRetired = x.IsRetired,
             RetiredCurrentAge = x.RetiredCurrentAge,
-            IsHallOfFamer = x.IsHallOfFamer,NumSeasons = x.NumSeasons,
+            IsHallOfFamer = x.IsHallOfFamer, NumSeasons = x.NumSeasons,
             Wins = x.Wins,
             Losses = x.Losses,
             EarnedRuns = x.EarnedRuns,
             TotalPitches = x.TotalPitches,
-            Era = x.Era,
+            EarnedRunAverage = x.EarnedRunAverage,
             Fip = x.Fip,
             GamesStarted = x.GamesStarted,
             Saves = x.Saves,
@@ -125,7 +125,7 @@ public partial class MappingService
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position?.Name ?? string.Empty, pitcherRole?.Name)
         };
     }
-    
+
     public async Task<PlayerCareerBase> FromCore(PlayerCareerBaseDto x)
     {
         var pitcherRoleId = x.PitcherRoleId;
@@ -158,12 +158,12 @@ public partial class MappingService
             DisplayPrimaryPosition = PlayerDetailBaseExtensions.GetDisplayPrimaryPosition(position.Name, pitcherRole?.Name)
         };
     }
-    
+
     public async Task<PlayerOverview> FromCore(PlayerOverviewDto x)
     {
         var careerPitching = await FromCore(x.CareerPitching);
         var careerBatting = await FromCore(x.CareerBatting);
-        
+
         var pitcherRoleId = x.PitcherRoleId;
         var primaryPositionId = x.PrimaryPositionId;
 
@@ -176,27 +176,27 @@ public partial class MappingService
             .Select(async y => await FromCore(y))
             .Select(y => y.Result)
             .ToObservableCollection();
-        
+
         var awards = x.AwardIds
             .Select(async y => await _lookupSearchService.GetPlayerAwardById(y))
             .Select(y => y.Result)
             .ToList();
-        
+
         var playerSeasonBatting = x.PlayerSeasonBatting
             .Select(async y => await FromCore(y))
             .Select(y => y.Result)
             .ToObservableCollection();
-        
+
         var playerSeasonPitching = x.PlayerSeasonPitching
             .Select(async y => await FromCore(y))
             .Select(y => y.Result)
             .ToObservableCollection();
-        
+
         var playerPlayoffBatting = x.PlayerPlayoffBatting
             .Select(async y => await FromCore(y))
             .Select(y => y.Result)
             .ToObservableCollection();
-        
+
         var playerPlayoffPitching = x.PlayerPlayoffPitching
             .Select(async y => await FromCore(y))
             .Select(y => y.Result)
@@ -244,7 +244,7 @@ public partial class MappingService
 
         return overview;
     }
-    
+
     public async Task<PlayerGameStatOverview> FromCore(PlayerGameStatOverviewDto x)
     {
         var traitTasks = x.TraitIds

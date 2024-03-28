@@ -1,6 +1,5 @@
 ﻿using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.ValueObjects.Players;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 

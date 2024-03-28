@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using ScottPlot;
 using ScottPlot.Drawing;
+using ScottPlot.Plottable;
 using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Entities.Players;
@@ -28,9 +29,14 @@ public partial class PlayerOverviewViewModel : ViewModelBase
     public const string PlayerIdProp = "PlayerId";
     public const string SeasonIdProp = "SeasonId";
     public const string TeamSeasonIdProp = "TeamSeasonId";
-    private readonly INavigationService _navigationService;
-    private Season? _selectedSeason;
     private readonly ISender _mediator;
+    private readonly INavigationService _navigationService;
+    private bool _filterToPitcherType;
+    private WpfPlot? _playerGameStatsPercentilePlot;
+
+    private WpfPlot? _playerGameStatsRadialPlot;
+    private WpfPlot? _playerKpisPercentilePlot;
+    private Season? _selectedSeason;
 
     public PlayerOverviewViewModel(INavigationService navigationService, ISender mediator, MappingService mappingService)
     {
@@ -106,6 +112,41 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
+    public bool HasAnyBatting => HasSeasonBatting || HasPlayoffBatting;
+    public bool HasSeasonBatting => PlayerOverview.PlayerSeasonBatting.Any();
+    public bool HasPlayoffBatting => PlayerOverview.PlayerPlayoffBatting.Any();
+
+    public bool HasAnyPitching => HasSeasonPitching || HasPlayoffPitching;
+    public bool HasSeasonPitching => PlayerOverview.PlayerSeasonPitching.Any();
+    public bool HasPlayoffPitching => PlayerOverview.PlayerPlayoffPitching.Any();
+
+    public int PitcherGridRow => PlayerOverview.IsPitcher ? 0 : 1;
+    public int BatterGridRow => PlayerOverview.IsPitcher ? 1 : 0;
+
+    public PlayerOverview PlayerOverview { get; }
+    public ObservableCollection<SimilarPlayer> SimilarPlayers { get; } = new();
+
+    private PlayerGameStatOverview SeasonStats { get; set; }
+    private GameStatDto LeagueAverageGameStats { get; set; }
+    private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; }
+    private PlayerKpiPercentileDto PlayerKpiPercentiles { get; set; }
+
+    public ObservableCollection<Season> Seasons { get; } = new();
+
+    public Season? SelectedSeason
+    {
+        get => _selectedSeason;
+        set => SetField(ref _selectedSeason, value);
+    }
+
+    public bool FilterToPitcherType
+    {
+        get => _filterToPitcherType;
+        set => SetField(ref _filterToPitcherType, value);
+    }
+
+    private int PlayerId { get; }
+
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -156,25 +197,6 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             DrawPlayerKpisPercentilePlot(_playerKpisPercentilePlot);
     }
 
-    public bool HasAnyBatting => HasSeasonBatting || HasPlayoffBatting;
-    public bool HasSeasonBatting => PlayerOverview.PlayerSeasonBatting.Any();
-    public bool HasPlayoffBatting => PlayerOverview.PlayerPlayoffBatting.Any();
-
-    public bool HasAnyPitching => HasSeasonPitching || HasPlayoffPitching;
-    public bool HasSeasonPitching => PlayerOverview.PlayerSeasonPitching.Any();
-    public bool HasPlayoffPitching => PlayerOverview.PlayerPlayoffPitching.Any();
-
-    public int PitcherGridRow => PlayerOverview.IsPitcher ? 0 : 1;
-    public int BatterGridRow => PlayerOverview.IsPitcher ? 1 : 0;
-
-    public PlayerOverview PlayerOverview { get; }
-    public ObservableCollection<SimilarPlayer> SimilarPlayers { get; } = new();
-
-    private WpfPlot? _playerGameStatsRadialPlot;
-    private WpfPlot? _playerGameStatsPercentilePlot;
-    private WpfPlot? _playerKpisPercentilePlot;
-    private bool _filterToPitcherType;
-
     [RelayCommand]
     private void NavigateToPlayerOverviewPage(int playerId)
     {
@@ -183,25 +205,6 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             new(PlayerIdProp, playerId)
         };
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
-    }
-
-    private PlayerGameStatOverview SeasonStats { get; set; }
-    private GameStatDto LeagueAverageGameStats { get; set; }
-    private PlayerGameStatPercentileDto PlayerGameStatPercentiles { get; set; }
-    private PlayerKpiPercentileDto PlayerKpiPercentiles { get; set; }
-
-    public ObservableCollection<Season> Seasons { get; } = new();
-
-    public Season? SelectedSeason
-    {
-        get => _selectedSeason;
-        set => SetField(ref _selectedSeason, value);
-    }
-
-    public bool FilterToPitcherType
-    {
-        get => _filterToPitcherType;
-        set => SetField(ref _filterToPitcherType, value);
     }
 
     public void DrawPlayerGameStatsRadialPlot(WpfPlot plot)
@@ -255,11 +258,11 @@ public partial class PlayerOverviewViewModel : ViewModelBase
         }
 
         plot.Plot.Palette = Palette.DarkPastel;
-        var radarPlot = plot.Plot.AddRadar(values: values, maxValues: maxValues, independentAxes: false);
+        var radarPlot = plot.Plot.AddRadar(values, maxValues: maxValues, independentAxes: false);
         radarPlot.HatchOptions = new HatchOptions[]
         {
             new() {Pattern = HatchStyle.StripedUpwardDiagonal},
-            new() {Pattern = HatchStyle.StripedDownwardDiagonal},
+            new() {Pattern = HatchStyle.StripedDownwardDiagonal}
         };
 
         radarPlot.AxisType = RadarAxis.Polygon;
@@ -319,26 +322,26 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             labels = new[] {"Power", "Contact", "Speed", "Fielding", "Arm"};
         }
 
-        List<ScottPlot.Plottable.Bar> bars = new();
+        List<Bar> bars = new();
         for (var i = 0; i < values.Length; i++)
         {
             var value = values[i];
 
             var clampValue = (int) Math.Round(Math.Clamp(value, 0, 100));
-            ScottPlot.Plottable.Bar bar = new()
+            Bar bar = new()
             {
                 Value = value,
                 Position = i,
                 FillColor = GetValueColor(clampValue),
                 Label = value.ToString(CultureInfo.InvariantCulture),
-                LineWidth = 2,
+                LineWidth = 2
             };
             bars.Add(bar);
         }
 
         plot.Plot.AddBarSeries(bars);
         plot.Plot.SetAxisLimits(yMin: 0, yMax: 100);
-        plot.Plot.XTicks(positions: labelPositions, labels: labels);
+        plot.Plot.XTicks(labelPositions, labels);
 
         plot.Height = 300;
         plot.Width = 350;
@@ -400,26 +403,26 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             labels = new[] {"H", "HR", "BA", "SB", "K%", "OBP", "SLG"};
         }
 
-        List<ScottPlot.Plottable.Bar> bars = new();
+        List<Bar> bars = new();
         for (var i = 0; i < values.Length; i++)
         {
             var value = values[i];
 
             var clampValue = (int) Math.Round(Math.Clamp(value, 0, 100));
-            ScottPlot.Plottable.Bar bar = new()
+            Bar bar = new()
             {
                 Value = value,
                 Position = i,
                 FillColor = GetValueColor(clampValue),
                 Label = value.ToString(CultureInfo.InvariantCulture),
-                LineWidth = 2,
+                LineWidth = 2
             };
             bars.Add(bar);
         }
 
         plot.Plot.AddBarSeries(bars: bars);
         plot.Plot.SetAxisLimits(yMin: 0, yMax: 100);
-        plot.Plot.XTicks(positions: labelPositions, labels: labels);
+        plot.Plot.XTicks(labelPositions, labels);
 
         plot.Height = 300;
         plot.Width = 600;
@@ -460,6 +463,4 @@ public partial class PlayerOverviewViewModel : ViewModelBase
             return Color.FromArgb(red, green, blue);
         }
     }
-
-    private int PlayerId { get; }
 }

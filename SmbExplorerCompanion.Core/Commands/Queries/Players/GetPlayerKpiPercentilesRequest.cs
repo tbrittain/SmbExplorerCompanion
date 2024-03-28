@@ -31,11 +31,13 @@ public class GetPlayerKpiPercentilesRequest : IRequest<PlayerKpiPercentileDto>
         }
 
         public async Task<PlayerKpiPercentileDto> Handle(GetPlayerKpiPercentilesRequest request,
-            CancellationToken cancellationToken) =>
-            await _generalPlayerRepository.GetPlayerKpiPercentiles(request.PlayerId,
+            CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetPlayerKpiPercentiles(request.PlayerId,
                 request.SeasonId,
                 request.IsPitcher,
                 request.PitcherRoleId,
                 cancellationToken);
+        }
     }
 }

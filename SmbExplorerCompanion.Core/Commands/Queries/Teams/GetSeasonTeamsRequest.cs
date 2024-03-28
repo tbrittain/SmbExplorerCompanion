@@ -24,7 +24,9 @@ public class GetSeasonTeamsRequest : IRequest<IEnumerable<TeamDto>>
         }
 
         public async Task<IEnumerable<TeamDto>> Handle(GetSeasonTeamsRequest request,
-            CancellationToken cancellationToken) =>
-            await _teamRepository.GetSeasonTeams(request.SeasonId, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _teamRepository.GetSeasonTeams(request.SeasonId, cancellationToken);
+        }
     }
 }

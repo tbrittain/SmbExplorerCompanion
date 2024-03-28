@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
-using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.Database.Entities;
 using SmbExplorerCompanion.Shared.Enums;
 using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
@@ -48,31 +47,25 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             orderBy = $"{defaultOrderByProperty} desc";
         }
 
-        if (filters.PrimaryPositionId is not null)
-        {
-            var position = await _dbContext.Positions
-                .Where(x => x.IsPrimaryPosition)
-                .SingleOrDefaultAsync(x => x.Id == filters.PrimaryPositionId, cancellationToken);
-
-            if (position is null)
-                throw new ArgumentException($"No primary position found with Id {filters.PrimaryPositionId}");
-        }
-
         var mostRecentSeason = await _dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstAsync(cancellationToken);
 
+        var startSeason = await _dbContext.Seasons
+            .Where(x => x.FranchiseId == _applicationContext.SelectedFranchiseId!.Value)
+            .OrderBy(x => x.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        var gamesPerSeason = startSeason.NumGamesRegularSeason;
+
         List<int> activePlayerIds = new();
         if (filters.OnlyActivePlayers)
-        {
             activePlayerIds = await _dbContext.Players
                 .Include(x => x.PlayerSeasons)
                 .Where(x => x.FranchiseId == franchiseId)
                 .Where(x => x.PlayerSeasons.Any(y => y.SeasonId == mostRecentSeason.Id))
                 .Select(x => x.Id)
                 .ToListAsync(cancellationToken: cancellationToken);
-        }
 
         var playerBattingDtos = await _dbContext.PlayerSeasonBattingStats
             .Include(x => x.PlayerSeason)
@@ -95,6 +88,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             .Select(x => new PlayerCareerBattingDto
             {
                 PlayerId = x.Key,
+                PlateAppearances = x.Sum(y => y.PlateAppearances),
                 StartSeasonNumber = x.Min(y => y.PlayerSeason.Season.Number),
                 EndSeasonNumber = x.Max(y => y.PlayerSeason.Season.Number),
                 Age = x.Max(y => y.PlayerSeason.Age),
@@ -125,6 +119,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                 SacrificeFlies = x.Sum(y => y.SacrificeFlies),
                 Errors = x.Sum(y => y.Errors),
                 AwardIds = x
+                    .Where(y => y.IsRegularSeason)
                     .SelectMany(y => y.PlayerSeason.Awards)
                     .Where(y => !y.OmitFromGroupings)
                     .Select(y => y.Id)
@@ -137,7 +132,48 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
                             .Single(z => z.Order == 1).SeasonTeamHistoryId == null
                             ? 0
                             : y.PlayerSeason.Salary),
+                BattingAverage = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : x.Sum(y => y.Hits) / (double) x.Sum(y => y.AtBats),
+                Obp = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : (
+                        (
+                            x.Sum(y => y.Hits) +
+                            x.Sum(y => y.Walks) +
+                            x.Sum(y => y.HitByPitch)) /
+                        (double) (x.Sum(y => y.AtBats) +
+                                  x.Sum(y => y.Walks) +
+                                  x.Sum(y => y.HitByPitch) +
+                                  x.Sum(y => y.SacrificeFlies)
+                        )
+                    ),
+                Slg = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : (
+                        (x.Sum(y => y.Singles) + (x.Sum(y => y.Doubles) * 2) + (x.Sum(y => y.Triples) * 3) +
+                         (x.Sum(y => y.HomeRuns) * 4)
+                        ) / (double) x.Sum(y => y.AtBats)
+                    ),
+                Ops = x.Sum(y => y.AtBats) == 0
+                    ? 0
+                    : (
+                        (
+                            x.Sum(y => y.Hits) +
+                            x.Sum(y => y.Walks) +
+                            x.Sum(y => y.HitByPitch)) /
+                        (double) (x.Sum(y => y.AtBats) +
+                                  x.Sum(y => y.Walks) +
+                                  x.Sum(y => y.HitByPitch) +
+                                  x.Sum(y => y.SacrificeFlies)
+                        )
+                    ) + (
+                        (x.Sum(y => y.Singles) + (x.Sum(y => y.Doubles) * 2) + (x.Sum(y => y.Triples) * 3) +
+                         (x.Sum(y => y.HomeRuns) * 4)
+                        ) / (double) x.Sum(y => y.AtBats)
+                    )
             })
+            .Where(x => !filters.OnlyQualifiedPlayers || (x.PlateAppearances >= gamesPerSeason * 3.1 * x.NumSeasons))
             .OrderBy(orderBy)
             .Skip(((filters.PageNumber ?? 1) - 1) * limitValue)
             .Take(limitValue)
@@ -167,32 +203,13 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             battingDto.IsRetired = battingDto.EndSeasonNumber < mostRecentSeason.Number;
             if (battingDto.IsRetired) battingDto.RetiredCurrentAge = battingDto.Age + (mostRecentSeason.Number - battingDto.EndSeasonNumber);
 
-            battingDto.BattingAverage = battingDto.AtBats == 0
-                ? 0
-                : battingDto.Hits / (double) battingDto.AtBats;
-            battingDto.Obp = battingDto.AtBats == 0
-                ? 0
-                : (battingDto.Hits + battingDto.Walks + battingDto.HitByPitch) /
-                  (double) (battingDto.AtBats + battingDto.Walks + battingDto.HitByPitch +
-                            battingDto.SacrificeFlies);
-            battingDto.Slg = battingDto.AtBats == 0
-                ? 0
-                : (battingDto.Singles + battingDto.Doubles * 2 + battingDto.Triples * 3 +
-                   battingDto.HomeRuns * 4) / (double) battingDto.AtBats;
-            battingDto.Ops = battingDto.Obp + battingDto.Slg;
-
             if (battingDto.NumChampionships > 0)
-            {
                 foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
                 {
                     battingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
-            }
 
-            if (battingDto.IsHallOfFamer)
-            {
-                battingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
-            }
+            if (battingDto.IsHallOfFamer) battingDto.AwardIds.Add((int) VirtualAward.HallOfFame);
         }
 
         return playerBattingDtos;
@@ -268,12 +285,10 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             battingDto.Ops = battingDto.Obp + battingDto.Slg;
 
             if (battingDto.NumChampionships > 0)
-            {
                 foreach (var _ in Enumerable.Range(1, battingDto.NumChampionships))
                 {
                     battingDto.AwardIds.Add((int) VirtualAward.Champion);
                 }
-            }
         }
 
         return battingDtos
@@ -290,7 +305,7 @@ public class PositionPlayerCareerRepository : IPositionPlayerCareerRepository
             {
                 PlayerId = playerId
             },
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
         if (!battingCareers.Any())
             throw new Exception($"No player career found for player ID {playerId}");

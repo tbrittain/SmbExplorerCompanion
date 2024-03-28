@@ -22,19 +22,21 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class TopBattingCareersViewModel : ViewModelBase
 {
+    private const int ResultsPerPage = 20;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
+    private Season? _endSeason;
+    private bool _isPlayoffs;
     private bool _onlyHallOfFamers;
     private int _pageNumber = 1;
+    private ObservableCollection<Season> _selectableEndSeasons;
+    private BatHandedness? _selectedBatHandedness;
+    private Chemistry? _selectedChemistry;
     private PlayerBattingCareer? _selectedPlayer;
     private Position? _selectedPosition;
-    private readonly MappingService _mappingService;
     private Season? _startSeason;
-    private ObservableCollection<Season> _selectableEndSeasons;
-    private Season? _endSeason;
-    private Chemistry? _selectedChemistry;
-    private BatHandedness? _selectedBatHandedness;
-    private bool _isPlayoffs;
+    private bool _onlyQualifiers;
 
     public TopBattingCareersViewModel(
         INavigationService navigationService,
@@ -87,6 +89,12 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
     }
 
+    public bool OnlyQualifiers
+    {
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
+    }
+
     public bool IsPlayoffs
     {
         get => _isPlayoffs;
@@ -129,6 +137,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     }
 
     public string SortColumn { get; set; } = nameof(PlayerCareerBattingDto.WeightedOpsPlusOrEraMinus);
+    public bool SortDescending { get; set; } = true;
 
     public PlayerBattingCareer? SelectedPlayer
     {
@@ -143,6 +152,45 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     {
         get => _selectedPosition;
         set => SetField(ref _selectedPosition, value);
+    }
+
+    private bool ShortCircuitPageNumberRefresh { get; set; }
+    private bool CanSelectPreviousPage => PageNumber > 1;
+
+    private bool CanSelectNextPage => TopBattingCareers.Count == ResultsPerPage;
+
+    public ObservableCollection<Season> Seasons { get; } = new();
+
+    public ObservableCollection<Season> SelectableEndSeasons
+    {
+        get => _selectableEndSeasons;
+        private set => SetField(ref _selectableEndSeasons, value);
+    }
+
+    public Season? StartSeason
+    {
+        get => _startSeason;
+        set
+        {
+            SetField(ref _startSeason, value);
+
+            if (value is not null)
+            {
+                var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
+                SelectableEndSeasons = new ObservableCollection<Season>(endSeasons);
+                EndSeason = endSeasons.LastOrDefault();
+            }
+            else
+            {
+                EndSeason = null;
+            }
+        }
+    }
+
+    public Season? EndSeason
+    {
+        get => _endSeason;
+        set => SetField(ref _endSeason, value);
     }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -162,6 +210,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             case nameof(SelectedBatHandedness):
             case nameof(SelectedChemistry):
             case nameof(IsPlayoffs):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -176,13 +225,6 @@ public partial class TopBattingCareersViewModel : ViewModelBase
             }
         }
     }
-
-    private bool ShortCircuitPageNumberRefresh { get; set; }
-
-    private const int ResultsPerPage = 20;
-    private bool CanSelectPreviousPage => PageNumber > 1;
-
-    private bool CanSelectNextPage => TopBattingCareers.Count == ResultsPerPage;
 
     [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
     private void IncrementPage()
@@ -230,12 +272,14 @@ public partial class TopBattingCareersViewModel : ViewModelBase
                 PageNumber = PageNumber,
                 Limit = ResultsPerPage,
                 OrderBy = SortColumn,
+                Descending = SortDescending,
                 OnlyHallOfFamers = OnlyHallOfFamers,
                 PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
                 Seasons = seasonRange,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
-                IsPlayoffs = IsPlayoffs
+                IsPlayoffs = IsPlayoffs,
+                OnlyQualifiedPlayers = OnlyQualifiers
             }));
 
         TopBattingCareers.Clear();
@@ -247,40 +291,6 @@ public partial class TopBattingCareersViewModel : ViewModelBase
         IncrementPageCommand.NotifyCanExecuteChanged();
         DecrementPageCommand.NotifyCanExecuteChanged();
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-    }
-
-    public ObservableCollection<Season> Seasons { get; } = new();
-
-    public ObservableCollection<Season> SelectableEndSeasons
-    {
-        get => _selectableEndSeasons;
-        private set => SetField(ref _selectableEndSeasons, value);
-    }
-
-    public Season? StartSeason
-    {
-        get => _startSeason;
-        set
-        {
-            SetField(ref _startSeason, value);
-
-            if (value is not null)
-            {
-                var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
-                SelectableEndSeasons = new ObservableCollection<Season>(endSeasons);
-                EndSeason = endSeasons.LastOrDefault();
-            }
-            else
-            {
-                EndSeason = null;
-            }
-        }
-    }
-
-    public Season? EndSeason
-    {
-        get => _endSeason;
-        set => SetField(ref _endSeason, value);
     }
 
     protected override void Dispose(bool disposing)

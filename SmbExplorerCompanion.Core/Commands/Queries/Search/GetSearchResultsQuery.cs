@@ -12,7 +12,7 @@ public class GetSearchResultsQuery : IRequest<IEnumerable<SearchResultDto>>
     }
 
     private string SearchQuery { get; }
-    
+
     // ReSharper disable once UnusedType.Global
     internal class GetSearchResultsHandler : IRequestHandler<GetSearchResultsQuery, IEnumerable<SearchResultDto>>
     {
@@ -24,7 +24,9 @@ public class GetSearchResultsQuery : IRequest<IEnumerable<SearchResultDto>>
         }
 
         public async Task<IEnumerable<SearchResultDto>> Handle(GetSearchResultsQuery request,
-            CancellationToken cancellationToken) =>
-            await _searchRepository.Search(request.SearchQuery, cancellationToken);
+            CancellationToken cancellationToken)
+        {
+            return await _searchRepository.Search(request.SearchQuery, cancellationToken);
+        }
     }
 }

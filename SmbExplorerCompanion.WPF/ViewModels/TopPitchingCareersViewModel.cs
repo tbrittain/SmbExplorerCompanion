@@ -22,19 +22,21 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class TopPitchingCareersViewModel : ViewModelBase
 {
+    private const int ResultsPerPage = 20;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
     private readonly INavigationService _navigationService;
+    private Season? _endSeason;
+    private bool _isPlayoffs;
     private bool _onlyHallOfFamers;
     private int _pageNumber = 1;
-    private PlayerPitchingCareer? _selectedPlayer;
-    private PitcherRole? _selectedPitcherRole;
-    private readonly MappingService _mappingService;
     private ObservableCollection<Season> _selectableEndSeasons;
-    private Season? _startSeason;
-    private Season? _endSeason;
     private Chemistry? _selectedChemistry;
+    private PitcherRole? _selectedPitcherRole;
+    private PlayerPitchingCareer? _selectedPlayer;
     private ThrowHandedness? _selectedThrowHandedness;
-    private bool _isPlayoffs;
+    private Season? _startSeason;
+    private bool _onlyQualifiers;
 
     public TopPitchingCareersViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -85,6 +87,12 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         PropertyChanged += OnPropertyChanged;
 
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    public bool OnlyQualifiers
+    {
+        get => _onlyQualifiers;
+        set => SetField(ref _onlyQualifiers, value);
     }
 
     public bool IsPlayoffs
@@ -156,13 +164,6 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    private void ClearSeasons()
-    {
-        StartSeason = null;
-        EndSeason = null;
-    }
-
     public bool OnlyHallOfFamers
     {
         get => _onlyHallOfFamers;
@@ -176,6 +177,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     }
 
     public string SortColumn { get; set; } = nameof(PlayerCareerPitchingDto.WeightedOpsPlusOrEraMinus);
+    public bool SortDescending { get; set; } = true;
 
     public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
     public ObservableCollection<PitcherRole> PitcherRoles { get; } = new();
@@ -184,6 +186,18 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     {
         get => _selectedPitcherRole;
         set => SetField(ref _selectedPitcherRole, value);
+    }
+
+    private bool ShortCircuitPageNumberRefresh { get; set; }
+    private bool CanSelectPreviousPage => PageNumber > 1;
+
+    private bool CanSelectNextPage => TopPitchingCareers.Count == ResultsPerPage;
+
+    [RelayCommand]
+    private void ClearSeasons()
+    {
+        StartSeason = null;
+        EndSeason = null;
     }
 
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -203,6 +217,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             case nameof(SelectedChemistry):
             case nameof(SelectedThrowHandedness):
             case nameof(IsPlayoffs):
+            case nameof(OnlyQualifiers):
             {
                 ShortCircuitPageNumberRefresh = true;
                 PageNumber = 1;
@@ -217,13 +232,6 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
             }
         }
     }
-
-    private bool ShortCircuitPageNumberRefresh { get; set; }
-
-    private const int ResultsPerPage = 20;
-    private bool CanSelectPreviousPage => PageNumber > 1;
-
-    private bool CanSelectNextPage => TopPitchingCareers.Count == ResultsPerPage;
 
     [RelayCommand(CanExecute = nameof(CanSelectNextPage))]
     private void IncrementPage()
@@ -269,7 +277,9 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
                 Seasons = seasonRange,
                 ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
-                IsPlayoffs = IsPlayoffs
+                IsPlayoffs = IsPlayoffs,
+                OnlyQualifiedPlayers = OnlyQualifiers,
+                Descending = SortDescending
             }));
 
         TopPitchingCareers.Clear();

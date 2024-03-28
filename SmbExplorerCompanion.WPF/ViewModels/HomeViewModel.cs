@@ -25,13 +25,13 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class HomeViewModel : ViewModelBase
 {
+    private readonly IApplicationContext _applicationContext;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
-    private string _searchQuery = string.Empty;
     private readonly INavigationService _navigationService;
     private bool _canDisplayFranchiseSummary;
     private FranchiseSummary? _franchiseSummary;
-    private readonly IApplicationContext _applicationContext;
-    private readonly MappingService _mappingService;
+    private string _searchQuery = string.Empty;
 
     public HomeViewModel(IMediator mediator,
         INavigationService navigationService,
@@ -56,37 +56,6 @@ public partial class HomeViewModel : ViewModelBase
         // summary data about the franchise
         CanDisplayFranchiseSummary = false;
         _applicationContext.PropertyChanged += ApplicationContextOnPropertyChanged;
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-    }
-
-    private async void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        switch (e.PropertyName)
-        {
-            case nameof(_applicationContext.HasFranchiseData):
-            {
-                await Application.Current.Dispatcher.InvokeAsync(async () =>
-                {
-                    CanDisplayFranchiseSummary = _applicationContext.HasFranchiseData;
-                    if (CanDisplayFranchiseSummary)
-                    {
-                        await GetFranchiseSummary();
-                    }
-                });
-                break;
-            }
-        }
-    }
-
-    private async Task GetFranchiseSummary()
-    {
-        var franchiseSummaryDto = await _mediator.Send(new GetFranchiseSummaryRequest());
-
-        if (franchiseSummaryDto is not null)
-            FranchiseSummary = await _mappingService.FromCore(franchiseSummaryDto);
-
-        var leagueSummaryDto = await _mediator.Send(new GetLeagueSummaryRequest());
-        Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -124,7 +93,42 @@ public partial class HomeViewModel : ViewModelBase
         }
     }
 
-    private bool CanSearch() => !string.IsNullOrWhiteSpace(SearchQuery);
+    private bool HasSearched { get; set; }
+
+    public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
+
+    private async void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(_applicationContext.HasFranchiseData):
+            {
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    CanDisplayFranchiseSummary = _applicationContext.HasFranchiseData;
+                    if (CanDisplayFranchiseSummary) await GetFranchiseSummary();
+                });
+                break;
+            }
+        }
+    }
+
+    private async Task GetFranchiseSummary()
+    {
+        var franchiseSummaryDto = await _mediator.Send(new GetFranchiseSummaryRequest());
+
+        if (franchiseSummaryDto is not null)
+            FranchiseSummary = await _mappingService.FromCore(franchiseSummaryDto);
+
+        var leagueSummaryDto = await _mediator.Send(new GetLeagueSummaryRequest());
+        Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    private bool CanSearch()
+    {
+        return !string.IsNullOrWhiteSpace(SearchQuery);
+    }
 
     [RelayCommand(CanExecute = nameof(CanSearch))]
     private async Task GetSearchResults()
@@ -143,10 +147,6 @@ public partial class HomeViewModel : ViewModelBase
         SearchResults.AddRange(groupedSearchResults);
         OnPropertyChanged(nameof(HasSearchResults));
     }
-
-    private bool HasSearched { get; set; }
-
-    public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
 
     [RelayCommand]
     private void NavigateToSearchResultPage(SearchResult searchResult)
@@ -225,10 +225,7 @@ public partial class HomeViewModel : ViewModelBase
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
-        }
+        if (disposing) _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
 
         base.Dispose(disposing);
     }

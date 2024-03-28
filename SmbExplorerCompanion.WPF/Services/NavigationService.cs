@@ -58,7 +58,7 @@ public sealed class NavigationService : INavigationService
 
         OnPropertyChanged(nameof(CanNavigateBack));
         CurrentView = viewModelBase;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 

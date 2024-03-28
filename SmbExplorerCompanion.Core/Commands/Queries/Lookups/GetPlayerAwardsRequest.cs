@@ -20,12 +20,19 @@ public class GetPlayerAwardsRequest : IRequest<List<PlayerAwardDto>>
     private bool OnlyUserAssignable { get; }
     private bool IsRegularSeason { get; }
     private bool All { get; }
-
-    private static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable) => new(onlyUserAssignable, true);
-    private static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable) => new(onlyUserAssignable, false);
     public static GetPlayerAwardsRequest Default => RegularSeason(true);
     public static GetPlayerAwardsRequest DefaultPlayoffs => Playoffs(true);
     public static GetPlayerAwardsRequest AllAwards => new();
+
+    private static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable)
+    {
+        return new GetPlayerAwardsRequest(onlyUserAssignable, true);
+    }
+
+    private static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable)
+    {
+        return new GetPlayerAwardsRequest(onlyUserAssignable, false);
+    }
 
     // ReSharper disable once UnusedType.Global
     internal class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, List<PlayerAwardDto>>

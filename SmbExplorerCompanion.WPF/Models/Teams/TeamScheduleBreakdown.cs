@@ -1,6 +1,7 @@
 ﻿namespace SmbExplorerCompanion.WPF.Models.Teams;
 
-public record TeamScheduleBreakdown(int TeamHistoryId,
+public record TeamScheduleBreakdown(
+    int TeamHistoryId,
     string TeamName,
     int OpponentTeamHistoryId,
     string OpponentTeamName,

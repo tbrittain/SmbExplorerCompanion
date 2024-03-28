@@ -20,9 +20,9 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class DelegateHallOfFamersViewModel : ViewModelBase
 {
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
     private Season? _selectedSeason;
-    private readonly MappingService _mappingService;
 
     public DelegateHallOfFamersViewModel(IMediator mediator, MappingService mappingService)
     {
@@ -37,7 +37,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
         GetHallOfFamers().Wait();
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -94,7 +94,7 @@ public partial class DelegateHallOfFamersViewModel : ViewModelBase
             MessageBox.Show("No season selected.");
             return;
         }
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
 
         List<PlayerHallOfFameRequestDto> hallOfFamers = new();

@@ -11,11 +11,11 @@ public class AddPlayerAwardsRequest : IRequest
         PlayerAwardRequestDtos = playerAwardRequestDtos;
         SeasonId = seasonId;
     }
-    
+
     private int SeasonId { get; }
 
     private List<PlayerAwardRequestDto> PlayerAwardRequestDtos { get; }
-    
+
     // ReSharper disable once UnusedType.Global
     internal class AddPlayerAwardsHandler : IRequestHandler<AddPlayerAwardsRequest>
     {

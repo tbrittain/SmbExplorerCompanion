@@ -17,7 +17,6 @@
         <DockPanel Grid.Row="0">
             <WrapPanel DockPanel.Dock="Left">
                 <ComboBox
-                    DockPanel.Dock="Left"
                     Width="200"
                     Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
                     materialDesign:HintAssist.Hint="Start Season"
@@ -26,7 +25,6 @@
                     DisplayMemberPath="DisplaySeasonNumber" />
 
                 <ComboBox
-                    DockPanel.Dock="Left"
                     Width="200"
                     Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
                     materialDesign:HintAssist.Hint="End Season"
@@ -57,7 +55,6 @@
                     SelectedItem="{Binding SelectedSecondaryPosition}" />
 
                 <StackPanel
-                    DockPanel.Dock="Left"
                     Orientation="Horizontal">
                     <Label Content="Playoffs" />
                     <CheckBox
@@ -65,12 +62,18 @@
                 </StackPanel>
 
                 <StackPanel
-                    DockPanel.Dock="Left"
                     Orientation="Horizontal">
                     <Label Content="Only Rookies" />
                     <CheckBox
                         IsEnabled="{Binding CanSelectOnlyRookies}"
                         IsChecked="{Binding OnlyRookies}" />
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Label Content="Only Qualifiers" />
+                    <CheckBox
+                        IsChecked="{Binding OnlyQualifiers}" />
                 </StackPanel>
 
                 <ComboBox
