@@ -76,6 +76,13 @@
                         IsChecked="{Binding IsPlayoffs}" />
                 </StackPanel>
 
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Label Content="Only Qualifiers" />
+                    <CheckBox
+                        IsChecked="{Binding OnlyQualifiers}" />
+                </StackPanel>
+
                 <ComboBox
                     Margin="2"
                     Width="200"
