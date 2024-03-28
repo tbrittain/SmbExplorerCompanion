@@ -224,6 +224,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
     }
 
     public string SortColumn { get; set; } = nameof(PlayerBattingSeasonDto.WeightedOpsPlusOrEraMinus);
+    public bool SortDescending { get; set; } = true;
 
     public ObservableCollection<PlayerSeasonBatting> TopSeasonBatters { get; } = new();
 
@@ -345,7 +346,7 @@ public partial class TopBattingSeasonsViewModel : ViewModelBase
                 OnlyRookies = OnlyRookies,
                 Limit = ResultsPerPage,
                 PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
-                Descending = true,
+                Descending = SortDescending,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 BatHandednessId = SelectedBatHandedness?.Id == 0 ? null : SelectedBatHandedness?.Id,
                 TraitIds = SelectedTraits.Select(x => x.Id).ToList(),

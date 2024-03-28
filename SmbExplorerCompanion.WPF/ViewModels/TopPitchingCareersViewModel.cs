@@ -177,6 +177,7 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
     }
 
     public string SortColumn { get; set; } = nameof(PlayerCareerPitchingDto.WeightedOpsPlusOrEraMinus);
+    public bool SortDescending { get; set; } = true;
 
     public ObservableCollection<PlayerPitchingCareer> TopPitchingCareers { get; } = new();
     public ObservableCollection<PitcherRole> PitcherRoles { get; } = new();
@@ -277,7 +278,8 @@ public partial class TopPitchingCareersViewModel : ViewModelBase
                 ThrowHandednessId = SelectedThrowHandedness?.Id == 0 ? null : SelectedThrowHandedness?.Id,
                 ChemistryId = SelectedChemistry?.Id == 0 ? null : SelectedChemistry?.Id,
                 IsPlayoffs = IsPlayoffs,
-                OnlyQualifiedPlayers = OnlyQualifiers
+                OnlyQualifiedPlayers = OnlyQualifiers,
+                Descending = SortDescending
             }));
 
         TopPitchingCareers.Clear();

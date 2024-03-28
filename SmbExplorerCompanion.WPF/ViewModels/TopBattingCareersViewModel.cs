@@ -137,6 +137,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
     }
 
     public string SortColumn { get; set; } = nameof(PlayerCareerBattingDto.WeightedOpsPlusOrEraMinus);
+    public bool SortDescending { get; set; } = true;
 
     public PlayerBattingCareer? SelectedPlayer
     {
@@ -271,6 +272,7 @@ public partial class TopBattingCareersViewModel : ViewModelBase
                 PageNumber = PageNumber,
                 Limit = ResultsPerPage,
                 OrderBy = SortColumn,
+                Descending = SortDescending,
                 OnlyHallOfFamers = OnlyHallOfFamers,
                 PrimaryPositionId = SelectedPosition?.Id == 0 ? null : SelectedPosition?.Id,
                 Seasons = seasonRange,
