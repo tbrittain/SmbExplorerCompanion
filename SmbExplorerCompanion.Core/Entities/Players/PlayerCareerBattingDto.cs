@@ -2,6 +2,7 @@
 
 public class PlayerCareerBattingDto : PlayerCareerBaseDto
 {
+    public int PlateAppearances { get; set; }
     public int AtBats { get; set; }
     public int Hits { get; set; }
     public int Singles { get; set; }
@@ -22,4 +23,5 @@ public class PlayerCareerBattingDto : PlayerCareerBaseDto
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
+    public int GamesPlayed { get; set; }
 }

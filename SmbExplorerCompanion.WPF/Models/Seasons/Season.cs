@@ -1,4 +1,6 @@
-﻿namespace SmbExplorerCompanion.WPF.Models.Seasons;
+﻿using SmbExplorerCompanion.Core.Entities.Seasons;
+
+namespace SmbExplorerCompanion.WPF.Models.Seasons;
 
 public class Season
 {
@@ -22,4 +24,20 @@ public class Season
     }
 
     public bool CanSelectPlayoffs => Id == default || ChampionshipWinnerId is not null;
+}
+
+public static class SeasonExtensions
+{
+    public static Season FromCore(this SeasonDto seasonDto)
+    {
+        return new Season
+        {
+            Id = seasonDto.Id,
+            FranchiseId = seasonDto.FranchiseId,
+            Number = seasonDto.Number,
+            NumGamesRegularSeason = seasonDto.NumGamesRegularSeason,
+            ChampionshipWinnerId = seasonDto.ChampionshipWinnerId,
+            IsNewSeason = false
+        };
+    }
 }

@@ -9,7 +9,7 @@
              d:DataContext="{d:DesignInstance viewModels:TopPitchingCareersViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="100" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -35,14 +35,73 @@
                 <CheckBox
                     IsChecked="{Binding OnlyHallOfFamers}" />
             </StackPanel>
-            <ComboBox
-                Margin="2"
-                Width="200"
-                Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
-                materialDesign:HintAssist.Hint="Pitcher Role"
-                ItemsSource="{Binding PitcherRoles}"
-                DisplayMemberPath="Name"
-                SelectedItem="{Binding SelectedPitcherRole}" />
+
+            <WrapPanel FlowDirection="LeftToRight" Orientation="Horizontal">
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Start Season"
+                    ItemsSource="{Binding Seasons}"
+                    SelectedItem="{Binding StartSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
+
+                <ComboBox
+                    DockPanel.Dock="Left"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="End Season"
+                    ItemsSource="{Binding SelectableEndSeasons}"
+                    SelectedItem="{Binding EndSeason}"
+                    DisplayMemberPath="DisplaySeasonNumber" />
+
+                <Button
+                    Command="{Binding ClearSeasonsCommand}"
+                    Content="Clear Seasons" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Pitcher Role"
+                    ItemsSource="{Binding PitcherRoles}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedPitcherRole}" />
+
+                <StackPanel
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal">
+                    <Label Content="Playoffs" />
+                    <CheckBox
+                        IsChecked="{Binding IsPlayoffs}" />
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Label Content="Only Qualifiers" />
+                    <CheckBox
+                        IsChecked="{Binding OnlyQualifiers}" />
+                </StackPanel>
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Chemistry"
+                    ItemsSource="{Binding ChemistryTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedChemistry}" />
+
+                <ComboBox
+                    Margin="2"
+                    Width="200"
+                    Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                    materialDesign:HintAssist.Hint="Throw Handedness"
+                    ItemsSource="{Binding ThrowHandednessTypes}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding SelectedThrowHandedness}" />
+            </WrapPanel>
+
         </DockPanel>
 
         <DataGrid
@@ -80,7 +139,7 @@
                 <DataGridTextColumn
                     CanUserSort="False"
                     Header="Pitcher Role"
-                    Binding="{Binding PitcherRole}" />
+                    Binding="{Binding DisplayPrimaryPosition}" />
                 <DataGridTemplateColumn
                     CanUserSort="True"
                     Header="Career Earnings"
@@ -99,33 +158,18 @@
                     Header="L"
                     Binding="{Binding Losses}"
                     CanUserSort="True" />
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="ERA">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Era, StringFormat={}{0:F2}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="FIP">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Fip, StringFormat={}{0:F2}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="WHIP">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Whip, StringFormat={}{0:F2}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Header="ERA"
+                    CanUserSort="True"
+                    Binding="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn
+                    Header="FIP"
+                    CanUserSort="True"
+                    Binding="{Binding Fip, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn
+                    Header="WHIP"
+                    CanUserSort="True"
+                    Binding="{Binding Whip, StringFormat={}{0:F2}}" />
                 <DataGridTextColumn
                     Header="GS"
                     Binding="{Binding GamesStarted}"
@@ -134,16 +178,10 @@
                     Header="SV"
                     Binding="{Binding Saves}"
                     CanUserSort="True" />
-                <DataGridTemplateColumn
-                    CanUserSort="True"
+                <DataGridTextColumn
                     Header="IP"
-                    SortMemberPath="InningsPitched">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding InningsPitched, StringFormat={}{0:F1}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                    CanUserSort="True"
+                    Binding="{Binding InningsPitched, StringFormat={}{0:F1}}" />
                 <DataGridTextColumn
                     Header="K"
                     Binding="{Binding Strikeouts}"
@@ -180,34 +218,18 @@
                     Header="HBP"
                     Binding="{Binding HitByPitch}"
                     CanUserSort="True" />
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="ERA-">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding EraMinus, StringFormat={}{0:F2}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
-                    CanUserSort="False"
-                    Header="FIP-">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding FipMinus, StringFormat={}{0:F2}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn
+                <DataGridTextColumn
+                    Header="ERA-"
                     CanUserSort="True"
+                    Binding="{Binding EraMinus, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn
+                    Header="FIP-"
+                    CanUserSort="True"
+                    Binding="{Binding FipMinus, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn
                     Header="smbWAR"
-                    SortMemberPath="WeightedOpsPlusOrEraMinus">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                    CanUserSort="True"
+                    Binding="{Binding WeightedOpsPlusOrEraMinus, StringFormat={}{0:F1}}" />
                 <DataGridTextColumn
                     Header="Awards"
                     Binding="{Binding DisplayAwards}"

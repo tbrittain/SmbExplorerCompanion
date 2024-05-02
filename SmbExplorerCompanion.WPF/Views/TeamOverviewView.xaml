@@ -59,10 +59,8 @@
             <ScrollViewer>
                 <StackPanel Orientation="Vertical">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition MaxHeight="500"/>
-                        </Grid.RowDefinitions>
                         <DataGrid
+                            MaxHeight="500"
                             Name="TeamSeasonsDataGrid"
                             IsReadOnly="True"
                             ItemsSource="{Binding TeamOverview.TeamHistory}"
@@ -148,6 +146,10 @@
                                     CanUserSort="False"
                                     Header="# Seasons w/ Team"
                                     Binding="{Binding NumSeasonsWithTeam}" />
+                                <DataGridTextColumn
+                                    CanUserSort="False"
+                                    Header="Seasons"
+                                    Binding="{Binding Seasons}" />
                                 <DataGridTextColumn
                                     CanUserSort="False"
                                     Header="Position"

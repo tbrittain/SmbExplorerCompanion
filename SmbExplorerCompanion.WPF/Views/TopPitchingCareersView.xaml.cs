@@ -15,15 +15,27 @@ public partial class TopPitchingCareersView : UserControl
     private async void TopPitchingCareersDataGrid_OnSorting(object sender, DataGridSortingEventArgs e)
     {
         Debug.Assert(e.Column.SortMemberPath is not null, "e.Column.SortMemberPath is not null");
-        var columnPropertyName = e.Column.SortMemberPath;
+        var newSortColumn = e.Column.SortMemberPath;
 
         var viewModel = (TopPitchingCareersViewModel) DataContext;
-        viewModel.SortColumn = columnPropertyName;
+        TopPitchingCareersDataGrid.Items.SortDescriptions.Clear();
+        ListSortDirection sortDirection;
+        if (viewModel.SortColumn == newSortColumn)
+        {
+            viewModel.SortDescending = !viewModel.SortDescending;
+            sortDirection = viewModel.SortDescending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+        }
+        else
+        {
+            viewModel.SortDescending = true;
+            sortDirection = ListSortDirection.Descending;
+        }
+
+        viewModel.SortColumn = newSortColumn;
+        TopPitchingCareersDataGrid.Items.SortDescriptions.Add(new SortDescription(newSortColumn, sortDirection));
+        e.Column.SortDirection = sortDirection;
 
         await viewModel.GetTopPitchingCareers();
-
-        TopPitchingCareersDataGrid.Items.SortDescriptions.Clear();
-        TopPitchingCareersDataGrid.Items.SortDescriptions.Add(new SortDescription(columnPropertyName, ListSortDirection.Descending));
 
         e.Handled = true;
     }

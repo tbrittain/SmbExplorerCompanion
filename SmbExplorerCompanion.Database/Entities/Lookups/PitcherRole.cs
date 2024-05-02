@@ -1,7 +1,7 @@
-﻿namespace SmbExplorerCompanion.Database.Entities.Lookups;
+﻿using SmbExplorerCompanion.Core.ValueObjects;
 
-public class PitcherRole
+namespace SmbExplorerCompanion.Database.Entities.Lookups;
+
+public class PitcherRole : LookupBaseDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = default!;
 }

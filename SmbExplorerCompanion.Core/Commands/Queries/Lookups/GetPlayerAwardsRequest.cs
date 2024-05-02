@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Lookups;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Lookups;
 
-public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Exception>>
+public class GetPlayerAwardsRequest : IRequest<List<PlayerAwardDto>>
 {
     private GetPlayerAwardsRequest(bool onlyUserAssignable, bool isRegularSeason)
     {
@@ -13,16 +12,30 @@ public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Excep
         IsRegularSeason = isRegularSeason;
     }
 
+    private GetPlayerAwardsRequest()
+    {
+        All = true;
+    }
+
     private bool OnlyUserAssignable { get; }
     private bool IsRegularSeason { get; }
-
-    private static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable) => new(onlyUserAssignable, true);
-    private static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable) => new(onlyUserAssignable, false);
+    private bool All { get; }
     public static GetPlayerAwardsRequest Default => RegularSeason(true);
     public static GetPlayerAwardsRequest DefaultPlayoffs => Playoffs(true);
+    public static GetPlayerAwardsRequest AllAwards => new();
+
+    private static GetPlayerAwardsRequest RegularSeason(bool onlyUserAssignable)
+    {
+        return new GetPlayerAwardsRequest(onlyUserAssignable, true);
+    }
+
+    private static GetPlayerAwardsRequest Playoffs(bool onlyUserAssignable)
+    {
+        return new GetPlayerAwardsRequest(onlyUserAssignable, false);
+    }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, OneOf<List<PlayerAwardDto>, Exception>>
+    internal class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, List<PlayerAwardDto>>
     {
         private readonly IRepository<PlayerAwardDto> _playerAwardRepository;
 
@@ -31,15 +44,12 @@ public class GetPlayerAwardsRequest : IRequest<OneOf<List<PlayerAwardDto>, Excep
             _playerAwardRepository = playerAwardRepository;
         }
 
-        public async Task<OneOf<List<PlayerAwardDto>, Exception>> Handle(GetPlayerAwardsRequest request, CancellationToken cancellationToken)
+        public async Task<List<PlayerAwardDto>> Handle(GetPlayerAwardsRequest request, CancellationToken cancellationToken)
         {
             var awardResult = await _playerAwardRepository.GetAllAsync(cancellationToken);
-            if (awardResult.TryPickT1(out var exception, out var awards))
-                return exception;
-
-            return awards
-                .Where(x => x.IsPlayoffAward != request.IsRegularSeason)
-                .Where(x => x.IsUserAssignable == request.OnlyUserAssignable)
+            return awardResult
+                .Where(x => request.All || x.IsPlayoffAward != request.IsRegularSeason)
+                .Where(x => request.All || x.IsUserAssignable == request.OnlyUserAssignable)
                 .ToList();
         }
     }

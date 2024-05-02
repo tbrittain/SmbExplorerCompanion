@@ -1,12 +1,10 @@
-﻿using OneOf;
-using OneOf.Types;
-using SmbExplorerCompanion.Core.Entities.Summary;
+﻿using SmbExplorerCompanion.Core.Entities.Summary;
 
 namespace SmbExplorerCompanion.Core.Interfaces;
 
 public interface ISummaryRepository
 {
     public Task<bool> HasFranchiseDataAsync(CancellationToken cancellationToken = default);
-    public Task<OneOf<FranchiseSummaryDto, None, Exception>> GetFranchiseSummaryAsync(CancellationToken cancellationToken = default);
-    public Task<OneOf<List<ConferenceSummaryDto>, None, Exception>> GetLeagueSummaryAsync(CancellationToken cancellationToken = default);
+    public Task<FranchiseSummaryDto?> GetFranchiseSummaryAsync(CancellationToken cancellationToken = default);
+    public Task<List<ConferenceSummaryDto>> GetLeagueSummaryAsync(CancellationToken cancellationToken = default);
 }

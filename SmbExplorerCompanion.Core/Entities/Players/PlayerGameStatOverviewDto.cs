@@ -1,20 +1,13 @@
 ﻿namespace SmbExplorerCompanion.Core.Entities.Players;
 
-public class PlayerGameStatOverviewDto
+public class PlayerGameStatOverviewDto : GameStatDto
 {
     public int SeasonNumber { get; set; }
+    public int SeasonId { get; set; }
     public int Age { get; set; }
     public string TeamNames { get; set; } = string.Empty;
-    public int Power { get; set; }
-    public int Contact { get; set; }
-    public int Speed { get; set; }
-    public int Fielding { get; set; }
-    public int? Arm { get; set; }
-    public int? Velocity { get; set; }
-    public int? Junk { get; set; }
-    public int? Accuracy { get; set; }
     public int Salary { get; set; }
     public string? SecondaryPosition { get; set; } = string.Empty;
-    public string Traits { get; set; } = string.Empty;
-    public string PitchTypes { get; set; } = string.Empty;
+    public List<int> TraitIds { get; set; } = new();
+    public List<int> PitchTypeIds { get; set; } = new();
 }

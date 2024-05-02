@@ -6,7 +6,7 @@ public class PlayerCareerPitchingDto : PlayerCareerBaseDto
     public int Losses { get; set; }
     public int EarnedRuns { get; set; }
     public int TotalPitches { get; set; }
-    public double Era { get; set; }
+    public double EarnedRunAverage { get; set; }
     public double Fip { get; set; }
     public int GamesPlayed { get; set; }
     public int GamesStarted { get; set; }

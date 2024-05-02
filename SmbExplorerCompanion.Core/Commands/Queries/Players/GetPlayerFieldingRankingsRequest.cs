@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetPlayerFieldingRankingsRequest : IRequest<OneOf<List<PlayerFieldingRankingDto>, Exception>>
+public class GetPlayerFieldingRankingsRequest : IRequest<List<PlayerFieldingRankingDto>>
 {
     public GetPlayerFieldingRankingsRequest(int seasonId, int? primaryPositionId, int? pageNumber, int? limit)
     {
@@ -22,21 +21,23 @@ public class GetPlayerFieldingRankingsRequest : IRequest<OneOf<List<PlayerFieldi
 
     // ReSharper disable once UnusedType.Global
     internal class GetPlayerFieldingRankingsHandler : IRequestHandler<GetPlayerFieldingRankingsRequest,
-        OneOf<List<PlayerFieldingRankingDto>, Exception>>
+        List<PlayerFieldingRankingDto>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IGeneralPlayerRepository _generalPlayerRepository;
 
-        public GetPlayerFieldingRankingsHandler(IPlayerRepository playerRepository)
+        public GetPlayerFieldingRankingsHandler(IGeneralPlayerRepository generalPlayerRepository)
         {
-            _playerRepository = playerRepository;
+            _generalPlayerRepository = generalPlayerRepository;
         }
 
-        public async Task<OneOf<List<PlayerFieldingRankingDto>, Exception>> Handle(GetPlayerFieldingRankingsRequest request,
-            CancellationToken cancellationToken) =>
-            await _playerRepository.GetPlayerFieldingRankings(request.SeasonId,
+        public async Task<List<PlayerFieldingRankingDto>> Handle(GetPlayerFieldingRankingsRequest request,
+            CancellationToken cancellationToken)
+        {
+            return await _generalPlayerRepository.GetPlayerFieldingRankings(request.SeasonId,
                 request.PrimaryPositionId,
                 request.PageNumber,
                 request.Limit,
                 cancellationToken);
+        }
     }
 }

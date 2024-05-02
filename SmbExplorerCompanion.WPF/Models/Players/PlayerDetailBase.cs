@@ -4,11 +4,21 @@ public class PlayerDetailBase : PlayerBase
 {
     public bool IsPitcher { get; set; }
     public int TotalSalary { get; set; }
-    public string BatHandedness { get; set; } = string.Empty;
-    public string ThrowHandedness { get; set; } = string.Empty;
-    public string PrimaryPosition { get; set; } = string.Empty;
-    public string? PitcherRole { get; set; }
-    public string Chemistry { get; set; } = string.Empty;
+    public int BatHandednessId { get; set; }
+    public int ThrowHandednessId { get; set; }
+    public int PrimaryPositionId { get; set; }
+    public int? PitcherRoleId { get; set; }
+    public int? ChemistryId { get; set; }
     public double WeightedOpsPlusOrEraMinus { get; set; }
-    public string DisplayPrimaryPosition => IsPitcher ? $"{PrimaryPosition} ({PitcherRole})" : PrimaryPosition;
+    public string DisplayPrimaryPosition { get; set; } = default!;
+}
+
+public static class PlayerDetailBaseExtensions
+{
+    public static string GetDisplayPrimaryPosition(string primaryPositionName, string? pitcherRoleName)
+    {
+        return !string.IsNullOrEmpty(pitcherRoleName)
+            ? $"{primaryPositionName} ({pitcherRoleName})"
+            : primaryPositionName;
+    }
 }

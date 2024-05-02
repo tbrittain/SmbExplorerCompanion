@@ -8,6 +8,7 @@ public class PlayerSeasonPitching : PlayerSeasonBase
 {
     public int Wins { get; set; }
     public int Losses { get; set; }
+    public double WinPercentage { get; set; }
     public int EarnedRuns { get; set; }
     public int TotalPitches { get; set; }
     public double EarnedRunAverage { get; set; }
@@ -25,6 +26,11 @@ public class PlayerSeasonPitching : PlayerSeasonBase
     public double FipMinus { get; set; }
     public int CompleteGames { get; set; }
     public int Shutouts { get; set; }
-    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
+    public double HitsPerNine { get; set; }
+    public double HomeRunsPerNine { get; set; }
+    public double StrikeoutsPerNine { get; set; }
+    public double StrikeoutToWalkRatio { get; set; }
+    public string PitchTypes { get; set; } = string.Empty;
+    public ObservableCollection<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

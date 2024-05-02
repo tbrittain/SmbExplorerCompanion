@@ -1,15 +1,14 @@
 ﻿using System.Windows;
 
-namespace SmbExplorerCompanion.WPF.Views
+namespace SmbExplorerCompanion.WPF.Views;
+
+/// <summary>
+///     Interaction logic for MainWindow.xaml
+/// </summary>
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

@@ -8,10 +8,8 @@ using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Seasons;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
-using SmbExplorerCompanion.Core.Interfaces;
+using SmbExplorerCompanion.Core.ValueObjects.Seasons;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 using SmbExplorerCompanion.WPF.Models.Teams;
 using SmbExplorerCompanion.WPF.Services;
@@ -22,34 +20,25 @@ public class HistoricalTeamsViewModel : ViewModelBase
 {
     private readonly ISender _mediator;
     private readonly INavigationService _navigationService;
+    private Season? _endSeason;
+    private ObservableCollection<Season> _selectableEndSeasons;
     private HistoricalTeam? _selectedHistoricalTeam;
-    private Season? _selectedSeason;
+    private Season? _startSeason;
 
-    public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public HistoricalTeamsViewModel(ISender mediator, INavigationService navigationService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _navigationService = navigationService;
         _mediator = mediator;
 
-        var seasonsResponse = _mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
+        var seasons = _mediator.Send(new GetSeasonsRequest()).Result;
 
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        var seasonMapper = new SeasonMapping();
-
-        var allSeasons = new Season
-        {
-            Id = default
-        };
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
-        Seasons.Add(allSeasons);
-        SelectedSeason = allSeasons;
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
+        var minSeason = Seasons.OrderBy(x => x.Id).First();
+        var maxSeason = Seasons.OrderByDescending(x => x.Id).First();
+        StartSeason = minSeason;
+        EndSeason = maxSeason;
+        MinSeasonId = minSeason.Id;
 
         GetHistoricalTeams().Wait();
 
@@ -58,39 +47,38 @@ public class HistoricalTeamsViewModel : ViewModelBase
 
     public ObservableCollection<Season> Seasons { get; } = new();
 
-    public Season? SelectedSeason
+    public ObservableCollection<Season> SelectableEndSeasons
     {
-        get => _selectedSeason;
-        set => SetField(ref _selectedSeason, value);
+        get => _selectableEndSeasons;
+        private set => SetField(ref _selectableEndSeasons, value);
     }
 
-    private async Task GetHistoricalTeams()
+    private int MinSeasonId { get; }
+
+    public Season? StartSeason
     {
-        if (SelectedSeason is null)
+        get => _startSeason;
+        set
         {
-            MessageBox.Show("Please select a season.");
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
+            SetField(ref _startSeason, value);
+
+            if (value is not null)
+            {
+                var endSeasons = Seasons.Where(x => x.Id >= value.Id).ToList();
+                SelectableEndSeasons = new ObservableCollection<Season>(endSeasons);
+                EndSeason = endSeasons.LastOrDefault();
+            }
+            else
+            {
+                EndSeason = null;
+            }
         }
+    }
 
-        HistoricalTeams.Clear();
-
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
-        var historicalTeamsResponse =
-            await _mediator.Send(new GetHistoricalTeamsRequest(SelectedSeason!.Id == default ? null : SelectedSeason!.Id));
-        if (historicalTeamsResponse.TryPickT1(out var exception, out var historicalTeams))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        var mapper = new HistoricalTeamMapping();
-        HistoricalTeams.AddRange(historicalTeams
-            .Select(x => mapper.FromDto(x))
-            .OrderByDescending(x => x.NumRegularSeasonWins));
-
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    public Season? EndSeason
+    {
+        get => _endSeason;
+        set => SetField(ref _endSeason, value);
     }
 
     public ObservableCollection<HistoricalTeam> HistoricalTeams { get; } = new();
@@ -101,6 +89,31 @@ public class HistoricalTeamsViewModel : ViewModelBase
         set => SetField(ref _selectedHistoricalTeam, value);
     }
 
+    private async Task GetHistoricalTeams()
+    {
+        if (StartSeason is not null && EndSeason is not null && StartSeason.Id > EndSeason.Id)
+            return;
+
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
+        HistoricalTeams.Clear();
+
+        var seasonRange = (StartSeason, EndSeason) switch
+        {
+            (null, null) => new SeasonRange(MinSeasonId),
+            (not null, null) => new SeasonRange(StartSeason.Id),
+            (null, not null) => new SeasonRange(MinSeasonId, EndSeason.Id),
+            (not null, not null) => new SeasonRange(StartSeason.Id, EndSeason.Id)
+        };
+        var historicalTeams =
+            await _mediator.Send(new GetHistoricalTeamsRequest(seasonRange: seasonRange));
+
+        HistoricalTeams.AddRange(historicalTeams
+            .Select(x => x.FromCore())
+            .OrderByDescending(x => x.NumRegularSeasonWins));
+
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
     private async void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -109,7 +122,7 @@ public class HistoricalTeamsViewModel : ViewModelBase
             {
                 if (SelectedHistoricalTeam is not null)
                 {
-                    if (SelectedSeason is not null && SelectedHistoricalTeam.SeasonTeamId is not null)
+                    if (StartSeason is not null && SelectedHistoricalTeam.SeasonTeamId is not null)
                         NavigateToSeasonTeamDetail(SelectedHistoricalTeam);
                     else
                         NavigateToTeamOverview(SelectedHistoricalTeam);
@@ -117,10 +130,10 @@ public class HistoricalTeamsViewModel : ViewModelBase
 
                 break;
             }
-            case nameof(SelectedSeason):
+            case nameof(StartSeason):
+            case nameof(EndSeason):
             {
-                if (SelectedSeason is not null)
-                    await GetHistoricalTeams();
+                await GetHistoricalTeams();
                 break;
             }
         }

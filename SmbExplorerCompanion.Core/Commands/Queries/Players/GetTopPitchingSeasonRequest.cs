@@ -1,74 +1,34 @@
 ﻿using MediatR;
-using OneOf;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetTopPitchingSeasonRequest : IRequest<OneOf<List<PlayerPitchingSeasonDto>, Exception>>
+public class GetTopPitchingSeasonRequest : IRequest<List<PlayerPitchingSeasonDto>>
 {
-    public GetTopPitchingSeasonRequest(
-        int? seasonId = null,
-        int? limit = null,
-        bool isPlayoffs = false,
-        int? pageNumber = null,
-        string? orderBy = null,
-        bool descending = true,
-        int? teamId = null,
-        bool onlyRookies = false,
-        bool includeChampionAwards = true,
-        bool onlyUserAssignableAwards = false,
-        int? pitcherRoleId = null)
+    public GetTopPitchingSeasonRequest(GetPitchingSeasonsFilters filters)
     {
-        OnlyUserAssignableAwards = onlyUserAssignableAwards;
-        SeasonId = seasonId;
-        Limit = limit;
-        IsPlayoffs = isPlayoffs;
-        PageNumber = pageNumber;
-        OrderBy = orderBy;
-        Descending = descending;
-        OnlyRookies = onlyRookies;
-        TeamId = teamId;
-        IncludeChampionAwards = includeChampionAwards;
-        PitherRoleId = pitcherRoleId;
+        Filters = filters;
     }
 
-    private int? SeasonId { get; }
-    private bool IsPlayoffs { get; }
-    private int? PageNumber { get; }
-    private string? OrderBy { get; }
-    private bool Descending { get; }
-    private int? Limit { get; }
-    private int? TeamId { get; }
-    private bool OnlyRookies { get; }
-    private bool IncludeChampionAwards { get; }
-    private bool OnlyUserAssignableAwards { get; }
-    private int? PitherRoleId { get; }
+    private GetPitchingSeasonsFilters Filters { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, OneOf<List<PlayerPitchingSeasonDto>, Exception>>
+    internal class GetTopPitchingSeasonHandler : IRequestHandler<GetTopPitchingSeasonRequest, List<PlayerPitchingSeasonDto>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
 
-        public GetTopPitchingSeasonHandler(IPlayerRepository playerRepository)
+        public GetTopPitchingSeasonHandler(IPitcherSeasonRepository pitcherSeasonRepository)
         {
-            _playerRepository = playerRepository;
+            _pitcherSeasonRepository = pitcherSeasonRepository;
         }
 
-        public async Task<OneOf<List<PlayerPitchingSeasonDto>, Exception>> Handle(GetTopPitchingSeasonRequest request,
-            CancellationToken cancellationToken) =>
-            await _playerRepository.GetPitchingSeasons(
-                seasonId: request.SeasonId,
-                isPlayoffs: request.IsPlayoffs,
-                pageNumber: request.PageNumber,
-                orderBy: request.OrderBy,
-                limit: request.Limit,
-                descending: request.Descending,
-                teamId: request.TeamId,
-                onlyRookies: request.OnlyRookies,
-                includeChampionAwards: request.IncludeChampionAwards,
-                onlyUserAssignableAwards: request.OnlyUserAssignableAwards,
-                pitcherRoleId: request.PitherRoleId,
-                cancellationToken: cancellationToken);
+        public async Task<List<PlayerPitchingSeasonDto>> Handle(GetTopPitchingSeasonRequest request,
+            CancellationToken cancellationToken)
+        {
+            return await _pitcherSeasonRepository.GetPitchingSeasons(
+                request.Filters,
+                cancellationToken);
+        }
     }
 }

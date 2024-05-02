@@ -1,12 +1,10 @@
 ﻿using MediatR;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects.Awards;
 
 namespace SmbExplorerCompanion.Core.Commands.Actions.Awards;
 
-public class AddHallOfFamersRequest : IRequest<OneOf<Success, Exception>>
+public class AddHallOfFamersRequest : IRequest
 {
     public AddHallOfFamersRequest(List<PlayerHallOfFameRequestDto> players)
     {
@@ -16,7 +14,7 @@ public class AddHallOfFamersRequest : IRequest<OneOf<Success, Exception>>
     private List<PlayerHallOfFameRequestDto> Players { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class AddHallOfFamersHandler : IRequestHandler<AddHallOfFamersRequest, OneOf<Success, Exception>>
+    internal class AddHallOfFamersHandler : IRequestHandler<AddHallOfFamersRequest>
     {
         private readonly IAwardDelegationRepository _awardDelegationRepository;
 
@@ -25,9 +23,9 @@ public class AddHallOfFamersRequest : IRequest<OneOf<Success, Exception>>
             _awardDelegationRepository = awardDelegationRepository;
         }
 
-        public async Task<OneOf<Success, Exception>> Handle(AddHallOfFamersRequest request, CancellationToken cancellationToken)
+        public Task Handle(AddHallOfFamersRequest request, CancellationToken cancellationToken)
         {
-            return await _awardDelegationRepository.AddHallOfFameAwards(request.Players, cancellationToken);
+            return _awardDelegationRepository.AddHallOfFameAwards(request.Players, cancellationToken);
         }
     }
 }

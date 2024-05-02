@@ -13,7 +13,7 @@ public class TeamPlayoffRoundResult
     public int OpponentSeasonTeamId { get; set; }
     public int NumWins { get; set; }
     public int NumLosses { get; set; }
-    
+
     private string DisplayRound => Round switch
     {
         PlayoffRound.WildCard => "Wild Card",
@@ -34,5 +34,22 @@ public class TeamPlayoffRoundResult
             sb.Append($" {NumWins}-{NumLosses}");
             return sb.ToString();
         }
+    }
+}
+
+public static class TeamPlayoffRoundResultExtensions
+{
+    public static TeamPlayoffRoundResult FromCore(this TeamPlayoffRoundResultDto x)
+    {
+        return new TeamPlayoffRoundResult
+        {
+            Round = x.Round,
+            WonSeries = x.WonSeries,
+            SeriesNumber = x.SeriesNumber,
+            OpponentTeamName = x.OpponentTeamName,
+            OpponentSeasonTeamId = x.OpponentSeasonTeamId,
+            NumWins = x.NumWins,
+            NumLosses = x.NumLosses
+        };
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
 using SmbExplorerCompanion.WPF.Models.Players;
 
 namespace SmbExplorerCompanion.WPF.Models.Teams;

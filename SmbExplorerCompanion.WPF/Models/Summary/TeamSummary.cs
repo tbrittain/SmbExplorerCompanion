@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using System.Windows;
+using SmbExplorerCompanion.Core.Entities.Summary;
 
 namespace SmbExplorerCompanion.WPF.Models.Summary;
 
@@ -25,10 +25,7 @@ public class TeamSummary
         {
             var sb = new StringBuilder($"Regular Season {TeamRecord}");
 
-            if (IsDivisionChampion)
-            {
-                sb.Append(": Division Champion");
-            }
+            if (IsDivisionChampion) sb.Append(": Division Champion");
 
             return sb.ToString();
         }
@@ -46,26 +43,38 @@ public class TeamSummary
     {
         get
         {
-            if (!PlayoffWins.HasValue || !PlayoffLosses.HasValue)
-            {
-                return string.Empty;
-            }
+            if (!PlayoffWins.HasValue || !PlayoffLosses.HasValue) return string.Empty;
 
             var sb = new StringBuilder();
 
             sb.Append($"Playoffs {PlayoffRecord}");
             sb.Append($" {PlayoffSeedText}");
 
-            if (IsChampion)
-            {
-                sb.Append(": League Champion");
-            }
-            else if (IsConferenceChampion)
-            {
-                sb.Append(": Conference Champion");
-            }
+            if (IsChampion) sb.Append(": League Champion");
+            else if (IsConferenceChampion) sb.Append(": Conference Champion");
 
             return sb.ToString();
         }
+    }
+}
+
+public static class TeamSummaryExtensions
+{
+    public static TeamSummary FromCore(this TeamSummaryDto x)
+    {
+        return new TeamSummary
+        {
+            Id = x.Id,
+            SeasonTeamId = x.SeasonTeamId,
+            TeamName = x.TeamName,
+            Wins = x.Wins,
+            Losses = x.Losses,
+            PlayoffSeed = x.PlayoffSeed,
+            PlayoffWins = x.PlayoffWins,
+            PlayoffLosses = x.PlayoffLosses,
+            IsDivisionChampion = x.IsDivisionChampion,
+            IsConferenceChampion = x.IsConferenceChampion,
+            IsChampion = x.IsChampion
+        };
     }
 }

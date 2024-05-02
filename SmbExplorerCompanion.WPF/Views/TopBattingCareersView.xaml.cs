@@ -1,6 +1,6 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.DirectoryServices;
 using System.Windows.Controls;
 using SmbExplorerCompanion.WPF.ViewModels;
 
@@ -16,16 +16,28 @@ public partial class TopBattingCareersView
     private async void TopBattingCareersDataGrid_OnSorting(object sender, DataGridSortingEventArgs e)
     {
         Debug.Assert(e.Column.SortMemberPath is not null, "e.Column.SortMemberPath is not null");
-        var columnPropertyName = e.Column.SortMemberPath;
+        var newSortColumn = e.Column.SortMemberPath;
 
         var viewModel = (TopBattingCareersViewModel) DataContext;
-        viewModel.SortColumn = columnPropertyName;
+        TopBattingCareersDataGrid.Items.SortDescriptions.Clear();
+        ListSortDirection sortDirection;
+        if (viewModel.SortColumn == newSortColumn)
+        {
+            viewModel.SortDescending = !viewModel.SortDescending;
+            sortDirection = viewModel.SortDescending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+        }
+        else
+        {
+            viewModel.SortDescending = true;
+            sortDirection = ListSortDirection.Descending;
+        }
+
+        viewModel.SortColumn = newSortColumn;
+        TopBattingCareersDataGrid.Items.SortDescriptions.Add(new SortDescription(newSortColumn, sortDirection));
+        e.Column.SortDirection = sortDirection;
 
         await viewModel.GetTopBattingCareers();
-        
-        TopBattingCareersDataGrid.Items.SortDescriptions.Clear();
-        TopBattingCareersDataGrid.Items.SortDescriptions.Add(new SortDescription(columnPropertyName, ListSortDirection.Descending));
-        
+
         e.Handled = true;
     }
 }

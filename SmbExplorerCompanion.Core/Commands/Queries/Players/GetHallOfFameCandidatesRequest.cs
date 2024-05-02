@@ -1,12 +1,10 @@
 ﻿using MediatR;
-using OneOf;
-using OneOf.Types;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetHallOfFameCandidatesRequest : IRequest<OneOf<RetiredPlayerCareerStatsDto, None, Exception>>
+public class GetHallOfFameCandidatesRequest : IRequest<RetiredPlayerCareerStatsDto>
 {
     public GetHallOfFameCandidatesRequest(int seasonId)
     {
@@ -16,18 +14,30 @@ public class GetHallOfFameCandidatesRequest : IRequest<OneOf<RetiredPlayerCareer
     private int SeasonId { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetHallOfFameCandidatesHandler : IRequestHandler<GetHallOfFameCandidatesRequest,
-        OneOf<RetiredPlayerCareerStatsDto, None, Exception>>
+    internal class GetHallOfFameCandidatesHandler : IRequestHandler<GetHallOfFameCandidatesRequest, RetiredPlayerCareerStatsDto>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPitcherCareerRepository _pitcherCareerRepository;
+        private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
 
-        public GetHallOfFameCandidatesHandler(IPlayerRepository playerRepository)
+        public GetHallOfFameCandidatesHandler(IPositionPlayerCareerRepository positionPlayerCareerRepository,
+            IPitcherCareerRepository pitcherCareerRepository)
         {
-            _playerRepository = playerRepository;
+            _positionPlayerCareerRepository = positionPlayerCareerRepository;
+            _pitcherCareerRepository = pitcherCareerRepository;
         }
 
-        public async Task<OneOf<RetiredPlayerCareerStatsDto, None, Exception>> Handle(GetHallOfFameCandidatesRequest request,
-            CancellationToken cancellationToken) =>
-            await _playerRepository.GetHallOfFameCandidates(request.SeasonId, cancellationToken);
+        public async Task<RetiredPlayerCareerStatsDto> Handle(GetHallOfFameCandidatesRequest request,
+            CancellationToken cancellationToken)
+        {
+            var positionPlayersResponse = await _positionPlayerCareerRepository.GetHallOfFameCandidates(request.SeasonId, cancellationToken);
+
+            var pitchersResponse = await _pitcherCareerRepository.GetHallOfFameCandidates(request.SeasonId, cancellationToken);
+
+            return new RetiredPlayerCareerStatsDto
+            {
+                BattingCareers = positionPlayersResponse,
+                PitchingCareers = pitchersResponse
+            };
+        }
     }
 }

@@ -11,10 +11,10 @@ public class FranchiseSummaryDto
 
     public int? MostRecentChampionTeamId { get; set; }
     public string? MostRecentChampionTeamName { get; set; }
-    
+
     public int? MostRecentMvpPlayerId { get; set; }
     public string? MostRecentMvpPlayerName { get; set; }
-    
+
     public int? MostRecentCyYoungPlayerId { get; set; }
     public string? MostRecentCyYoungPlayerName { get; set; }
 

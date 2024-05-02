@@ -206,7 +206,7 @@
                                 IsReadOnly="True"
                                 Header="K"
                                 Binding="{Binding Strikeouts}"
-                                CanUserSort="True"/>
+                                CanUserSort="True" />
                             <DataGridTemplateColumn
                                 IsReadOnly="True"
                                 CanUserSort="True"
@@ -293,7 +293,7 @@
                                 Header="ERA">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Era, StringFormat={}{0:F2}}" />
+                                        <TextBlock Text="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -417,7 +417,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
-                
+
                 <Button
                     Command="{Binding SubmitHallOfFamersCommand}"
                     Content="Submit Hall of Famers" />

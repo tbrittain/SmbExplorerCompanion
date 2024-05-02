@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows;
 using SmbExplorerCompanion.WPF.Models.Players;
 
 namespace SmbExplorerCompanion.WPF.Models.Summary;

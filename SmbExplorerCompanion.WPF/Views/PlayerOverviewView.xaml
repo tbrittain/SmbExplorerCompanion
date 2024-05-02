@@ -7,8 +7,10 @@
              xmlns:dataTemplateSelectors="clr-namespace:SmbExplorerCompanion.WPF.DataTemplateSelectors"
              xmlns:players="clr-namespace:SmbExplorerCompanion.WPF.Models.Players"
              xmlns:converters="clr-namespace:SmbExplorerCompanion.WPF.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}">
+             d:DataContext="{d:DesignInstance viewModels:PlayerOverviewViewModel}"
+             x:Name="Control">
     <UserControl.Resources>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -54,6 +56,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="350" />
                 </Grid.RowDefinitions>
 
                 <StackPanel
@@ -222,7 +225,7 @@
                             <DataGridTextColumn
                                 CanUserSort="False"
                                 Header="ERA"
-                                Binding="{Binding Era, StringFormat={}{0:F2}}" />
+                                Binding="{Binding EarnedRunAverage, StringFormat={}{0:F2}}" />
                             <DataGridTextColumn
                                 CanUserSort="False"
                                 Header="Games Started"
@@ -257,6 +260,44 @@
                                 Binding="{Binding DisplayAge}" />
                         </DataGrid.Columns>
                     </DataGrid>
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox
+                            DockPanel.Dock="Left"
+                            Width="200"
+                            Style="{DynamicResource MaterialDesignFloatingHintComboBox}"
+                            materialDesign:HintAssist.Hint="Season"
+                            ItemsSource="{Binding Seasons}"
+                            SelectedItem="{Binding SelectedSeason}"
+                            DisplayMemberPath="DisplaySeasonNumber" />
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <StackPanel.Visibility>
+                                <Binding Path="PlayerOverview.IsPitcher">
+                                    <Binding.Converter>
+                                        <StaticResource ResourceKey="BoolToVisibilityConverter" />
+                                    </Binding.Converter>
+                                </Binding>
+                            </StackPanel.Visibility>
+                            <Label Content="Filter to pitcher role" />
+                            <CheckBox
+                                IsChecked="{Binding FilterToPitcherType}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <WpfPlot x:Name="PlayerGameStatsRadialPlot" />
+                        <WpfPlot x:Name="PlayerGameStatsPercentilePlot" />
+                        <WpfPlot x:Name="PlayerKpisPercentilePlot" />
+                    </StackPanel>
+
                 </StackPanel>
             </Grid>
 
@@ -750,6 +791,22 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="H/9"
+                                        Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="HR/9"
+                                        Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="K/9"
+                                        Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="K/BB"
+                                        Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
                                         Header="ER"
                                         Binding="{Binding EarnedRuns}"
                                         CanUserSort="True" />
@@ -773,6 +830,10 @@
                                         Header="HBP"
                                         Binding="{Binding HitByPitch}"
                                         CanUserSort="True" />
+                                    <DataGridTextColumn
+                                        Header="Pitch Types"
+                                        Binding="{Binding PitchTypes}"
+                                        CanUserSort="False" />
                                     <DataGridTextColumn
                                         Header="Awards"
                                         Binding="{Binding DisplayAwards}"
@@ -920,6 +981,22 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="H/9"
+                                        Binding="{Binding HitsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="HR/9"
+                                        Binding="{Binding HomeRunsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="K/9"
+                                        Binding="{Binding StrikeoutsPerNine, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
+                                        CanUserSort="True"
+                                        Header="K/BB"
+                                        Binding="{Binding StrikeoutToWalkRatio, StringFormat={}{0:F2}}" />
+                                    <DataGridTextColumn
                                         Header="ER"
                                         Binding="{Binding EarnedRuns}"
                                         CanUserSort="True" />
@@ -1041,6 +1118,35 @@
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
+
+            <StackPanel Orientation="Vertical">
+                <TextBlock FontSize="16" FontWeight="SemiBold">Similar Players</TextBlock>
+                <ItemsControl
+                    ItemsSource="{Binding SimilarPlayers}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button
+                                Margin="5"
+                                Height="60"
+                                CommandParameter="{Binding PlayerId}">
+                                <Button.Command>
+                                    <Binding Path="DataContext.NavigateToPlayerOverviewPageCommand"
+                                             ElementName="Control" />
+                                </Button.Command>
+                                <StackPanel Orientation="Vertical">
+                                    <Label Content="{Binding PlayerName}" />
+                                    <Label Content="{Binding SimilarityScoreString}" />
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

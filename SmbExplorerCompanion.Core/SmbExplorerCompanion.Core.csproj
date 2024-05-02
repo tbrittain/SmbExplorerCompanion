@@ -7,21 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MediatR" Version="12.1.1" />
-      <PackageReference Include="OneOf" Version="3.0.263" />
+        <PackageReference Include="MediatR" Version="12.2.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj" />
-
-
-
+        <ProjectReference Include="..\SmbExplorerCompanion.Shared\SmbExplorerCompanion.Shared.csproj"/>
 
 
     </ItemGroup>
-
-
-
 
 
 </Project>

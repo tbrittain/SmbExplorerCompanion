@@ -14,13 +14,14 @@ using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.Core.ValueObjects;
 using SmbExplorerCompanion.Core.ValueObjects.Progress;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Seasons;
 using SmbExplorerCompanion.WPF.Models.Seasons;
 
 namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class ImportCsvViewModel : ViewModelBase
 {
+    private readonly IApplicationContext _applicationContext;
+    private readonly ICsvImportRepository _csvImportRepository;
     private string _overallPlayersCsvPath = string.Empty;
     private string _playoffBattingCsvPath = string.Empty;
     private string _playoffPitchingCsvPath = string.Empty;
@@ -28,28 +29,16 @@ public partial class ImportCsvViewModel : ViewModelBase
     private string _seasonBattingCsvPath = string.Empty;
     private string _seasonPitchingCsvPath = string.Empty;
     private string _seasonScheduleCsvPath = string.Empty;
-    private string _teamsCsvPath = string.Empty;
-    private readonly ICsvImportRepository _csvImportRepository;
-    private readonly IApplicationContext _applicationContext;
     private Season? _selectedSeason;
+    private string _teamsCsvPath = string.Empty;
 
     public ImportCsvViewModel(ICsvImportRepository csvImportRepository, ISender mediator, IApplicationContext applicationContext)
     {
         _csvImportRepository = csvImportRepository;
         _applicationContext = applicationContext;
 
-        var seasonsResponse = mediator.Send(new GetSeasonsByFranchiseRequest(
-            applicationContext.SelectedFranchiseId!.Value)).Result;
-
-        if (seasonsResponse.TryPickT1(out var exception, out var seasons))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        var seasonMapper = new SeasonMapping();
-        Seasons.AddRange(seasons.Select(s => seasonMapper.FromDto(s)));
+        var seasons = mediator.Send(new GetSeasonsRequest()).Result;
+        Seasons.AddRange(seasons.Select(s => s.FromCore()));
     }
 
     public Season? SelectedSeason
@@ -79,25 +68,6 @@ public partial class ImportCsvViewModel : ViewModelBase
     private bool HasAddedSeason { get; set; }
 
     private bool CanAddNewSeason => !HasAddedSeason;
-
-    // This will ensure that the user clicks the "Add Season" button before they can import CSVs
-    // and does not click the "Add Season" button again after they have already added a season.
-    [RelayCommand(CanExecute = nameof(CanAddNewSeason))]
-    private void AddSeason()
-    {
-        var lastSeason = Seasons.MaxBy(s => s.Number);
-        var newSeason = new Season
-        {
-            Id = default,
-            FranchiseId = _applicationContext.SelectedFranchiseId!.Value,
-            Number = lastSeason is not null ? lastSeason.Number + 1 : 1,
-            IsNewSeason = true
-        };
-
-        Seasons.Add(newSeason);
-        SelectedSeason = newSeason;
-        HasAddedSeason = true;
-    }
 
     public string TeamsCsvPath
     {
@@ -193,6 +163,25 @@ public partial class ImportCsvViewModel : ViewModelBase
 
     public ObservableCollection<ImportProgress> ImportProgress { get; } = new();
 
+    // This will ensure that the user clicks the "Add Season" button before they can import CSVs
+    // and does not click the "Add Season" button again after they have already added a season.
+    [RelayCommand(CanExecute = nameof(CanAddNewSeason))]
+    private void AddSeason()
+    {
+        var lastSeason = Seasons.MaxBy(s => s.Number);
+        var newSeason = new Season
+        {
+            Id = default,
+            FranchiseId = _applicationContext.SelectedFranchiseId!.Value,
+            Number = lastSeason is not null ? lastSeason.Number + 1 : 1,
+            IsNewSeason = true
+        };
+
+        Seasons.Add(newSeason);
+        SelectedSeason = newSeason;
+        HasAddedSeason = true;
+    }
+
     [RelayCommand(CanExecute = nameof(CanImportSeasonCsvs))]
     private async Task ImportSeasonData()
     {
@@ -249,15 +238,15 @@ public partial class ImportCsvViewModel : ViewModelBase
                 });
 
             await foreach (var progress in progressChannel.Reader.ReadAllAsync())
+            {
                 ImportProgress.Add(progress);
+            }
+
             await task;
 
             if (hasError) return;
 
-            if (SelectedSeason.IsNewSeason)
-            {
-                SelectedSeason.Id = task.Result.Id;
-            }
+            if (SelectedSeason.IsNewSeason) SelectedSeason.Id = task.Result.Id;
 
             MessageBox.Show("Successfully imported season data!");
         }
@@ -324,7 +313,10 @@ public partial class ImportCsvViewModel : ViewModelBase
                 });
 
             await foreach (var progress in progressChannel.Reader.ReadAllAsync())
+            {
                 ImportProgress.Add(progress);
+            }
+
             await task;
 
             if (hasError) return;

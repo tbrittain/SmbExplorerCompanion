@@ -9,13 +9,12 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using SmbExplorerCompanion.Core.Commands.Queries.Players;
 using SmbExplorerCompanion.Core.Commands.Queries.Search;
 using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Entities.Search;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings.Search;
-using SmbExplorerCompanion.WPF.Mappings.Summary;
 using SmbExplorerCompanion.WPF.Models.Search;
 using SmbExplorerCompanion.WPF.Models.Summary;
 using SmbExplorerCompanion.WPF.Services;
@@ -26,19 +25,24 @@ namespace SmbExplorerCompanion.WPF.ViewModels;
 
 public partial class HomeViewModel : ViewModelBase
 {
+    private readonly IApplicationContext _applicationContext;
+    private readonly MappingService _mappingService;
     private readonly IMediator _mediator;
-    private string _searchQuery = string.Empty;
     private readonly INavigationService _navigationService;
     private bool _canDisplayFranchiseSummary;
     private FranchiseSummary? _franchiseSummary;
-    private readonly IApplicationContext _applicationContext;
+    private string _searchQuery = string.Empty;
 
-    public HomeViewModel(IMediator mediator, INavigationService navigationService, IApplicationContext applicationContext)
+    public HomeViewModel(IMediator mediator,
+        INavigationService navigationService,
+        IApplicationContext applicationContext,
+        MappingService mappingService)
     {
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = Cursors.Wait);
         _mediator = mediator;
         _navigationService = navigationService;
         _applicationContext = applicationContext;
+        _mappingService = mappingService;
 
         if (applicationContext.HasFranchiseData)
         {
@@ -52,58 +56,6 @@ public partial class HomeViewModel : ViewModelBase
         // summary data about the franchise
         CanDisplayFranchiseSummary = false;
         _applicationContext.PropertyChanged += ApplicationContextOnPropertyChanged;
-        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-    }
-
-    private async void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        switch (e.PropertyName)
-        {
-            case nameof(_applicationContext.HasFranchiseData):
-            {
-                await Application.Current.Dispatcher.InvokeAsync(async () =>
-                {
-                    CanDisplayFranchiseSummary = _applicationContext.HasFranchiseData;
-                    if (CanDisplayFranchiseSummary)
-                    {
-                        await GetFranchiseSummary();
-                    }
-                });
-                break;
-            }
-        }
-    }
-
-    private async Task GetFranchiseSummary()
-    {
-        var franchiseSummaryResult = await _mediator.Send(new GetFranchiseSummaryRequest());
-        if (franchiseSummaryResult.TryPickT2(out var exception, out var rest))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        if (rest.TryPickT0(out var franchiseSummaryDto, out _))
-        {
-            var franchiseSummaryMapper = new FranchiseSummaryMapping();
-            FranchiseSummary = franchiseSummaryMapper.FromFranchiseSummaryDto(franchiseSummaryDto);
-        }
-
-        var conferenceSummaryResult = await _mediator.Send(new GetLeagueSummaryRequest());
-        if (conferenceSummaryResult.TryPickT2(out exception, out var rest2))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            return;
-        }
-
-        if (rest2.TryPickT0(out var leagueSummaryDto, out _))
-        {
-            var conferenceSummaryMapper = new ConferenceSummaryMapping();
-            Conferences.AddRange(leagueSummaryDto.Select(conferenceSummaryMapper.FromConferenceSummaryDto));
-        }
-
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
@@ -141,7 +93,42 @@ public partial class HomeViewModel : ViewModelBase
         }
     }
 
-    private bool CanSearch() => !string.IsNullOrWhiteSpace(SearchQuery);
+    private bool HasSearched { get; set; }
+
+    public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
+
+    private async void ApplicationContextOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(_applicationContext.HasFranchiseData):
+            {
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    CanDisplayFranchiseSummary = _applicationContext.HasFranchiseData;
+                    if (CanDisplayFranchiseSummary) await GetFranchiseSummary();
+                });
+                break;
+            }
+        }
+    }
+
+    private async Task GetFranchiseSummary()
+    {
+        var franchiseSummaryDto = await _mediator.Send(new GetFranchiseSummaryRequest());
+
+        if (franchiseSummaryDto is not null)
+            FranchiseSummary = await _mappingService.FromCore(franchiseSummaryDto);
+
+        var leagueSummaryDto = await _mediator.Send(new GetLeagueSummaryRequest());
+        Conferences.AddRange(leagueSummaryDto.Select(x => x.FromCore()));
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
+    }
+
+    private bool CanSearch()
+    {
+        return !string.IsNullOrWhiteSpace(SearchQuery);
+    }
 
     [RelayCommand(CanExecute = nameof(CanSearch))]
     private async Task GetSearchResults()
@@ -149,19 +136,10 @@ public partial class HomeViewModel : ViewModelBase
         HasSearched = true;
         SearchResults.Clear();
         OnPropertyChanged(nameof(HasSearchResults));
-        var searchResponse = await _mediator.Send(new GetSearchResultsQuery(SearchQuery.Trim()));
-        if (searchResponse.TryPickT1(out var exception, out var searchResultDtos))
-        {
-            MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
+        var searchResultDtos = await _mediator.Send(new GetSearchResultsQuery(SearchQuery.Trim()));
 
-        var searchResultMapper = new SearchResultMapping();
-        var searchResults = searchResultDtos
-            .Select(searchResultMapper.FromSearchResultDto)
-            .ToList();
-
-        var groupedSearchResults = searchResults
+        var groupedSearchResults = searchResultDtos
+            .Select(x => x.FromCore())
             .GroupBy(searchResult => searchResult.Type)
             .Select(group => new ObservableGroup<SearchResultType, SearchResult>(group.Key, group))
             .ToList();
@@ -169,10 +147,6 @@ public partial class HomeViewModel : ViewModelBase
         SearchResults.AddRange(groupedSearchResults);
         OnPropertyChanged(nameof(HasSearchResults));
     }
-
-    private bool HasSearched { get; set; }
-    
-    public bool HasSearchResults => HasSearched && SearchResults.Count > 0;
 
     [RelayCommand]
     private void NavigateToSearchResultPage(SearchResult searchResult)
@@ -210,6 +184,13 @@ public partial class HomeViewModel : ViewModelBase
         _navigationService.NavigateTo<PlayerOverviewViewModel>(playerParams);
     }
 
+    [RelayCommand]
+    private async Task NavigateToRandomPlayerOverviewPage()
+    {
+        var player = await _mediator.Send(new GetRandomPlayerRequest());
+        NavigateToPlayerOverviewPage(player.PlayerId);
+    }
+
     private void NavigateToTeamOverviewPage(int teamId)
     {
         var teamParams = new Tuple<string, object>[]
@@ -244,10 +225,7 @@ public partial class HomeViewModel : ViewModelBase
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
-        }
+        if (disposing) _applicationContext.PropertyChanged -= ApplicationContextOnPropertyChanged;
 
         base.Dispose(disposing);
     }

@@ -1,80 +1,34 @@
-﻿using System.Collections.Immutable;
-using MediatR;
-using OneOf;
+﻿using MediatR;
 using SmbExplorerCompanion.Core.Entities.Players;
 using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Core.Commands.Queries.Players;
 
-public class GetTopBattingCareersRequest : IRequest<OneOf<List<PlayerCareerBattingDto>, Exception>>
+public class GetTopBattingCareersRequest : IRequest<List<PlayerCareerBattingDto>>
 {
-    public GetTopBattingCareersRequest(int? pageNumber = null,
-        int? limit = null,
-        string? orderBy = null,
-        bool descending = true,
-        bool onlyHallOfFamers = false,
-        int? primaryPositionId = null)
+    public GetTopBattingCareersRequest(GetBattingCareersFilters filters)
     {
-        PageNumber = pageNumber;
-        Limit = limit;
-        OrderBy = orderBy;
-        Descending = descending;
-        OnlyHallOfFamers = onlyHallOfFamers;
-        PrimaryPositionId = primaryPositionId;
+        Filters = filters;
     }
 
-    private int? PageNumber { get; }
-    private int? Limit { get; }
-    private string? OrderBy { get; }
-    private bool Descending { get; }
-    private bool OnlyHallOfFamers { get; }
-    private int? PrimaryPositionId { get; }
-
-    private static ImmutableArray<string> ValidOrderByProperties { get; } = ImmutableArray.Create(
-        nameof(PlayerCareerBattingDto.TotalSalary),
-        nameof(PlayerCareerBattingDto.NumSeasons),
-        nameof(PlayerCareerBattingDto.AtBats),
-        nameof(PlayerCareerBattingDto.Hits),
-        nameof(PlayerCareerBattingDto.Singles),
-        nameof(PlayerCareerBattingDto.Doubles),
-        nameof(PlayerCareerBattingDto.Triples),
-        nameof(PlayerCareerBattingDto.HomeRuns),
-        nameof(PlayerCareerBattingDto.Walks),
-        nameof(PlayerCareerBattingDto.Runs),
-        nameof(PlayerCareerBattingDto.RunsBattedIn),
-        nameof(PlayerCareerBattingDto.StolenBases),
-        nameof(PlayerCareerBattingDto.SacrificeHits),
-        nameof(PlayerCareerBattingDto.SacrificeFlies),
-        nameof(PlayerCareerBattingDto.HitByPitch),
-        nameof(PlayerCareerBattingDto.Errors),
-        nameof(PlayerCareerBattingDto.Strikeouts),
-        nameof(PlayerCareerBattingDto.WeightedOpsPlusOrEraMinus)
-    );
+    private GetBattingCareersFilters Filters { get; }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, OneOf<List<PlayerCareerBattingDto>, Exception>>
+    internal class GetTopBattingCareersHandler : IRequestHandler<GetTopBattingCareersRequest, List<PlayerCareerBattingDto>>
     {
-        private readonly IPlayerRepository _playerRepository;
+        private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
 
-        public GetTopBattingCareersHandler(IPlayerRepository playerRepository)
+        public GetTopBattingCareersHandler(IPositionPlayerCareerRepository positionPlayerCareerRepository)
         {
-            _playerRepository = playerRepository;
+            _positionPlayerCareerRepository = positionPlayerCareerRepository;
         }
 
-        public async Task<OneOf<List<PlayerCareerBattingDto>, Exception>> Handle(GetTopBattingCareersRequest request,
+        public async Task<List<PlayerCareerBattingDto>> Handle(GetTopBattingCareersRequest request,
             CancellationToken cancellationToken)
         {
-            if (request.OrderBy is not null && !ValidOrderByProperties.Contains(request.OrderBy))
-                return new ArgumentException($"Invalid property name '{request.OrderBy}' for ordering");
-
-            return await _playerRepository.GetBattingCareers(
-                pageNumber: request.PageNumber,
-                limit: request.Limit,
-                orderBy: request.OrderBy,
-                descending: request.Descending,
-                onlyHallOfFamers: request.OnlyHallOfFamers,
-                primaryPositionId: request.PrimaryPositionId,
-                cancellationToken: cancellationToken);
+            return await _positionPlayerCareerRepository.GetBattingCareers(
+                request.Filters,
+                cancellationToken);
         }
     }
 }

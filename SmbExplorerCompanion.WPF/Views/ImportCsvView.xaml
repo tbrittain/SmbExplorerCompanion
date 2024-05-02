@@ -124,7 +124,7 @@
                             Grid.Row="0"
                             Grid.Column="0">
                             <Button Command="{Binding SelectPlayoffPitchingCsvCommand}">
-                                <Label Content="Select Playoffs Pitching CSV"></Label>
+                                <Label Content="Select Playoffs Pitching CSV" />
                             </Button>
                             <Label Content="{Binding PlayoffPitchingCsvPath}" />
                         </StackPanel>
@@ -133,7 +133,7 @@
                             Grid.Row="0"
                             Grid.Column="1">
                             <Button Command="{Binding SelectPlayoffBattingCsvCommand}">
-                                <Label Content="Select Playoffs Batting CSV"></Label>
+                                <Label Content="Select Playoffs Batting CSV" />
                             </Button>
                             <Label Content="{Binding PlayoffBattingCsvPath}" />
                         </StackPanel>
@@ -142,7 +142,7 @@
                             Grid.Row="0"
                             Grid.Column="2">
                             <Button Command="{Binding SelectPlayoffScheduleCsvCommand}">
-                                <Label Content="Select Playoffs Schedule CSV"></Label>
+                                <Label Content="Select Playoffs Schedule CSV" />
                             </Button>
                             <Label Content="{Binding PlayoffScheduleCsvPath}" />
                         </StackPanel>

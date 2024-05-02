@@ -11,7 +11,6 @@ using SmbExplorerCompanion.Core.Commands.Queries.Franchises;
 using SmbExplorerCompanion.Core.Commands.Queries.Summary;
 using SmbExplorerCompanion.Core.Interfaces;
 using SmbExplorerCompanion.WPF.Extensions;
-using SmbExplorerCompanion.WPF.Mappings;
 using SmbExplorerCompanion.WPF.Models;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -32,22 +31,11 @@ public partial class FranchiseSelectViewModel : ViewModelBase
         _applicationContext = applicationContext;
         _navigationService = navigationService;
 
-        var franchiseResponse = _mediator.Send(new GetAllFranchisesRequest()).Result;
-        if (franchiseResponse.TryPickT1(out var exception, out var franchises))
-        {
-            MessageBox.Show(exception.Message);
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-            Franchises = new ObservableCollection<Franchise>();
-        }
-        else
-        {
-            var mapper = new FranchiseMapping();
-            Franchises = franchises
-                .Select(x => mapper
-                    .FromDto(x))
-                .ToObservableCollection();
-            Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
-        }
+        var franchises = _mediator.Send(new GetAllFranchisesRequest()).Result;
+        Franchises = franchises
+            .Select(x => x.FromCore())
+            .ToObservableCollection();
+        Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
     public ObservableCollection<Franchise> Franchises { get; }
@@ -90,15 +78,8 @@ public partial class FranchiseSelectViewModel : ViewModelBase
             return;
         }
 
-        var franchiseResponse = await _mediator.Send(new AddFranchiseRequest(franchiseName));
-        if (franchiseResponse.TryPickT1(out var exception, out var franchise))
-        {
-            MessageBox.Show(exception.Message);
-            return;
-        }
-
-        var mapper = new FranchiseMapping();
-        Franchises.Add(mapper.FromDto(franchise));
+        var franchise = await _mediator.Send(new AddFranchiseRequest(franchiseName));
+        Franchises.Add(franchise.FromCore());
         SelectedFranchise = Franchises.First(x => x.Id == franchise.Id);
     }
 }

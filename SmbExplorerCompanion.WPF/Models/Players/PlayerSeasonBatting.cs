@@ -26,6 +26,6 @@ public class PlayerSeasonBatting : PlayerSeasonBase
     public double OpsPlus { get; set; }
     public int Errors { get; set; }
     public int Strikeouts { get; set; }
-    public ObservableCollection<PlayerAwardBase> Awards { get; set; } = new();
+    public ObservableCollection<PlayerAward> Awards { get; set; } = new();
     public string? DisplayAwards => Awards.GetFormattedAwards(isSeason: true);
 }

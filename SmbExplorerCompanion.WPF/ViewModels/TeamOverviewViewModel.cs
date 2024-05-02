@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Input;
 using MediatR;
 using SmbExplorerCompanion.Core.Commands.Queries.Teams;
-using SmbExplorerCompanion.WPF.Mappings.Teams;
 using SmbExplorerCompanion.WPF.Models.Teams;
 using SmbExplorerCompanion.WPF.Services;
 
@@ -33,20 +32,11 @@ public class TeamOverviewViewModel : ViewModelBase
         TeamId = teamId;
         _navigationService.ClearParameters();
 
-        var teamOverviewResponse = mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
-        if (teamOverviewResponse.TryPickT1(out var exception, out var teamOverview))
-        {
-            MessageBox.Show(exception.Message);
-            TeamOverview = new TeamOverview();
-        }
-        else
-        {
-            var mapper = new TeamOverviewMapping();
-            TeamOverview = mapper.FromDto(teamOverview);
-        }
+        var teamOverview = mediator.Send(new GetTeamOverviewRequest(TeamId)).Result;
+        TeamOverview = teamOverview.FromCore();
 
         PropertyChanged += OnPropertyChanged;
-        
+
         Application.Current.Dispatcher.Invoke(() => Mouse.OverrideCursor = null);
     }
 
