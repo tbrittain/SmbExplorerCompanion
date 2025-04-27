@@ -80,8 +80,6 @@ public partial class TeamSeasonDetailView : IDisposable
             var annotationText =
                 $"Game {nearestPoint.Day}: {nearestPoint.TeamName} {wasWin} against {nearestPoint.OpponentTeamName} {nearestPoint.TeamScore} - {nearestPoint.OpponentTeamScore}";
             _tooltip = TeamSchedulePlot.Plot.AddTooltip(annotationText, nearestPoint.Day, nearestPoint.WinsDelta);
-
-            TeamSchedulePlot.Plot.Render();
         }
         else
         {
@@ -90,14 +88,17 @@ public partial class TeamSeasonDetailView : IDisposable
                 TeamSchedulePlot.Plot.Remove(_tooltip);
                 _tooltip = null;
             }
-
-            TeamSchedulePlot.Plot.Render();
         }
+
+        TeamSchedulePlot.Plot.Render();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is not TeamSeasonDetailViewModel viewModel) return;
         viewModel.DrawTeamSchedulePlot(TeamSchedulePlot);
+        
+        TeamSchedulePlot.Configuration.Pan = false;
+        TeamSchedulePlot.Configuration.Zoom = false;
     }
 }
