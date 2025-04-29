@@ -874,6 +874,14 @@ public class CsvMappingRepository
             .ToListAsync(cancellationToken: cancellationToken);
 
         // reset the playoff schedule for all teams in case we are re-importing it
+        // similarly, remove any existing championship winner from the season, just in case
+        var existingChampionshipWinner = await _dbContext.ChampionshipWinners
+            .SingleOrDefaultAsync(x => x.SeasonId == season.Id, cancellationToken: cancellationToken);
+        if (existingChampionshipWinner is not null)
+        {
+            _dbContext.ChampionshipWinners.Remove(existingChampionshipWinner);
+        }
+
         foreach (var seasonTeamHistory in seasonTeamHistories)
         {
             foreach (var teamPlayoffSchedule in seasonTeamHistory.HomePlayoffSchedule
