@@ -4,18 +4,11 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PositionRepository : IRepository<PositionDto>
+public class PositionRepository(SmbExplorerCompanionDbContext context) : IRepository<PositionDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public PositionRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<PositionDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var positions = await _context.Positions
+        var positions = await context.Positions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 

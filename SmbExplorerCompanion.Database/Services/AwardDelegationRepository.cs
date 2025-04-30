@@ -6,15 +6,8 @@ using SmbExplorerCompanion.Database.Entities.Lookups;
 
 namespace SmbExplorerCompanion.Database.Services;
 
-public class AwardDelegationRepository : IAwardDelegationRepository
+public class AwardDelegationRepository(SmbExplorerCompanionDbContext dbContext) : IAwardDelegationRepository
 {
-    private readonly SmbExplorerCompanionDbContext _dbContext;
-
-    public AwardDelegationRepository(SmbExplorerCompanionDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     public async Task AddRegularSeasonPlayerAwards(int seasonId,
         List<PlayerAwardRequestDto> playerAwardRequestDtos,
         CancellationToken cancellationToken = default)
@@ -23,10 +16,10 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             .GroupBy(x => x.PlayerId)
             .ToList();
 
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            var regularSeasonAwards = await _dbContext.PlayerAwards
+            var regularSeasonAwards = await dbContext.PlayerAwards
                 .Where(x => !x.IsPlayoffAward)
                 .ToListAsync(cancellationToken: cancellationToken);
 
@@ -74,7 +67,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
                     .Where(x => newPlayerAwardIds.Contains(x.Id))
                     .ToList();
 
-                var playerSeason = await _dbContext.PlayerSeasons
+                var playerSeason = await dbContext.PlayerSeasons
                     .Include(x => x.Awards)
                     .FirstAsync(x => x.PlayerId == playerId &&
                                      x.SeasonId == seasonId,
@@ -85,10 +78,10 @@ public class AwardDelegationRepository : IAwardDelegationRepository
                     playerSeason.Awards.Add(award);
                 }
 
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
         catch
@@ -103,7 +96,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
     {
         var playerIds = players.Select(x => x.PlayerId).ToList();
 
-        var playerEntities = await _dbContext.Players
+        var playerEntities = await dbContext.Players
             .Where(x => playerIds.Contains(x.Id))
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -113,7 +106,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             playerEntity.IsHallOfFamer = player.IsHallOfFamer;
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
@@ -127,11 +120,11 @@ public class AwardDelegationRepository : IAwardDelegationRepository
         int seasonId,
         CancellationToken cancellationToken = default)
     {
-        var season = await _dbContext.Seasons
+        var season = await dbContext.Seasons
             .Where(x => x.Id == seasonId)
             .SingleAsync(cancellationToken: cancellationToken);
 
-        var battingIQueryable = _dbContext.PlayerSeasonBattingStats
+        var battingIQueryable = dbContext.PlayerSeasonBattingStats
             .Include(x => x.PlayerSeason)
             .ThenInclude(x => x.Awards)
             .Where(x => x.PlayerSeason.SeasonId == seasonId)
@@ -148,7 +141,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             playerSeason.Awards.Clear();
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var maxHomeRuns = await battingIQueryable
             .MaxAsync(x => x.HomeRuns, cancellationToken);
@@ -203,12 +196,12 @@ public class AwardDelegationRepository : IAwardDelegationRepository
         if (battingTripleCrownWinner != default)
         {
             var battingTripleCrownAward = awards.First(x => x.OriginalName == "Triple Crown (Batting)");
-            var battingTripleCrownPlayerSeason = await _dbContext.PlayerSeasons
+            var battingTripleCrownPlayerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == battingTripleCrownWinner, cancellationToken);
 
             battingTripleCrownPlayerSeason.Awards.Add(battingTripleCrownAward);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         // now we can assign the awards to the players who are not the triple crown winner, if any
@@ -216,39 +209,39 @@ public class AwardDelegationRepository : IAwardDelegationRepository
                      .Where(x => x.PlayerSeasonId != battingTripleCrownWinner))
         {
             var award = awards.First(x => x.OriginalName == "Home Run Title");
-            var playerSeason = await _dbContext.PlayerSeasons
+            var playerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == batterStats.PlayerSeasonId, cancellationToken);
 
             playerSeason.Awards.Add(award);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         foreach (var batterStats in topRbiHitters
                      .Where(x => x.PlayerSeasonId != battingTripleCrownWinner))
         {
             var award = awards.First(x => x.OriginalName == "RBI Title");
-            var playerSeason = await _dbContext.PlayerSeasons
+            var playerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == batterStats.PlayerSeasonId, cancellationToken);
 
             playerSeason.Awards.Add(award);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         foreach (var batterStats in topBattingAverageHitters
                      .Where(x => x.PlayerSeasonId != battingTripleCrownWinner))
         {
             var award = awards.First(x => x.OriginalName == "Batting Title");
-            var playerSeason = await _dbContext.PlayerSeasons
+            var playerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == batterStats.PlayerSeasonId, cancellationToken);
 
             playerSeason.Awards.Add(award);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var pitchingIQueryable = _dbContext.PlayerSeasonPitchingStats
+        var pitchingIQueryable = dbContext.PlayerSeasonPitchingStats
             .Include(x => x.PlayerSeason)
             .ThenInclude(x => x.Awards)
             .Where(x => x.PlayerSeason.SeasonId == seasonId)
@@ -262,7 +255,7 @@ public class AwardDelegationRepository : IAwardDelegationRepository
             playerSeason.Awards.Clear();
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var topEarnedRunAveragePitchers = await pitchingIQueryable
             .Where(x => x.InningsPitched >= season.NumGamesRegularSeason * 1.0)
@@ -314,48 +307,48 @@ public class AwardDelegationRepository : IAwardDelegationRepository
         if (pitchingTripleCrownWinner != default)
         {
             var pitchingTripleCrownAward = awards.First(x => x.OriginalName == "Triple Crown (Pitching)");
-            var pitchingTripleCrownPlayerSeason = await _dbContext.PlayerSeasons
+            var pitchingTripleCrownPlayerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == pitchingTripleCrownWinner, cancellationToken);
 
             pitchingTripleCrownPlayerSeason.Awards.Add(pitchingTripleCrownAward);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         foreach (var pitcherStats in topEarnedRunAveragePitchers
                      .Where(x => x.PlayerSeasonId != pitchingTripleCrownWinner))
         {
             var award = awards.First(x => x.OriginalName == "ERA Title");
-            var playerSeason = await _dbContext.PlayerSeasons
+            var playerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == pitcherStats.PlayerSeasonId, cancellationToken);
 
             playerSeason.Awards.Add(award);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         foreach (var pitcherStats in topWinsPitchers
                      .Where(x => x.PlayerSeasonId != pitchingTripleCrownWinner))
         {
             var award = awards.First(x => x.OriginalName == "Wins Title");
-            var playerSeason = await _dbContext.PlayerSeasons
+            var playerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == pitcherStats.PlayerSeasonId, cancellationToken);
 
             playerSeason.Awards.Add(award);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         foreach (var pitcherStats in topStrikeoutsPitchers
                      .Where(x => x.PlayerSeasonId != pitchingTripleCrownWinner))
         {
             var award = awards.First(x => x.OriginalName == "Strikeouts Title");
-            var playerSeason = await _dbContext.PlayerSeasons
+            var playerSeason = await dbContext.PlayerSeasons
                 .Include(x => x.Awards)
                 .SingleAsync(x => x.Id == pitcherStats.PlayerSeasonId, cancellationToken);
 
             playerSeason.Awards.Add(award);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -5,18 +5,11 @@ using SmbExplorerCompanion.Shared.Enums;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class AwardRepository : IRepository<PlayerAwardDto>
+public class AwardRepository(SmbExplorerCompanionDbContext context) : IRepository<PlayerAwardDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public AwardRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<PlayerAwardDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var awards = await _context.PlayerAwards
+        var awards = await context.PlayerAwards
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 

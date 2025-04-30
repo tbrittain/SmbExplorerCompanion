@@ -5,27 +5,19 @@ using SmbExplorerCompanion.Database.Mappings;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class SeasonRepository : IRepository<SeasonDto>, ISeasonSearchService
+public class SeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
+    : IRepository<SeasonDto>, ISeasonSearchService
 {
-    private readonly SmbExplorerCompanionDbContext _dbContext;
-    private readonly IApplicationContext _applicationContext;
-
-    public SeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
-    {
-        _dbContext = dbContext;
-        _applicationContext = applicationContext;
-    }
-
     public async Task<IEnumerable<SeasonDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var franchiseId = applicationContext.SelectedFranchiseId!.Value;
 
-        var seasons = await _dbContext.Seasons
+        var seasons = await dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .Include(x => x.Franchise)
             .ToListAsync(cancellationToken);
 
-        var championshipWinners = await _dbContext.ChampionshipWinners
+        var championshipWinners = await dbContext.ChampionshipWinners
             .ToListAsync(cancellationToken);
 
         var mapper = new SeasonMapping();
@@ -53,9 +45,9 @@ public class SeasonRepository : IRepository<SeasonDto>, ISeasonSearchService
 
     public async Task<SeasonDto?> GetByTeamSeasonIdAsync(int teamSeasonId, CancellationToken cancellationToken = default)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var franchiseId = applicationContext.SelectedFranchiseId!.Value;
 
-        var season = await _dbContext.SeasonTeamHistory
+        var season = await dbContext.SeasonTeamHistory
             .Include(x => x.Season)
             .ThenInclude(x => x.Franchise)
             .Where(x => x.Season.FranchiseId == franchiseId)

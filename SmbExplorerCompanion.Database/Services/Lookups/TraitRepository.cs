@@ -4,18 +4,11 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class TraitRepository : IRepository<TraitDto>
+public class TraitRepository(SmbExplorerCompanionDbContext context) : IRepository<TraitDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public TraitRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<TraitDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var traits = await _context.Traits
+        var traits = await context.Traits
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 

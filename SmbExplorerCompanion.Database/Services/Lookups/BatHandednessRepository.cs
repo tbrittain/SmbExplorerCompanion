@@ -4,18 +4,11 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class BatHandednessRepository : IRepository<BatHandednessDto>
+public class BatHandednessRepository(SmbExplorerCompanionDbContext context) : IRepository<BatHandednessDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public BatHandednessRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<BatHandednessDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var batHandedness = await _context.BatHandedness
+        var batHandedness = await context.BatHandedness
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 

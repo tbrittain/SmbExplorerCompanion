@@ -4,18 +4,11 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PitchTypesRepository : IRepository<PitchTypeDto>
+public class PitchTypesRepository(SmbExplorerCompanionDbContext context) : IRepository<PitchTypeDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public PitchTypesRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<PitchTypeDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var pitchTypes = await _context.PitchTypes
+        var pitchTypes = await context.PitchTypes
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
