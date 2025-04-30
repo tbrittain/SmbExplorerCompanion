@@ -32,7 +32,18 @@ public partial class PlayerOverviewView : IDisposable
     {
         if (e.NewValue is not PlayerOverviewViewModel viewModel) return;
         viewModel.DrawPlayerGameStatsRadialPlot(PlayerGameStatsRadialPlot);
+        
+        PlayerGameStatsRadialPlot.Configuration.Pan = false;
+        PlayerGameStatsRadialPlot.Configuration.Zoom = false;
+
         viewModel.DrawPlayerGameStatsPercentilePlot(PlayerGameStatsPercentilePlot);
+
+        PlayerGameStatsPercentilePlot.Configuration.Pan = false;
+        PlayerGameStatsPercentilePlot.Configuration.Zoom = false;
+
         viewModel.DrawPlayerKpisPercentilePlot(PlayerKpisPercentilePlot);
+
+        PlayerKpisPercentilePlot.Configuration.Pan = false;
+        PlayerKpisPercentilePlot.Configuration.Zoom = false;
     }
 }
