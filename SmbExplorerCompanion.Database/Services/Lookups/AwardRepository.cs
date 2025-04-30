@@ -5,7 +5,7 @@ using SmbExplorerCompanion.Shared.Enums;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class AwardRepository(SmbExplorerCompanionDbContext context) : IRepository<PlayerAwardDto>
+public class AwardRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<PlayerAwardDto>
 {
     public async Task<IEnumerable<PlayerAwardDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -51,10 +51,5 @@ public class AwardRepository(SmbExplorerCompanionDbContext context) : IRepositor
         });
 
         return dtos;
-    }
-
-    public Task<PlayerAwardDto> AddAsync(PlayerAwardDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

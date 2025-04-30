@@ -5,7 +5,7 @@ using SmbExplorerCompanion.Database.Mappings;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class FranchiseRepository(SmbExplorerCompanionDbContext dbContext) : IRepository<FranchiseDto>
+public class FranchiseRepository(SmbExplorerCompanionDbContext dbContext) : IGetAllRepository<FranchiseDto>, IAddRepository<FranchiseDto>
 {
     public async Task<IEnumerable<FranchiseDto>> GetAllAsync(
         CancellationToken cancellationToken = default)

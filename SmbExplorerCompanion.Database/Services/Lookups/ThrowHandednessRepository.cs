@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class ThrowHandednessRepository(SmbExplorerCompanionDbContext context) : IRepository<ThrowHandednessDto>
+public class ThrowHandednessRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<ThrowHandednessDto>
 {
     public async Task<IEnumerable<ThrowHandednessDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -19,10 +19,5 @@ public class ThrowHandednessRepository(SmbExplorerCompanionDbContext context) : 
                 Name = p.Name
             })
             .ToList();
-    }
-
-    public Task<ThrowHandednessDto> AddAsync(ThrowHandednessDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

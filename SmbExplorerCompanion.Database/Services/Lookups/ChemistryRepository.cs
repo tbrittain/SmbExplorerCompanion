@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class ChemistryRepository(SmbExplorerCompanionDbContext context) : IRepository<ChemistryDto>
+public class ChemistryRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<ChemistryDto>
 {
     public async Task<IEnumerable<ChemistryDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -19,10 +19,5 @@ public class ChemistryRepository(SmbExplorerCompanionDbContext context) : IRepos
                 Name = p.Name
             })
             .ToList();
-    }
-
-    public Task<ChemistryDto> AddAsync(ChemistryDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

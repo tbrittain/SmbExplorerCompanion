@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class TraitRepository(SmbExplorerCompanionDbContext context) : IRepository<TraitDto>
+public class TraitRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<TraitDto>
 {
     public async Task<IEnumerable<TraitDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -21,10 +21,5 @@ public class TraitRepository(SmbExplorerCompanionDbContext context) : IRepositor
                 IsPositive = p.IsPositive
             })
             .ToList();
-    }
-
-    public Task<TraitDto> AddAsync(TraitDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

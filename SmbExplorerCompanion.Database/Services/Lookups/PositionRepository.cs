@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PositionRepository(SmbExplorerCompanionDbContext context) : IRepository<PositionDto>
+public class PositionRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<PositionDto>
 {
     public async Task<IEnumerable<PositionDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -20,10 +20,5 @@ public class PositionRepository(SmbExplorerCompanionDbContext context) : IReposi
                 IsPrimaryPosition = p.IsPrimaryPosition
             })
             .ToList();
-    }
-
-    public Task<PositionDto> AddAsync(PositionDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

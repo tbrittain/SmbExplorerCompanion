@@ -5,7 +5,7 @@ using SmbExplorerCompanion.Database.Mappings;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PlayerAwardRepository(SmbExplorerCompanionDbContext context) : IRepository<PlayerAwardDto>
+public class PlayerAwardRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<PlayerAwardDto>, IAddRepository<PlayerAwardDto>
 {
     public async Task<IEnumerable<PlayerAwardDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {

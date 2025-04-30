@@ -6,7 +6,7 @@ using SmbExplorerCompanion.Database.Mappings;
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
 public class SeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicationContext applicationContext)
-    : IRepository<SeasonDto>, ISeasonSearchService
+    : IGetAllRepository<SeasonDto>, ISeasonSearchService
 {
     public async Task<IEnumerable<SeasonDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -36,11 +36,6 @@ public class SeasonRepository(SmbExplorerCompanionDbContext dbContext, IApplicat
         }
 
         return seasonDtos;
-    }
-
-    public Task<SeasonDto> AddAsync(SeasonDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 
     public async Task<SeasonDto?> GetByTeamSeasonIdAsync(int teamSeasonId, CancellationToken cancellationToken = default)

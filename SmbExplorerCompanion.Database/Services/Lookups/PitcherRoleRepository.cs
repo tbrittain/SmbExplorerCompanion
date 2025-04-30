@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PitcherRoleRepository(SmbExplorerCompanionDbContext context) : IRepository<PitcherRoleDto>
+public class PitcherRoleRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<PitcherRoleDto>
 {
     public async Task<IEnumerable<PitcherRoleDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -19,10 +19,5 @@ public class PitcherRoleRepository(SmbExplorerCompanionDbContext context) : IRep
                 Name = p.Name
             })
             .ToList();
-    }
-
-    public Task<PitcherRoleDto> AddAsync(PitcherRoleDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

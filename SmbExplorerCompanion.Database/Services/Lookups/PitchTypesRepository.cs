@@ -4,7 +4,7 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PitchTypesRepository(SmbExplorerCompanionDbContext context) : IRepository<PitchTypeDto>
+public class PitchTypesRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<PitchTypeDto>
 {
     public async Task<IEnumerable<PitchTypeDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -19,10 +19,5 @@ public class PitchTypesRepository(SmbExplorerCompanionDbContext context) : IRepo
                 Name = p.Name
             })
             .ToList();
-    }
-
-    public Task<PitchTypeDto> AddAsync(PitchTypeDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }
