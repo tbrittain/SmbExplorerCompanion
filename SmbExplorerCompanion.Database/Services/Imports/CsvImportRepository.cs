@@ -10,24 +10,13 @@ using SmbExplorerCompanion.Database.Entities;
 
 namespace SmbExplorerCompanion.Database.Services.Imports;
 
-public class CsvImportRepository : ICsvImportRepository
+public class CsvImportRepository(
+    CsvMappingRepository csvMappingRepository,
+    CsvReaderService csvReaderService,
+    SmbExplorerCompanionDbContext dbContext,
+    IApplicationContext applicationContext)
+    : ICsvImportRepository
 {
-    private readonly CsvMappingRepository _csvMappingRepository;
-    private readonly CsvReaderService _csvReaderService;
-    private readonly SmbExplorerCompanionDbContext _dbContext;
-    private readonly IApplicationContext _applicationContext;
-
-    public CsvImportRepository(CsvMappingRepository csvMappingRepository,
-        CsvReaderService csvReaderService,
-        SmbExplorerCompanionDbContext dbContext,
-        IApplicationContext applicationContext)
-    {
-        _csvMappingRepository = csvMappingRepository;
-        _csvReaderService = csvReaderService;
-        _dbContext = dbContext;
-        _applicationContext = applicationContext;
-    }
-
     public async Task<SeasonDto> ImportSeason(ImportSeasonFilePaths filePaths,
         ChannelWriter<ImportProgress> channel,
         SeasonDto selectedSeason,
@@ -35,7 +24,7 @@ public class CsvImportRepository : ICsvImportRepository
     {
         foreach (var filePath in filePaths) ValidateFile(filePath);
 
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         Season season;
         try
@@ -54,12 +43,12 @@ public class CsvImportRepository : ICsvImportRepository
 
             await transaction.CommitAsync(cancellationToken);
 
-            _applicationContext.HasFranchiseData = true;
+            applicationContext.HasFranchiseData = true;
         }
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
-            _dbContext.ChangeTracker.Clear();
+            dbContext.ChangeTracker.Clear();
             throw;
         }
         finally
@@ -80,28 +69,28 @@ public class CsvImportRepository : ICsvImportRepository
         Season season;
         if (selectedSeason.Id == default)
         {
-            var atLeastOneSeasonExists = await _dbContext.Seasons
+            var atLeastOneSeasonExists = await dbContext.Seasons
                 .AnyAsync(cancellationToken: cancellationToken);
 
             var maxSeasonId = 0;
             if (atLeastOneSeasonExists)
             {
-                maxSeasonId = await _dbContext.Seasons
+                maxSeasonId = await dbContext.Seasons
                     .MaxAsync(x => x.Id, cancellationToken: cancellationToken);
             }
 
             season = new Season
             {
                 Id = maxSeasonId + 1,
-                FranchiseId = _applicationContext.SelectedFranchiseId!.Value,
+                FranchiseId = applicationContext.SelectedFranchiseId!.Value,
                 Number = selectedSeason.Number,
             };
-            _dbContext.Seasons.Add(season);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.Seasons.Add(season);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
         else
         {
-            season = await _dbContext.Seasons
+            season = await dbContext.Seasons
                          .SingleOrDefaultAsync(x => x.Id == selectedSeason.Id, cancellationToken: cancellationToken) ??
                      throw new Exception($"Season not found: {selectedSeason.Id}");
         }
@@ -116,7 +105,7 @@ public class CsvImportRepository : ICsvImportRepository
     {
         foreach (var filePath in filePaths) ValidateFile(filePath);
 
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
@@ -133,7 +122,7 @@ public class CsvImportRepository : ICsvImportRepository
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
-            _dbContext.ChangeTracker.Clear();
+            dbContext.ChangeTracker.Clear();
             throw;
         }
         finally
@@ -147,8 +136,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var teams = await _csvReaderService.ReadTeamsAsync(filePath);
-        await _csvMappingRepository.AddTeamsAsync(teams, channelWriter, season, cancellationToken);
+        var teams = await csvReaderService.ReadTeamsAsync(filePath);
+        await csvMappingRepository.AddTeamsAsync(teams, channelWriter, season, cancellationToken);
     }
 
     private async Task ImportOverallPlayers(string filePath,
@@ -156,8 +145,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var players = await _csvReaderService.ReadOverallPlayersAsync(filePath);
-        await _csvMappingRepository.AddOverallPlayersAsync(players, channelWriter, season, cancellationToken);
+        var players = await csvReaderService.ReadOverallPlayersAsync(filePath);
+        await csvMappingRepository.AddOverallPlayersAsync(players, channelWriter, season, cancellationToken);
     }
 
     private async Task ImportSeasonStatsPitching(string filePath,
@@ -165,8 +154,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var stats = await _csvReaderService.ReadPlayerStatPitchingAsync(filePath);
-        await _csvMappingRepository.AddPlayerPitchingStatsAsync(stats, channelWriter, season, true, cancellationToken);
+        var stats = await csvReaderService.ReadPlayerStatPitchingAsync(filePath);
+        await csvMappingRepository.AddPlayerPitchingStatsAsync(stats, channelWriter, season, true, cancellationToken);
     }
 
     private async Task ImportSeasonStatsBatting(string filePath,
@@ -174,8 +163,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var stats = await _csvReaderService.ReadPlayerStatBattingAsync(filePath);
-        await _csvMappingRepository.AddPlayerBattingStatsAsync(stats, channelWriter, season, true, cancellationToken);
+        var stats = await csvReaderService.ReadPlayerStatBattingAsync(filePath);
+        await csvMappingRepository.AddPlayerBattingStatsAsync(stats, channelWriter, season, true, cancellationToken);
     }
 
     private async Task ImportSeasonSchedule(string filePath,
@@ -183,8 +172,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var schedule = await _csvReaderService.ReadSeasonScheduleAsync(filePath);
-        await _csvMappingRepository.AddSeasonScheduleAsync(schedule, channelWriter, season, cancellationToken);
+        var schedule = await csvReaderService.ReadSeasonScheduleAsync(filePath);
+        await csvMappingRepository.AddSeasonScheduleAsync(schedule, channelWriter, season, cancellationToken);
     }
 
     private async Task ImportPlayoffStatsPitching(string filePath,
@@ -192,8 +181,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var stats = await _csvReaderService.ReadPlayerStatPitchingAsync(filePath);
-        await _csvMappingRepository.AddPlayerPitchingStatsAsync(stats, channelWriter, season, false, cancellationToken);
+        var stats = await csvReaderService.ReadPlayerStatPitchingAsync(filePath);
+        await csvMappingRepository.AddPlayerPitchingStatsAsync(stats, channelWriter, season, false, cancellationToken);
     }
 
     private async Task ImportPlayoffStatsBatting(string filePath,
@@ -201,8 +190,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var stats = await _csvReaderService.ReadPlayerStatBattingAsync(filePath);
-        await _csvMappingRepository.AddPlayerBattingStatsAsync(stats, channelWriter, season, false, cancellationToken);
+        var stats = await csvReaderService.ReadPlayerStatBattingAsync(filePath);
+        await csvMappingRepository.AddPlayerBattingStatsAsync(stats, channelWriter, season, false, cancellationToken);
     }
 
     private async Task ImportPlayoffSchedule(string filePath,
@@ -210,8 +199,8 @@ public class CsvImportRepository : ICsvImportRepository
         Season season,
         CancellationToken cancellationToken)
     {
-        var schedule = await _csvReaderService.ReadPlayoffScheduleAsync(filePath);
-        await _csvMappingRepository.AddPlayoffScheduleAsync(schedule, channelWriter, season, cancellationToken);
+        var schedule = await csvReaderService.ReadPlayoffScheduleAsync(filePath);
+        await csvMappingRepository.AddPlayoffScheduleAsync(schedule, channelWriter, season, cancellationToken);
     }
 
     private static void ValidateFile(string filePath)

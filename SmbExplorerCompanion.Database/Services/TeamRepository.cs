@@ -8,27 +8,16 @@ using static SmbExplorerCompanion.Shared.Constants.WeightedOpsPlusOrEraMinus;
 
 namespace SmbExplorerCompanion.Database.Services;
 
-public class TeamRepository : ITeamRepository
+public class TeamRepository(
+    SmbExplorerCompanionDbContext dbContext,
+    IApplicationContext applicationContext,
+    IPositionPlayerSeasonRepository positionPlayerSeasonRepository,
+    IPitcherSeasonRepository pitcherSeasonRepository)
+    : ITeamRepository
 {
-    private readonly IApplicationContext _applicationContext;
-    private readonly SmbExplorerCompanionDbContext _dbContext;
-    private readonly IPitcherSeasonRepository _pitcherSeasonRepository;
-    private readonly IPositionPlayerSeasonRepository _positionPlayerSeasonRepository;
-
-    public TeamRepository(SmbExplorerCompanionDbContext dbContext,
-        IApplicationContext applicationContext,
-        IPositionPlayerSeasonRepository positionPlayerSeasonRepository,
-        IPitcherSeasonRepository pitcherSeasonRepository)
-    {
-        _dbContext = dbContext;
-        _applicationContext = applicationContext;
-        _positionPlayerSeasonRepository = positionPlayerSeasonRepository;
-        _pitcherSeasonRepository = pitcherSeasonRepository;
-    }
-
     public async Task<IEnumerable<TeamDto>> GetSeasonTeams(int seasonId, CancellationToken cancellationToken)
     {
-        var teams = await _dbContext.SeasonTeamHistory
+        var teams = await dbContext.SeasonTeamHistory
             .Include(x => x.Season)
             .Include(x => x.TeamNameHistory)
             .Include(x => x.Division)
@@ -52,21 +41,21 @@ public class TeamRepository : ITeamRepository
     public async Task<IEnumerable<HistoricalTeamDto>> GetHistoricalTeams(SeasonRange seasonRange,
         CancellationToken cancellationToken)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
-        var teamsQueryable = _dbContext.SeasonTeamHistory
+        var franchiseId = applicationContext.SelectedFranchiseId!.Value;
+        var teamsQueryable = dbContext.SeasonTeamHistory
             .Include(x => x.Team)
             .Include(x => x.Division)
             .ThenInclude(x => x.Conference)
             .Where(x => x.Team.FranchiseId == franchiseId)
             .Where(x => x.SeasonId >= seasonRange.StartSeasonId && x.SeasonId <= seasonRange.EndSeasonId);
 
-        var maxPlayoffSeries = await _dbContext.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
+        var maxPlayoffSeries = await dbContext.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
 
         var isMultipleSeasons = seasonRange.StartSeasonId != seasonRange.EndSeasonId;
         int? previousSeasonId = null;
         if (!isMultipleSeasons)
         {
-            var previousSeason = await _dbContext.Seasons
+            var previousSeason = await dbContext.Seasons
                 .Where(x => x.FranchiseId == franchiseId)
                 .OrderByDescending(x => x.Number)
                 .FirstOrDefaultAsync(x => x.Number < seasonRange.StartSeasonId, cancellationToken);
@@ -124,7 +113,7 @@ public class TeamRepository : ITeamRepository
         foreach (var team in teams)
         {
             // TODO: May want to do the same aggregations here as we did above, but for team-player-specific stats
-            var playerTeamHistory = await _dbContext.SeasonTeamHistory
+            var playerTeamHistory = await dbContext.SeasonTeamHistory
                 .Include(x => x.PlayerTeamHistory)
                 .ThenInclude(x => x.PlayerSeason)
                 .ThenInclude(x => x.Player)
@@ -208,7 +197,7 @@ public class TeamRepository : ITeamRepository
             })
             .ToList();
 
-        var currentSeason = await _dbContext.Seasons
+        var currentSeason = await dbContext.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .Where(x => x.Id == seasonRange.EndSeasonId)
             .OrderByDescending(x => x.Number)
@@ -216,7 +205,7 @@ public class TeamRepository : ITeamRepository
 
         foreach (var team in historicalTeams)
         {
-            var lastChampionshipSeason = await _dbContext.SeasonTeamHistory
+            var lastChampionshipSeason = await dbContext.SeasonTeamHistory
                 .Include(x => x.Season)
                 .Include(x => x.ChampionshipWinner)
                 .Where(x => x.TeamId == team.TeamId)
@@ -237,10 +226,10 @@ public class TeamRepository : ITeamRepository
 
     public async Task<TeamOverviewDto> GetTeamOverview(int teamId, CancellationToken cancellationToken)
     {
-        var maxPlayoffSeries = await _dbContext
-            .GetMaxPlayoffSeriesAsync(_applicationContext.SelectedFranchiseId!.Value, cancellationToken);
+        var maxPlayoffSeries = await dbContext
+            .GetMaxPlayoffSeriesAsync(applicationContext.SelectedFranchiseId!.Value, cancellationToken);
 
-        var teamOverviewDto = await _dbContext.SeasonTeamHistory
+        var teamOverviewDto = await dbContext.SeasonTeamHistory
             .Include(x => x.TeamNameHistory)
             .Include(x => x.ChampionshipWinner)
             .Include(x => x.HomePlayoffSchedule)
@@ -265,7 +254,7 @@ public class TeamRepository : ITeamRepository
             })
             .FirstAsync(cancellationToken: cancellationToken);
 
-        var teamHistories = await _dbContext.SeasonTeamHistory
+        var teamHistories = await dbContext.SeasonTeamHistory
             .Include(x => x.Season)
             .Include(x => x.Division)
             .ThenInclude(x => x.Conference)
@@ -299,7 +288,7 @@ public class TeamRepository : ITeamRepository
 
         // TODO: This will likely pull back more data the more seasons there are,
         // so we will want to do some sort of ordering and limiting here in the future
-        var topPlayers = await _dbContext.Players
+        var topPlayers = await dbContext.Players
             .Include(x => x.PlayerSeasons
                 .Where(y => y.PlayerTeamHistory
                     .Any(z => z.SeasonTeamHistory != null && z.SeasonTeamHistory.TeamId == teamId)))
@@ -419,10 +408,10 @@ public class TeamRepository : ITeamRepository
 
     public async Task<TeamSeasonDetailDto> GetTeamSeasonDetail(int teamSeasonId, CancellationToken cancellationToken)
     {
-        var maxPlayoffSeries = await _dbContext
-            .GetMaxPlayoffSeriesAsync(_applicationContext.SelectedFranchiseId!.Value, cancellationToken);
+        var maxPlayoffSeries = await dbContext
+            .GetMaxPlayoffSeriesAsync(applicationContext.SelectedFranchiseId!.Value, cancellationToken);
 
-        var teamSeason = await _dbContext.SeasonTeamHistory
+        var teamSeason = await dbContext.SeasonTeamHistory
             .Include(x => x.TeamNameHistory)
             .Include(x => x.Division)
             .ThenInclude(x => x.Conference)
@@ -436,7 +425,7 @@ public class TeamRepository : ITeamRepository
         var seasonId = teamSeason.SeasonId;
         var teamId = teamSeason.TeamId;
 
-        var seasonPlayoffsCompleted = await _dbContext.ChampionshipWinners
+        var seasonPlayoffsCompleted = await dbContext.ChampionshipWinners
             .AnyAsync(x => x.SeasonId == seasonId, cancellationToken);
 
         var teamSeasonDetailDto = new TeamSeasonDetailDto
@@ -484,7 +473,7 @@ public class TeamRepository : ITeamRepository
                 teamSeason.HomePlayoffSchedule,
                 teamSeason.AwayPlayoffSchedule);
 
-            teamSeasonDetailDto.PlayoffPitching = await _pitcherSeasonRepository.GetPitchingSeasons(
+            teamSeasonDetailDto.PlayoffPitching = await pitcherSeasonRepository.GetPitchingSeasons(
                 new GetPitchingSeasonsFilters
                 {
                     Seasons = new SeasonRange(seasonId),
@@ -493,7 +482,7 @@ public class TeamRepository : ITeamRepository
                 },
                 cancellationToken);
 
-            teamSeasonDetailDto.PlayoffBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
+            teamSeasonDetailDto.PlayoffBatting = await positionPlayerSeasonRepository.GetBattingSeasons(
                 new GetBattingSeasonsFilters
                 {
                     Seasons = new SeasonRange(seasonId),
@@ -503,7 +492,7 @@ public class TeamRepository : ITeamRepository
                 cancellationToken);
         }
 
-        teamSeasonDetailDto.RegularSeasonPitching = await _pitcherSeasonRepository.GetPitchingSeasons(
+        teamSeasonDetailDto.RegularSeasonPitching = await pitcherSeasonRepository.GetPitchingSeasons(
             new GetPitchingSeasonsFilters
             {
                 Seasons = new SeasonRange(seasonId),
@@ -512,7 +501,7 @@ public class TeamRepository : ITeamRepository
             },
             cancellationToken);
 
-        teamSeasonDetailDto.RegularSeasonBatting = await _positionPlayerSeasonRepository.GetBattingSeasons(
+        teamSeasonDetailDto.RegularSeasonBatting = await positionPlayerSeasonRepository.GetBattingSeasons(
             new GetBattingSeasonsFilters
             {
                 Seasons = new SeasonRange(seasonId),
@@ -528,19 +517,19 @@ public class TeamRepository : ITeamRepository
         bool includeDivision,
         CancellationToken cancellationToken)
     {
-        var seasonId = await _dbContext.SeasonTeamHistory
+        var seasonId = await dbContext.SeasonTeamHistory
             .Where(x => x.Id == teamSeasonId)
             .Select(x => x.SeasonId)
             .SingleAsync(cancellationToken: cancellationToken);
         var teamSeasonIds = new List<int>(teamSeasonId);
         if (includeDivision)
         {
-            var divisionId = await _dbContext.SeasonTeamHistory
+            var divisionId = await dbContext.SeasonTeamHistory
                 .Where(x => x.Id == teamSeasonId)
                 .Select(x => x.DivisionId)
                 .SingleAsync(cancellationToken: cancellationToken);
 
-            teamSeasonIds = await _dbContext.SeasonTeamHistory
+            teamSeasonIds = await dbContext.SeasonTeamHistory
                 .Include(x => x.Division)
                 .Where(x => x.SeasonId == seasonId)
                 .Where(x => x.DivisionId == divisionId)
@@ -552,7 +541,7 @@ public class TeamRepository : ITeamRepository
         var divisionScheduleBreakdown = new DivisionScheduleBreakdownDto();
         foreach (var currentTeamSeasonId in teamSeasonIds)
         {
-            var teamSeason = await _dbContext.SeasonTeamHistory
+            var teamSeason = await dbContext.SeasonTeamHistory
                 .Include(x => x.TeamNameHistory)
                 .Include(x => x.HomeSeasonSchedule)
                 .ThenInclude(x => x.AwayTeamHistory)
@@ -655,7 +644,7 @@ public class TeamRepository : ITeamRepository
             var teamWonSeries = numWins > numLosses;
             var opponentTeamSeasonId = series.First().OpponentTeamSeasonId;
 
-            var opponentSeasonTeamHistory = await _dbContext.SeasonTeamHistory
+            var opponentSeasonTeamHistory = await dbContext.SeasonTeamHistory
                 .Include(x => x.TeamNameHistory)
                 .Where(x => x.Id == opponentTeamSeasonId)
                 .SingleAsync();

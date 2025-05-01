@@ -5,22 +5,15 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services;
 
-public class SearchRepository : ISearchRepository
+public class SearchRepository(SmbExplorerCompanionDbContext context) : ISearchRepository
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public SearchRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<SearchResultDto>> Search(string query, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(query)) return new List<SearchResultDto>();
 
         var lowerQuery = query.ToLower();
 
-        var matchingPlayers = await _context.Players
+        var matchingPlayers = await context.Players
             .Include(x => x.PlayerSeasons)
             .ThenInclude(x => x.Season)
             .Where(x => x.FirstName.ToLower().Contains(lowerQuery) ||
@@ -30,7 +23,7 @@ public class SearchRepository : ISearchRepository
             .Take(10)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        var matchingTeams = await _context.TeamNameHistory
+        var matchingTeams = await context.TeamNameHistory
             .Include(x => x.SeasonTeamHistory)
             .ThenInclude(x => x.Team)
             .Where(x => x.Name.ToLower().Contains(lowerQuery))

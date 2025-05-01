@@ -5,20 +5,13 @@ using SmbExplorerCompanion.Database.Mappings;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class PlayerAwardRepository : IRepository<PlayerAwardDto>
+public class PlayerAwardRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<PlayerAwardDto>, IAddRepository<PlayerAwardDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public PlayerAwardRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<PlayerAwardDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var mapper = new PlayerAwardMapping();
 
-        var playerAwards = await _context.PlayerAwards
+        var playerAwards = await context.PlayerAwards
             .ToListAsync(cancellationToken: cancellationToken);
 
         var playerAwardDtos = playerAwards
@@ -32,7 +25,7 @@ public class PlayerAwardRepository : IRepository<PlayerAwardDto>
     {
         var mapper = new PlayerAwardMapping();
 
-        var existingPlayerAward = await _context.PlayerAwards
+        var existingPlayerAward = await context.PlayerAwards
             .FirstOrDefaultAsync(x => x.Name == entity.Name, cancellationToken: cancellationToken);
 
         if (existingPlayerAward is not null)
@@ -41,8 +34,8 @@ public class PlayerAwardRepository : IRepository<PlayerAwardDto>
         }
 
         var newPlayerAward = mapper.PlayerAwardDtoToPlayerAward(entity);
-        _context.PlayerAwards.Add(newPlayerAward);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.PlayerAwards.Add(newPlayerAward);
+        await context.SaveChangesAsync(cancellationToken);
 
         var newPlayerAwardDto = mapper.PlayerAwardToPlayerAwardDto(newPlayerAward);
         return newPlayerAwardDto;
