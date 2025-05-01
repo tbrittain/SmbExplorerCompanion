@@ -35,18 +35,12 @@ public class GetPlayerAwardsRequest : IRequest<List<PlayerAwardDto>>
     }
 
     // ReSharper disable once UnusedType.Global
-    internal class GetPlayerAwardsHandler : IRequestHandler<GetPlayerAwardsRequest, List<PlayerAwardDto>>
+    internal class GetPlayerAwardsHandler(IGetAllRepository<PlayerAwardDto> playerAwardRepository)
+        : IRequestHandler<GetPlayerAwardsRequest, List<PlayerAwardDto>>
     {
-        private readonly IRepository<PlayerAwardDto> _playerAwardRepository;
-
-        public GetPlayerAwardsHandler(IRepository<PlayerAwardDto> playerAwardRepository)
-        {
-            _playerAwardRepository = playerAwardRepository;
-        }
-
         public async Task<List<PlayerAwardDto>> Handle(GetPlayerAwardsRequest request, CancellationToken cancellationToken)
         {
-            var awardResult = await _playerAwardRepository.GetAllAsync(cancellationToken);
+            var awardResult = await playerAwardRepository.GetAllAsync(cancellationToken);
             return awardResult
                 .Where(x => request.All || x.IsPlayoffAward != request.IsRegularSeason)
                 .Where(x => request.All || x.IsUserAssignable == request.OnlyUserAssignable)

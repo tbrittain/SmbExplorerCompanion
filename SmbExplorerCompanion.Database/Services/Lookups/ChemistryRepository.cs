@@ -4,18 +4,11 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services.Lookups;
 
-public class ChemistryRepository : IRepository<ChemistryDto>
+public class ChemistryRepository(SmbExplorerCompanionDbContext context) : IGetAllRepository<ChemistryDto>
 {
-    private readonly SmbExplorerCompanionDbContext _context;
-
-    public ChemistryRepository(SmbExplorerCompanionDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<ChemistryDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var chemistry = await _context.Chemistry
+        var chemistry = await context.Chemistry
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -26,10 +19,5 @@ public class ChemistryRepository : IRepository<ChemistryDto>
                 Name = p.Name
             })
             .ToList();
-    }
-
-    public Task<ChemistryDto> AddAsync(ChemistryDto entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotSupportedException();
     }
 }

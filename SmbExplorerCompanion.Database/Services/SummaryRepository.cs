@@ -5,38 +5,27 @@ using SmbExplorerCompanion.Core.Interfaces;
 
 namespace SmbExplorerCompanion.Database.Services;
 
-public class SummaryRepository : ISummaryRepository
+public class SummaryRepository(
+    SmbExplorerCompanionDbContext context,
+    IApplicationContext applicationContext,
+    IPitcherCareerRepository pitcherCareerRepository,
+    IPositionPlayerCareerRepository positionPlayerCareerRepository)
+    : ISummaryRepository
 {
-    private readonly IApplicationContext _applicationContext;
-    private readonly SmbExplorerCompanionDbContext _context;
-    private readonly IPitcherCareerRepository _pitcherCareerRepository;
-    private readonly IPositionPlayerCareerRepository _positionPlayerCareerRepository;
-
-    public SummaryRepository(SmbExplorerCompanionDbContext context,
-        IApplicationContext applicationContext,
-        IPitcherCareerRepository pitcherCareerRepository,
-        IPositionPlayerCareerRepository positionPlayerCareerRepository)
-    {
-        _context = context;
-        _applicationContext = applicationContext;
-        _pitcherCareerRepository = pitcherCareerRepository;
-        _positionPlayerCareerRepository = positionPlayerCareerRepository;
-    }
-
     public Task<bool> HasFranchiseDataAsync(CancellationToken cancellationToken = default)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var franchiseId = applicationContext.SelectedFranchiseId!.Value;
 
-        return _context.Seasons
+        return context.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .AnyAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<FranchiseSummaryDto?> GetFranchiseSummaryAsync(CancellationToken cancellationToken = default)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var franchiseId = applicationContext.SelectedFranchiseId!.Value;
 
-        var franchiseSeasons = await _context.Seasons
+        var franchiseSeasons = await context.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Number)
             .ToListAsync(cancellationToken: cancellationToken);
@@ -49,7 +38,7 @@ public class SummaryRepository : ISummaryRepository
             NumSeasons = franchiseSeasons.Count
         };
 
-        var playersIQueryable = _context.Players
+        var playersIQueryable = context.Players
             .Where(x => x.FranchiseId == franchiseId);
 
         var numPlayers = await playersIQueryable
@@ -69,7 +58,7 @@ public class SummaryRepository : ISummaryRepository
 
         franchiseSummaryDto.NumHallOfFamers = numHallOfFamers;
 
-        var mostRecentChampionTeam = await _context.SeasonTeamHistory
+        var mostRecentChampionTeam = await context.SeasonTeamHistory
             .Include(x => x.Team)
             .Include(x => x.TeamNameHistory)
             .Where(x => x.Team.FranchiseId == franchiseId)
@@ -83,12 +72,12 @@ public class SummaryRepository : ISummaryRepository
             franchiseSummaryDto.MostRecentChampionTeamName = mostRecentChampionTeam.TeamNameHistory.Name;
         }
 
-        var mostRecentSeasonAwardees = _context.PlayerSeasons
+        var mostRecentSeasonAwardees = context.PlayerSeasons
             .Include(x => x.Awards)
             .Include(x => x.Player)
             .Where(x => x.SeasonId == mostRecentSeason.Id);
 
-        var mvpAward = await _context.PlayerAwards
+        var mvpAward = await context.PlayerAwards
             .Where(x => x.OriginalName == "MVP")
             .SingleAsync(cancellationToken: cancellationToken);
 
@@ -102,7 +91,7 @@ public class SummaryRepository : ISummaryRepository
             franchiseSummaryDto.MostRecentMvpPlayerName = $"{mostRecentSeasonMvp.Player.FirstName} {mostRecentSeasonMvp.Player.LastName}";
         }
 
-        var cyYoungAward = await _context.PlayerAwards
+        var cyYoungAward = await context.PlayerAwards
             .Where(x => x.OriginalName == "Cy Young")
             .SingleAsync(cancellationToken: cancellationToken);
 
@@ -196,7 +185,7 @@ public class SummaryRepository : ISummaryRepository
 
         if (topStrikeouts is not null) franchiseSummaryDto.TopStrikeouts = topStrikeouts;
 
-        var currentBattingGreats = await _positionPlayerCareerRepository.GetBattingCareers(
+        var currentBattingGreats = await positionPlayerCareerRepository.GetBattingCareers(
             new GetBattingCareersFilters
             {
                 Limit = 5,
@@ -204,7 +193,7 @@ public class SummaryRepository : ISummaryRepository
             },
             cancellationToken);
 
-        var currentPitchingGreats = await _pitcherCareerRepository.GetPitchingCareers(
+        var currentPitchingGreats = await pitcherCareerRepository.GetPitchingCareers(
             new GetPitchingCareersFilters
             {
                 Limit = 5,
@@ -224,18 +213,18 @@ public class SummaryRepository : ISummaryRepository
 
     public async Task<List<ConferenceSummaryDto>> GetLeagueSummaryAsync(CancellationToken cancellationToken = default)
     {
-        var franchiseId = _applicationContext.SelectedFranchiseId!.Value;
+        var franchiseId = applicationContext.SelectedFranchiseId!.Value;
 
-        var mostRecentSeason = await _context.Seasons
+        var mostRecentSeason = await context.Seasons
             .Where(x => x.FranchiseId == franchiseId)
             .OrderByDescending(x => x.Id)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (mostRecentSeason is null) return new List<ConferenceSummaryDto>();
 
-        var maxPlayoffSeries = await _context.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
+        var maxPlayoffSeries = await context.GetMaxPlayoffSeriesAsync(franchiseId, cancellationToken);
 
-        var conferences = await _context.Conferences
+        var conferences = await context.Conferences
             .Where(x => x.FranchiseId == franchiseId)
             .ToListAsync(cancellationToken: cancellationToken);
 
@@ -249,7 +238,7 @@ public class SummaryRepository : ISummaryRepository
 
         foreach (var conferenceSummaryDto in conferenceSummaryDtos)
         {
-            var divisions = await _context.Divisions
+            var divisions = await context.Divisions
                 .Where(x => x.ConferenceId == conferenceSummaryDto.Id)
                 .ToListAsync(cancellationToken: cancellationToken);
 
@@ -263,7 +252,7 @@ public class SummaryRepository : ISummaryRepository
 
             foreach (var divisionSummaryDto in divisionSummaryDtos)
             {
-                var mostRecentSeasonTeamHistory = await _context.SeasonTeamHistory
+                var mostRecentSeasonTeamHistory = await context.SeasonTeamHistory
                     .Include(x => x.TeamNameHistory)
                     .Include(x => x.ChampionshipWinner)
                     .Include(x => x.HomePlayoffSchedule)
