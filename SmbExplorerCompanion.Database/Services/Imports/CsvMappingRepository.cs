@@ -38,6 +38,7 @@ public class CsvMappingRepository(SmbExplorerCompanionDbContext dbContext, IAppl
             var division = await dbContext.Divisions
                 .Include(x => x.Conference)
                 .Where(x => x.Conference.FranchiseId == franchiseId)
+                .Where(x => x.Conference.Name == csvTeam.ConferenceName)
                 .SingleOrDefaultAsync(x => x.Name == csvTeam.DivisionName, cancellationToken);
             if (division is null)
             {
